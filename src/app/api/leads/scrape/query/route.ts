@@ -45,45 +45,49 @@ export async function POST(req: Request) {
     const places: { place_id: string; name: string }[] = searchData.results ?? []
     nextPageToken = searchData.next_page_token ?? null
 
-    for (const place of places) {
-      if (seenPlaceIds.has(place.place_id)) {
-        skipped.push({ name: place.name, reason: 'duplicate' })
-        continue
-      }
-      seenPlaceIds.add(place.place_id)
+    // Fetch all place details in parallel (5 at a time) instead of sequentially
+    const CONCURRENCY = 5
+    const uniquePlaces = places.filter(p => {
+      if (seenPlaceIds.has(p.place_id)) { skipped.push({ name: p.name, reason: 'duplicate' }); return false }
+      seenPlaceIds.add(p.place_id); return true
+    })
 
-      const detailsRes = await fetch(
-        `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_phone_number,formatted_address,website,rating,user_ratings_total&key=${apiKey}`,
-        { cache: 'no-store' }
-      )
-      const { result: d = {} } = await detailsRes.json()
+    for (let i = 0; i < uniquePlaces.length; i += CONCURRENCY) {
+      const batch = uniquePlaces.slice(i, i + CONCURRENCY)
+      await Promise.allSettled(batch.map(async (place) => {
+        const detailsRes = await fetch(
+          `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_phone_number,formatted_address,website,rating,user_ratings_total&key=${apiKey}`,
+          { cache: 'no-store' }
+        )
+        const { result: d = {} } = await detailsRes.json()
 
-      if (d.website)                                { skipped.push({ name: d.name ?? place.name, reason: 'website' }); continue }
-      if ((d.rating ?? 0) < minRating)              { skipped.push({ name: d.name ?? place.name, reason: 'rating' }); continue }
-      if ((d.user_ratings_total ?? 0) < minReviews) { skipped.push({ name: d.name ?? place.name, reason: 'reviews' }); continue }
+        if (d.website)                                { skipped.push({ name: d.name ?? place.name, reason: 'website' }); return }
+        if ((d.rating ?? 0) < minRating)              { skipped.push({ name: d.name ?? place.name, reason: 'rating' }); return }
+        if ((d.user_ratings_total ?? 0) < minReviews) { skipped.push({ name: d.name ?? place.name, reason: 'reviews' }); return }
 
-      const existing = await db.lead.findUnique({ where: { placeId: place.place_id } })
-      if (existing) { skipped.push({ name: d.name ?? place.name, reason: 'duplicate' }); continue }
+        const existing = await db.lead.findUnique({ where: { placeId: place.place_id } })
+        if (existing) { skipped.push({ name: d.name ?? place.name, reason: 'duplicate' }); return }
 
-      const baseSlug = slugify(d.name ?? place.name)
-      let slug = baseSlug, attempt = 0
-      while (await db.lead.findFirst({ where: { slug } })) slug = `${baseSlug}-${++attempt}`
+        const baseSlug = slugify(d.name ?? place.name)
+        let slug = baseSlug, attempt = 0
+        while (await db.lead.findFirst({ where: { slug } })) slug = `${baseSlug}-${++attempt}`
 
-      const created = await db.lead.create({
-        data: {
-          name: d.name ?? place.name,
-          phone: d.formatted_phone_number ?? null,
-          address: d.formatted_address ?? null,
-          city, category,
-          rating: d.rating ?? null,
-          reviewCount: d.user_ratings_total ?? null,
-          placeId: place.place_id,
-          hasWebsite: false,
-          slug,
-        },
-        include: { site: true, smsLogs: true },
-      })
-      leads.push(created)
+        const created = await db.lead.create({
+          data: {
+            name: d.name ?? place.name,
+            phone: d.formatted_phone_number ?? null,
+            address: d.formatted_address ?? null,
+            city, category,
+            rating: d.rating ?? null,
+            reviewCount: d.user_ratings_total ?? null,
+            placeId: place.place_id,
+            hasWebsite: false,
+            slug,
+          },
+          include: { site: true, smsLogs: true },
+        })
+        leads.push(created)
+      }))
     }
   }
 

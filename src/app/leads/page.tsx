@@ -78,7 +78,7 @@ type FeedItem =
 interface Toast { id: number; message: string; ok: boolean }
 
 // Queue item for the scrape job
-interface QueueItem { query: string; pageToken?: string }
+interface QueueItem { query: string; pageToken?: string; city?: string; category?: string }
 
 export default function LeadsPage() {
   const [city, setCity] = useState('')
@@ -192,8 +192,9 @@ export default function LeadsPage() {
     setCallingId(null)
   }
 
-  // Process the queue one request at a time.
+  // Run up to CONCURRENCY queries in parallel.
   // Uses a ref flag so tab-switching never aborts the loop.
+  const CONCURRENCY = 5
   const processQueue = useCallback(async (
     queue: QueueItem[],
     cityVal: string,
@@ -204,18 +205,18 @@ export default function LeadsPage() {
   ) => {
     let doneCount = 0
 
-    while (queue.length > 0 && runningRef.current) {
-      const item = queue.shift()!
-      setCurrentLabel(`Query ${++doneCount}/${totalQueries}: ${item.query}`)
-      setProgress({ done: doneCount, total: totalQueries })
-
+    async function runOne(item: QueueItem): Promise<void> {
+      if (!runningRef.current) return
       try {
         const res = await fetch('/api/leads/scrape/query', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            city: cityVal, category: catVal,
-            query: item.query, minRating: minRatingVal, minReviews: minReviewsVal,
+            city: item.city ?? cityVal,
+            category: item.category ?? catVal,
+            query: item.query,
+            minRating: minRatingVal,
+            minReviews: minReviewsVal,
             pageToken: item.pageToken,
           }),
         })
@@ -223,20 +224,17 @@ export default function LeadsPage() {
         if (!res.ok) {
           const { error: err } = await res.json().catch(() => ({ error: 'Request failed' }))
           setError(err ?? 'Request failed')
-          break
+          return
         }
 
         const data = await res.json()
 
-        // Add new leads to the feed
         if (data.leads?.length) {
           setFeed(prev => [
             ...prev,
             ...data.leads.map((lead: Lead) => ({ kind: 'lead' as const, lead, key: lead.id })),
           ])
         }
-
-        // Add skipped items to the feed
         if (data.skipped?.length) {
           setFeed(prev => [
             ...prev,
@@ -247,21 +245,24 @@ export default function LeadsPage() {
           ])
         }
 
-        // If there's a next page for this query, push it back to the front
         if (data.nextPageToken && runningRef.current) {
-          // Wait 2s before next page (Google requires it)
           await new Promise(r => setTimeout(r, 2000))
-          queue.unshift({ query: item.query, pageToken: data.nextPageToken })
-          // Don't increment doneCount for pagination — same query continuing
-          doneCount--
+          queue.push({ ...item, pageToken: data.nextPageToken })
         }
 
-        if (data.error) { setError(data.error); break }
+        if (data.error) setError(data.error)
 
       } catch (err: unknown) {
-        // Network errors shouldn't stop the whole run — just log and continue
         console.error('Query failed:', err)
       }
+    }
+
+    while (queue.length > 0 && runningRef.current) {
+      const batch = queue.splice(0, CONCURRENCY)
+      doneCount += batch.length
+      setCurrentLabel(`${doneCount}/${totalQueries} queries — ${batch.length} running in parallel`)
+      setProgress({ done: doneCount, total: totalQueries })
+      await Promise.allSettled(batch.map(runOne))
     }
 
     if (runningRef.current) {
@@ -278,20 +279,22 @@ export default function LeadsPage() {
     setFeed([]); setDone(false); setError(null); setStarted(true)
     setLoading(true); setCurrentLabel(null); runningRef.current = true
 
+    // Support comma-separated cities e.g. "Houston, TX; Dallas, TX; Austin, TX"
+    const cities = city.split(/[,;\n]+/).map(c => c.trim()).filter(Boolean)
     const isAll = category.toLowerCase() === 'all' || category.toLowerCase() === 'all categories'
     const allQueries: QueueItem[] = []
 
-    if (isAll) {
-      for (const cat of CATEGORIES) {
-        for (const q of buildQueries(cat, city.trim())) allQueries.push({ query: q })
+    for (const c of cities) {
+      if (isAll) {
+        for (const cat of CATEGORIES)
+          for (const q of buildQueries(cat, c)) allQueries.push({ query: q, city: c, category: cat })
+      } else {
+        for (const q of buildQueries(category, c)) allQueries.push({ query: q, city: c, category })
       }
-    } else {
-      for (const q of buildQueries(category, city.trim())) allQueries.push({ query: q })
     }
 
     setProgress({ done: 0, total: allQueries.length })
-
-    await processQueue(allQueries, city.trim(), isAll ? 'mixed' : category, minRating, minReviews, allQueries.length)
+    await processQueue(allQueries, cities[0], isAll ? 'mixed' : category, minRating, minReviews, allQueries.length)
   }
 
   function handleStop() {
@@ -333,7 +336,7 @@ export default function LeadsPage() {
                     handleCityKeyDown(e)
                     if (e.key === 'Enter' && activeSuggestion < 0) handleScrape()
                   }}
-                  placeholder={cityLoading ? 'Detecting location…' : 'Type any city…'}
+                  placeholder={cityLoading ? 'Detecting location…' : 'City, State — or paste multiple separated by semicolons'}
                   autoComplete="off"
                   className="w-full rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#3a4a2a] focus:outline-none focus:ring-1 focus:ring-[#c8f13540]"
                   style={{ background: '#0d0e0b', border: '1px solid #1e2218', paddingRight: 32 }}
