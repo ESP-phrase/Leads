@@ -9,11 +9,15 @@ interface WorkerSummary {
   name: string
   phone?: string | null
   email?: string | null
+  referralCode?: string | null
+  referralCount: number
   leadsAssigned: number
   closedDeals: number
   pendingDeals: number
   interestedDeals: number
   earned: number
+  directEarned: number
+  referralEarned: number
   pending: number
   potential: number
 }
@@ -111,8 +115,8 @@ export default function EarningsPage() {
                 </div>
 
                 <div className="grid border-b border-[#1a1e14]"
-                  style={{ gridTemplateColumns: '40px 1.5fr 1fr 1fr 1fr 1fr 1fr' }}>
-                  {['#', 'Worker', 'Leads', 'Closed', 'Pending', 'Potential', 'Earned'].map(h => (
+                  style={{ gridTemplateColumns: '40px 1.8fr 0.8fr 0.8fr 0.8fr 1fr 1.2fr' }}>
+                  {['#', 'Worker', 'Leads', 'Closed', 'Recruits', 'Referral $', 'Total Earned'].map(h => (
                     <div key={h} className="px-3 py-2.5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#2a3a1a' }}>
                       {h}
                     </div>
@@ -123,7 +127,7 @@ export default function EarningsPage() {
                   <p className="text-center text-sm py-12" style={{ color: '#3a4a2a' }}>No active workers yet.</p>
                 ) : sorted.map((w, i) => (
                   <div key={w.workerId} className="grid items-center border-b border-[#161a11] hover:bg-[#ffffff02] transition-colors"
-                    style={{ gridTemplateColumns: '40px 1.5fr 1fr 1fr 1fr 1fr 1fr', background: i % 2 === 0 ? 'transparent' : '#0f1009' }}>
+                    style={{ gridTemplateColumns: '40px 1.8fr 0.8fr 0.8fr 0.8fr 1fr 1.2fr', background: i % 2 === 0 ? 'transparent' : '#0f1009' }}>
                     <div className="px-3 py-3.5">
                       <span className="text-sm font-bold" style={{ color: i === 0 ? '#c8f135' : i === 1 ? '#a0b8a0' : i === 2 ? '#b89060' : '#3a4a2a' }}>
                         {i + 1}
@@ -132,6 +136,7 @@ export default function EarningsPage() {
                     <div className="px-3 py-3.5">
                       <p className="text-sm font-semibold text-white">{w.name}</p>
                       {w.phone && <p className="text-xs mt-0.5" style={{ color: '#3a4a2a' }}>{w.phone}</p>}
+                      {w.referralCode && <p className="text-xs mt-0.5 font-mono" style={{ color: '#2a4a2a' }}>{w.referralCode}</p>}
                     </div>
                     <div className="px-3 py-3.5">
                       <p className="text-sm" style={{ color: '#6b7a5a' }}>{w.leadsAssigned}</p>
@@ -140,13 +145,18 @@ export default function EarningsPage() {
                       <p className="text-sm font-bold" style={{ color: w.closedDeals > 0 ? '#c8f135' : '#3a4a2a' }}>{w.closedDeals}</p>
                     </div>
                     <div className="px-3 py-3.5">
-                      <p className="text-sm" style={{ color: w.pendingDeals > 0 ? '#d4a44a' : '#3a4a2a' }}>{w.pendingDeals}</p>
+                      <p className="text-sm" style={{ color: w.referralCount > 0 ? '#4a9eff' : '#3a4a2a' }}>{w.referralCount}</p>
                     </div>
                     <div className="px-3 py-3.5">
-                      <p className="text-sm" style={{ color: w.interestedDeals > 0 ? '#9b6fd4' : '#3a4a2a' }}>${w.potential}</p>
+                      <p className="text-sm font-bold" style={{ color: w.referralEarned > 0 ? '#4a9eff' : '#3a4a2a' }}>
+                        {w.referralEarned > 0 ? `$${w.referralEarned}` : '—'}
+                      </p>
                     </div>
                     <div className="px-3 py-3.5">
                       <p className="text-base font-black" style={{ color: w.earned > 0 ? '#c8f135' : '#3a4a2a' }}>${w.earned}</p>
+                      {w.referralEarned > 0 && (
+                        <p className="text-xs" style={{ color: '#2a4a2a' }}>${w.directEarned} + ${w.referralEarned} ref</p>
+                      )}
                     </div>
                   </div>
                 ))}

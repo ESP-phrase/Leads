@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { DollarSign, Phone, CheckCircle, Zap, Clock, ArrowRight, Star } from 'lucide-react'
 import Logo from '@/components/Logo'
@@ -58,10 +58,18 @@ export default function JoinPage() {
   const [experience, setExperience] = useState('')
   const [whyJoin, setWhyJoin] = useState('')
   const [referralSource, setReferralSource] = useState('')
+  const [referralCode, setReferralCode] = useState('')
   const [smsOptIn, setSmsOptIn] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Read referral code from URL ?ref=CODE
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const ref = params.get('ref')
+    if (ref) setReferralCode(ref.toUpperCase())
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -72,7 +80,7 @@ export default function JoinPage() {
     const res = await fetch('/api/apply', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, phone, email, state: stateField, hoursPerWeek, experience, whyJoin, referralSource, smsOptIn }),
+      body: JSON.stringify({ name, phone, email, state: stateField, hoursPerWeek, experience, whyJoin, referralSource, referralCode: referralCode || null, smsOptIn }),
     })
     const data = await res.json()
     if (res.ok && data.url) {

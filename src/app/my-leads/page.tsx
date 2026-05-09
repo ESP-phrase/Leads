@@ -2,12 +2,29 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Star, MessageSquare, PhoneCall, CheckCircle, Globe, LogOut, Phone } from 'lucide-react'
+import { Star, MessageSquare, PhoneCall, CheckCircle, Globe, LogOut, Phone, Copy, Users, DollarSign, Link2, ChevronDown, ChevronUp } from 'lucide-react'
 import Logo from '@/components/Logo'
 import type { Lead } from '@/types'
 import { formatPhone } from '@/lib/utils'
 
 interface Toast { id: number; message: string; ok: boolean }
+
+interface Recruit {
+  id: string
+  name: string
+  joinedAt: string
+  closedDeals: number
+  theirEarnings: number
+  yourCut: number
+}
+
+interface ReferralData {
+  referralCode: string | null
+  referralCount: number
+  recruits: Recruit[]
+  totalReferralEarnings: number
+  referralPct: number
+}
 
 export default function MyLeadsPage() {
   const router = useRouter()
@@ -19,6 +36,9 @@ export default function MyLeadsPage() {
   const [calledIds, setCalledIds] = useState<Set<string>>(new Set())
   const [toasts, setToasts] = useState<Toast[]>([])
   const [workerName, setWorkerName] = useState('')
+  const [referral, setReferral] = useState<ReferralData | null>(null)
+  const [showRecruits, setShowRecruits] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   function addToast(message: string, ok = true) {
     const id = Date.now()
@@ -28,8 +48,8 @@ export default function MyLeadsPage() {
 
   useEffect(() => {
     fetch('/api/leads').then(r => r.json()).then(data => { setLeads(data); setLoading(false) })
-    // Get name from cookie (non-httpOnly part isn't available — use a whoami endpoint instead)
     fetch('/api/auth/whoami').then(r => r.ok ? r.json() : null).then(d => { if (d?.name) setWorkerName(d.name) })
+    fetch('/api/workers/referral').then(r => r.ok ? r.json() : null).then(d => { if (d?.referralCode !== undefined) setReferral(d) })
   }, [])
 
   async function handleSms(lead: Lead) {
@@ -37,8 +57,7 @@ export default function MyLeadsPage() {
     setSendingId(lead.id)
     try {
       const res = await fetch('/api/sms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ leadId: lead.id }),
       })
       if (res.ok) { setSentIds(prev => new Set(prev).add(lead.id)); addToast(`SMS sent to ${lead.name}`) }
@@ -50,11 +69,7 @@ export default function MyLeadsPage() {
   async function handleCall(lead: Lead) {
     if (!lead.phone) return
     setCallingId(lead.id)
-    await fetch('/api/call', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ leadId: lead.id }),
-    })
+    await fetch('/api/call', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId: lead.id }) })
     setCalledIds(prev => new Set(prev).add(lead.id))
     setCallingId(null)
     addToast(`Call initiated to ${lead.name}`)
@@ -64,6 +79,19 @@ export default function MyLeadsPage() {
     await fetch('/api/auth/logout', { method: 'POST' })
     router.push('/login')
   }
+
+  function copyReferralLink() {
+    if (!referral?.referralCode) return
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin
+    navigator.clipboard.writeText(`${baseUrl}/join?ref=${referral.referralCode}`)
+    setCopied(true)
+    addToast('Referral link copied!')
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const referralLink = referral?.referralCode
+    ? `${typeof window !== 'undefined' ? window.location.origin : ''}/join?ref=${referral.referralCode}`
+    : null
 
   return (
     <div className="min-h-screen" style={{ background: '#0d0e0b', color: '#d4dfc4' }}>
@@ -90,7 +118,115 @@ export default function MyLeadsPage() {
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto p-6 space-y-3">
+      <div className="max-w-3xl mx-auto p-6 space-y-4">
+
+        {/* ── Referral Card ── */}
+        {referral && (
+          <div className="rounded-xl border border-[#c8f13525] overflow-hidden" style={{ background: '#111310' }}>
+            {/* Header */}
+            <div className="px-5 py-4 border-b border-[#1e2218]" style={{ background: 'linear-gradient(135deg, #c8f13508, transparent)' }}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: '#c8f13520' }}>
+                    <Link2 size={14} style={{ color: '#c8f135' }} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-white">Invite & Earn 15%</p>
+                    <p className="text-xs" style={{ color: '#4a5a3a' }}>
+                      Get 15% of every sale your recruits close — forever
+                    </p>
+                  </div>
+                </div>
+                {referral.totalReferralEarnings > 0 && (
+                  <div className="text-right">
+                    <p className="text-lg font-black" style={{ color: '#c8f135' }}>${referral.totalReferralEarnings}</p>
+                    <p className="text-xs" style={{ color: '#4a5a3a' }}>referral earnings</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Link + stats */}
+            <div className="p-5 space-y-4">
+              {/* Stats row */}
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { label: 'Your code', value: referral.referralCode ?? '—', icon: Link2, color: '#c8f135' },
+                  { label: 'Recruits', value: referral.referralCount, icon: Users, color: '#4a9eff' },
+                  { label: 'Earned', value: `$${referral.totalReferralEarnings}`, icon: DollarSign, color: '#c8f135' },
+                ].map(({ label, value, icon: Icon, color }) => (
+                  <div key={label} className="rounded-lg p-3 text-center" style={{ background: '#0d0e0b', border: '1px solid #1e2218' }}>
+                    <Icon size={13} style={{ color, margin: '0 auto 4px' }} />
+                    <p className="text-base font-black" style={{ color }}>{value}</p>
+                    <p className="text-xs" style={{ color: '#3a4a2a' }}>{label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Referral link */}
+              {referralLink && (
+                <div>
+                  <p className="text-xs font-semibold mb-2 uppercase tracking-wider" style={{ color: '#3a4a2a' }}>Your invite link</p>
+                  <div className="flex gap-2">
+                    <div className="flex-1 rounded-lg px-3 py-2.5 text-xs font-mono truncate"
+                         style={{ background: '#0d0e0b', border: '1px solid #1e2218', color: '#6b7a5a' }}>
+                      {referralLink}
+                    </div>
+                    <button onClick={copyReferralLink}
+                      className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-bold transition-all flex-shrink-0"
+                      style={copied
+                        ? { background: '#0d2218', color: '#c8f135', border: '1px solid #1a3520' }
+                        : { background: '#c8f135', color: '#0d0e0b' }}>
+                      <Copy size={11} />
+                      {copied ? 'Copied!' : 'Copy'}
+                    </button>
+                  </div>
+                  <p className="text-xs mt-2" style={{ color: '#2a3a1a' }}>
+                    Share this link. When someone applies and gets approved, you earn 15% of every sale they close.
+                  </p>
+                </div>
+              )}
+
+              {/* Recruits list toggle */}
+              {referral.referralCount > 0 && (
+                <div>
+                  <button
+                    onClick={() => setShowRecruits(v => !v)}
+                    className="flex items-center gap-1.5 text-xs font-semibold w-full py-2 border-t border-[#1e2218] mt-2 pt-3"
+                    style={{ color: '#4a5a3a' }}>
+                    <Users size={12} />
+                    Your {referral.referralCount} recruit{referral.referralCount !== 1 ? 's' : ''}
+                    {showRecruits ? <ChevronUp size={12} className="ml-auto" /> : <ChevronDown size={12} className="ml-auto" />}
+                  </button>
+
+                  {showRecruits && (
+                    <div className="mt-2 space-y-2">
+                      {referral.recruits.map(r => (
+                        <div key={r.id} className="flex items-center justify-between rounded-lg px-3 py-2.5"
+                             style={{ background: '#0d0e0b', border: '1px solid #1e2218' }}>
+                          <div>
+                            <p className="text-sm font-semibold text-white">{r.name}</p>
+                            <p className="text-xs" style={{ color: '#3a4a2a' }}>
+                              {r.closedDeals} deal{r.closedDeals !== 1 ? 's' : ''} closed · joined {new Date(r.joinedAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-black" style={{ color: r.yourCut > 0 ? '#c8f135' : '#3a4a2a' }}>
+                              +${r.yourCut}
+                            </p>
+                            <p className="text-xs" style={{ color: '#2a3a1a' }}>your cut</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── Lead list ── */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#c8f135' }} />
@@ -101,9 +237,7 @@ export default function MyLeadsPage() {
             <p className="text-sm" style={{ color: '#3a4a2a' }}>Your admin will assign leads to you soon.</p>
           </div>
         ) : leads.map(lead => (
-          <div key={lead.id}
-            className="rounded-xl border border-[#1e2218] p-5"
-            style={{ background: '#111310' }}>
+          <div key={lead.id} className="rounded-xl border border-[#1e2218] p-5" style={{ background: '#111310' }}>
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 mb-1">
@@ -114,9 +248,7 @@ export default function MyLeadsPage() {
                   {[lead.category, lead.city].filter(Boolean).join(' · ')}
                 </p>
                 {lead.phone && (
-                  <a href={`tel:${lead.phone}`}
-                    className="flex items-center gap-1 mt-1.5 text-sm"
-                    style={{ color: '#6b7a5a', textDecoration: 'none' }}>
+                  <a href={`tel:${lead.phone}`} className="flex items-center gap-1 mt-1.5 text-sm" style={{ color: '#6b7a5a', textDecoration: 'none' }}>
                     <Phone size={12} />{formatPhone(lead.phone)}
                   </a>
                 )}
@@ -137,8 +269,7 @@ export default function MyLeadsPage() {
                     <Globe size={11} /> View Site
                   </a>
                 )}
-                <button onClick={() => handleSms(lead)}
-                  disabled={sendingId === lead.id || !lead.phone}
+                <button onClick={() => handleSms(lead)} disabled={sendingId === lead.id || !lead.phone}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all disabled:opacity-40"
                   style={sentIds.has(lead.id)
                     ? { background: '#0d2218', color: '#c8f135', borderColor: '#1a3520' }
@@ -146,8 +277,7 @@ export default function MyLeadsPage() {
                   <MessageSquare size={11} />
                   {sendingId === lead.id ? '…' : sentIds.has(lead.id) ? 'SMS Sent' : 'Send SMS'}
                 </button>
-                <button onClick={() => handleCall(lead)}
-                  disabled={callingId === lead.id || !lead.phone}
+                <button onClick={() => handleCall(lead)} disabled={callingId === lead.id || !lead.phone}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all disabled:opacity-40"
                   style={calledIds.has(lead.id)
                     ? { background: '#131a2e', color: '#4a9eff', borderColor: '#1d2840' }

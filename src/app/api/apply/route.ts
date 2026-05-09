@@ -4,7 +4,7 @@ import { getStripe, WORKER_FEE } from '@/lib/stripe'
 
 export async function POST(req: Request) {
   const body = await req.json()
-  const { name, phone, email, state, hoursPerWeek, experience, whyJoin, referralSource, smsOptIn } = body
+  const { name, phone, email, state, hoursPerWeek, experience, whyJoin, referralSource, smsOptIn, referralCode } = body
 
   if (!name?.trim() || !phone?.trim()) {
     return NextResponse.json({ error: 'Name and phone are required' }, { status: 400 })
@@ -32,6 +32,7 @@ export async function POST(req: Request) {
       experience: experience || null,
       whyJoin: whyJoin.trim(),
       referralSource: referralSource || null,
+      referralCode: referralCode?.trim() || null,
       smsOptIn: true,
       smsOptInAt: new Date(),
       smsOptInIp: ip,

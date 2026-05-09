@@ -53,6 +53,18 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     let workerId = application.workerId
     if (!workerId) {
+      // Look up referrer by the code used on the application
+      let referredById: string | null = null
+      if (application.referralCode) {
+        const referrer = await db.worker.findUnique({ where: { referralCode: application.referralCode } })
+        if (referrer) referredById = referrer.id
+      }
+
+      // Generate a unique referral code for this new worker
+      const makeCode = () => 'SF-' + Math.random().toString(36).toUpperCase().slice(2, 8)
+      let referralCode = makeCode()
+      while (await db.worker.findUnique({ where: { referralCode } })) referralCode = makeCode()
+
       const worker = await db.worker.create({
         data: {
           name: application.name,
@@ -62,6 +74,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
           active: true,
           paidAt: application.paidAt ?? new Date(),
           stripeSessionId: application.stripeSessionId,
+          referralCode,
+          referredById,
         },
       })
       workerId = worker.id

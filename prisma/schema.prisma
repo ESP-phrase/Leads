@@ -17,6 +17,10 @@ model Worker {
   stripeSessionId String?
   paidAt          DateTime?
   leads           Lead[]
+  referralCode    String?  @unique   // their personal invite code
+  referredById    String?            // which worker recruited them
+  referredBy      Worker?  @relation("Referrals", fields: [referredById], references: [id])
+  referrals       Worker[] @relation("Referrals")
   createdAt       DateTime @default(now())
 }
 
@@ -33,6 +37,7 @@ model Application {
   smsOptIn             Boolean  @default(false)
   smsOptInAt           DateTime?
   smsOptInIp           String?
+  referralCode         String?            // referral code used when applying
   status               String   @default("pending")
   // pending → applied, no deposit yet
   // paid_pending      → paid $5, awaiting admin review
