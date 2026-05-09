@@ -12,20 +12,28 @@ export async function POST(req: Request) {
   const lead = await db.lead.findUnique({ where: { id: leadId } })
   if (!lead) return NextResponse.json({ error: 'Lead not found' }, { status: 404 })
 
-  const content = await generateSiteContent({
-    name: lead.name,
-    category: lead.category ?? 'local business',
-    city: lead.city ?? 'your area',
-    rating: lead.rating,
-    reviewCount: lead.reviewCount,
-  })
+  // Step 1: Generate content via OpenAI
+  let content
+  try {
+    content = await generateSiteContent({
+      name: lead.name,
+      category: lead.category ?? 'local business',
+      city: lead.city ?? 'your area',
+      rating: lead.rating,
+      reviewCount: lead.reviewCount,
+    })
+  } catch (err) {
+    console.error('[generate] OpenAI failed:', err)
+    return NextResponse.json({ error: 'OpenAI content generation failed', detail: String(err) }, { status: 500 })
+  }
 
   const services = typeof content.services === 'string'
     ? JSON.parse(content.services)
     : content.services
 
-  // Render to static HTML and deploy to Vercel
+  // Step 2: Render HTML + deploy to Vercel
   let vercelUrl: string | null = null
+  let deployError: string | null = null
   const localUrl = `${process.env.PREVIEW_BASE_URL}/preview/${lead.slug}`
 
   if (process.env.VERCEL_TOKEN) {
@@ -46,43 +54,55 @@ export async function POST(req: Request) {
         slug: lead.slug ?? lead.id,
       })
       vercelUrl = await deployToVercel(lead.slug ?? lead.id, html)
+      console.log('[generate] Deployed to Vercel:', vercelUrl)
     } catch (err) {
-      console.error('Vercel deploy failed:', err)
+      deployError = String(err)
+      console.error('[generate] Vercel deploy failed:', err)
     }
+  } else {
+    deployError = 'VERCEL_TOKEN not set'
+    console.warn('[generate] No VERCEL_TOKEN, skipping deploy')
   }
 
   const previewUrl = vercelUrl ?? localUrl
 
-  const site = await db.generatedSite.upsert({
-    where: { leadId },
-    create: {
-      leadId,
-      headline: content.headline,
-      subheadline: content.subheadline,
-      services: JSON.stringify(services),
-      aboutText: content.aboutText,
-      cityServed: lead.city ?? '',
-      phone: lead.phone,
-      address: lead.address,
-      primaryColor,
-      template,
-      vercelUrl,
-    },
-    update: {
-      headline: content.headline,
-      subheadline: content.subheadline,
-      services: JSON.stringify(services),
-      aboutText: content.aboutText,
-      cityServed: lead.city ?? '',
-      phone: lead.phone,
-      address: lead.address,
-      primaryColor,
-      template,
-      vercelUrl,
-    },
-  })
+  // Step 3: Save to DB
+  let site
+  try {
+    site = await db.generatedSite.upsert({
+      where: { leadId },
+      create: {
+        leadId,
+        headline: content.headline,
+        subheadline: content.subheadline,
+        services: JSON.stringify(services),
+        aboutText: content.aboutText,
+        cityServed: lead.city ?? '',
+        phone: lead.phone,
+        address: lead.address,
+        primaryColor,
+        template,
+        vercelUrl,
+      },
+      update: {
+        headline: content.headline,
+        subheadline: content.subheadline,
+        services: JSON.stringify(services),
+        aboutText: content.aboutText,
+        cityServed: lead.city ?? '',
+        phone: lead.phone,
+        address: lead.address,
+        primaryColor,
+        template,
+        vercelUrl,
+      },
+    })
 
-  await db.lead.update({ where: { id: leadId }, data: { previewUrl } })
+    await db.lead.update({ where: { id: leadId }, data: { previewUrl } })
+  } catch (err) {
+    console.error('[generate] DB save failed:', err)
+    return NextResponse.json({ error: 'DB save failed', detail: String(err) }, { status: 500 })
+  }
 
-  return NextResponse.json({ site, previewUrl, vercelUrl })
+  return NextResponse.json({ site, previewUrl, vercelUrl, deployError })
 }
