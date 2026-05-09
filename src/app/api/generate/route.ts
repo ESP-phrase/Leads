@@ -3,6 +3,8 @@ import { db } from '@/lib/db'
 import { generateSiteContent } from '@/lib/generator'
 import { renderSiteHtml, deployToVercel } from '@/lib/vercel'
 
+export const maxDuration = 120 // seconds — Pro plan allows up to 300
+
 export async function POST(req: Request) {
   const body = await req.json()
   const { leadId, primaryColor = '#2563eb', template = 'modern' } = body

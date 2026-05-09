@@ -40,6 +40,7 @@ export interface GeneratedSite {
   address: string | null
   primaryColor: string
   template: string
+  vercelUrl: string | null
   createdAt: string
   updatedAt: string
 }
