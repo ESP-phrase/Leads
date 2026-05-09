@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const PUBLIC = ['/login', '/join', '/api/auth', '/preview', '/_next', '/favicon']
+const PUBLIC = ['/login', '/join', '/api/auth', '/api/stripe', '/preview', '/_next', '/favicon']
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
+  // Public landing page
+  if (pathname === '/') return NextResponse.next()
   if (PUBLIC.some(p => pathname.startsWith(p))) return NextResponse.next()
 
   const session = req.cookies.get('canvass_session')?.value
