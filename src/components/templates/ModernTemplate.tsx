@@ -279,7 +279,7 @@ export default function ModernTemplate({
       {/* Footer */}
       <footer style={{ background: '#0a0a0a', color: '#374151', padding: '28px 1.5rem', textAlign: 'center', fontSize: 13 }}>
         <p style={{ color: '#6b7280' }}>© {new Date().getFullYear()} {businessName} · {city}</p>
-        <p style={{ marginTop: 4, fontSize: 11 }}>Site by Website Hustle</p>
+        <p style={{ marginTop: 4, fontSize: 11 }}>Site by SiteForge</p>
       </footer>
     </div>
   )

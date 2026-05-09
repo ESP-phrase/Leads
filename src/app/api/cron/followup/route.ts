@@ -35,7 +35,7 @@ export async function GET(req: Request) {
   const failed: { leadId: string; error: string }[] = []
 
   for (const lead of leads) {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.PREVIEW_BASE_URL ?? 'https://websitehustle.app'
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.PREVIEW_BASE_URL ?? 'https://siteforge.app'
     const previewUrl = lead.slug
       ? `${baseUrl}/s/${lead.slug}`
       : (lead.site?.vercelUrl ?? lead.previewUrl ?? `${baseUrl}/preview/${lead.slug}`)

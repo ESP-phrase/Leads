@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     metadata: { leadId },
     after_completion: {
       type: 'redirect',
-      redirect: { url: lead.site.vercelUrl ?? `https://canvass.app` },
+      redirect: { url: lead.site.vercelUrl ?? `https://siteforge.app` },
     },
   })
 

@@ -82,6 +82,7 @@ interface QueueItem { query: string; pageToken?: string }
 
 export default function LeadsPage() {
   const [city, setCity] = useState('')
+  const [cityLoading, setCityLoading] = useState(false)
   const [category, setCategory] = useState('')
   const [minRating, setMinRating] = useState(4.0)
   const [minReviews, setMinReviews] = useState(10)
@@ -104,6 +105,22 @@ export default function LeadsPage() {
 
   // Use a ref for the running flag so we can cancel without stale closures
   const runningRef = useRef(false)
+
+  // Auto-detect city on mount using IP geolocation (no permission needed)
+  useEffect(() => {
+    setCityLoading(true)
+    fetch('https://ipapi.co/json/', { cache: 'no-store' })
+      .then(r => r.json())
+      .then(d => {
+        if (d.city && d.region_code) {
+          setCity(`${d.city}, ${d.region_code}`)
+        } else if (d.city) {
+          setCity(d.city)
+        }
+      })
+      .catch(() => { /* silently fail — user can type manually */ })
+      .finally(() => setCityLoading(false))
+  }, [])
 
   const leads = feed.filter((i): i is Extract<FeedItem, { kind: 'lead' }> => i.kind === 'lead').map(i => i.lead)
 
@@ -273,14 +290,22 @@ export default function LeadsPage() {
               <label className="block text-xs font-semibold mb-1.5" style={{ color: '#4a5a3a' }}>
                 <MapPin size={11} className="inline mr-1" />CITY
               </label>
-              <input
-                type="text" value={city}
-                onChange={e => setCity(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleScrape()}
-                placeholder="Austin, TX"
-                className="w-full rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#2a3a1a] focus:outline-none focus:ring-1 focus:ring-[#c8f13540]"
-                style={{ background: '#0d0e0b', border: '1px solid #1e2218' }}
-              />
+              <div className="relative">
+                <input
+                  type="text" value={city}
+                  onChange={e => setCity(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleScrape()}
+                  placeholder={cityLoading ? 'Detecting location…' : 'Austin, TX'}
+                  className="w-full rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#3a4a2a] focus:outline-none focus:ring-1 focus:ring-[#c8f13540]"
+                  style={{ background: '#0d0e0b', border: '1px solid #1e2218', paddingRight: cityLoading ? 32 : undefined }}
+                />
+                {cityLoading && (
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs animate-pulse" style={{ color: '#4a5a3a' }}>⌖</span>
+                )}
+              </div>
+              {!cityLoading && city && (
+                <p className="text-xs mt-1" style={{ color: '#3a4a2a' }}>📍 Auto-detected · tap to change</p>
+              )}
             </div>
 
             <div>

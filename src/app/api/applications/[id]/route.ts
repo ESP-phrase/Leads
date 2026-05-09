@@ -37,7 +37,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     try {
       await sendSms(application.phone,
-        `Hi ${application.name.split(' ')[0]} — thanks for applying to Website Hustle. We can't move forward this time. Your $5 deposit has been refunded automatically (5–10 business days). Best of luck!`)
+        `Hi ${application.name.split(' ')[0]} — thanks for applying to SiteForge. We can't move forward this time. Your $5 deposit has been refunded automatically (5–10 business days). Best of luck!`)
     } catch { /* ignore */ }
 
     return NextResponse.json({ ok: true, status: 'rejected', refunded: !!refundedSid })
@@ -77,10 +77,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       },
     })
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://websitehustle.app'
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://siteforge.app'
     try {
       await sendSms(application.phone,
-        `🎉 ${application.name.split(' ')[0]}, you've been approved for Website Hustle! Sign in here: ${baseUrl}/login\n\nUse the phone number you applied with. Your first leads are waiting. Every closed sale = $119. Welcome to the team!`)
+        `🎉 ${application.name.split(' ')[0]}, you've been approved for SiteForge! Sign in here: ${baseUrl}/login\n\nUse the phone number you applied with. Your first leads are waiting. Every closed sale = $119. Welcome to the team!`)
     } catch { /* ignore */ }
 
     return NextResponse.json({ ok: true, status: 'approved', workerId })

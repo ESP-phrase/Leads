@@ -2,8 +2,8 @@ import Link from 'next/link'
 import Logo from '@/components/Logo'
 
 export const metadata = {
-  title: 'SMS Terms & Consent — Website Hustle',
-  description: 'Website Hustle SMS messaging program terms, opt-in/opt-out, and consent details.',
+  title: 'SMS Terms & Consent — SiteForge',
+  description: 'SiteForge SMS messaging program terms, opt-in/opt-out, and consent details.',
 }
 
 export default function SmsConsentPage() {
@@ -26,7 +26,7 @@ export default function SmsConsentPage() {
         <p style={{ color: '#5a6a4a', fontSize: 14, marginBottom: 40 }}>Last updated {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
 
         <Section title="Program description">
-          Website Hustle (&quot;we,&quot; &quot;us&quot;) operates an SMS messaging program for applicants and active workers.
+          SiteForge (&quot;we,&quot; &quot;us&quot;) operates an SMS messaging program for applicants and active workers.
           By providing your phone number and checking the consent box on our application, you opt in to receive
           SMS messages from us about your application status, account activation, lead notifications, pitch
           templates, payout updates, and account-related notices.
@@ -50,7 +50,7 @@ export default function SmsConsentPage() {
 
         <Section title="Charges">
           <strong style={{ color: '#fff' }}>Message and data rates may apply.</strong> Charges depend on your
-          mobile carrier and plan. Website Hustle does not charge for SMS messages.
+          mobile carrier and plan. SiteForge does not charge for SMS messages.
         </Section>
 
         <Section title="How to opt out">
@@ -62,7 +62,7 @@ export default function SmsConsentPage() {
           Reply <Code>HELP</Code> to any message for assistance, or contact us directly:
           <div style={{ marginTop: 12, padding: '14px 16px', borderRadius: 12, background: '#111310', border: '1px solid #1e2218' }}>
             <p style={{ color: '#a0b080', fontSize: 14 }}>
-              📧 <a href="mailto:support@websitehustle.app" style={{ color: '#c8f135', textDecoration: 'none' }}>support@websitehustle.app</a>
+              📧 <a href="mailto:support@siteforge.app" style={{ color: '#c8f135', textDecoration: 'none' }}>support@siteforge.app</a>
             </p>
             <p style={{ color: '#a0b080', fontSize: 14, marginTop: 6 }}>
               📞 <a href="tel:+15127967462" style={{ color: '#c8f135', textDecoration: 'none' }}>+1 (512) 796-7462</a>
@@ -93,14 +93,14 @@ export default function SmsConsentPage() {
           </p>
           <p style={{ color: '#a0b080', fontSize: 14, lineHeight: 1.7 }}>
             • Opt out: text <Code>STOP</Code> to <strong style={{ color: '#fff' }}>+1 (762) 238-7190</strong><br />
-            • Get help: text <Code>HELP</Code> or email <a href="mailto:support@websitehustle.app" style={{ color: '#c8f135' }}>support@websitehustle.app</a><br />
+            • Get help: text <Code>HELP</Code> or email <a href="mailto:support@siteforge.app" style={{ color: '#c8f135' }}>support@siteforge.app</a><br />
             • Frequency: up to 10 msgs/week (workers), 1–3 total (applicants)<br />
             • Cost: free from us; carrier rates may apply
           </p>
         </div>
 
         <p style={{ marginTop: 40, fontSize: 12, color: '#3a4a2a', textAlign: 'center' }}>
-          © {new Date().getFullYear()} Website Hustle ·{' '}
+          © {new Date().getFullYear()} SiteForge ·{' '}
           <Link href="/privacy" style={{ color: '#5a6a4a' }}>Privacy</Link> ·{' '}
           <Link href="/" style={{ color: '#5a6a4a' }}>Home</Link>
         </p>

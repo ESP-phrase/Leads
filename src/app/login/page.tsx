@@ -45,7 +45,7 @@ export default function LoginPage() {
             const res = await fetch('/api/auth/login', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ password: 'canvass2025' }),
+              body: JSON.stringify({ password: 'siteforge2025' }),
             })
             if (res.ok) { router.push('/dashboard'); router.refresh() }
             else { setError('Demo login failed'); setLoading(false) }

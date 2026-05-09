@@ -14,8 +14,8 @@ export async function POST(req: Request) {
   if (!lead.phone) return NextResponse.json({ error: 'Lead has no phone' }, { status: 400 })
 
   // Use a branded /s/{slug} link that redirects to the underlying Vercel URL.
-  // This hides the *.vercel.app domain so recipients see a Website Hustle URL.
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.PREVIEW_BASE_URL ?? 'https://websitehustle.app'
+  // This hides the *.vercel.app domain so recipients see a SiteForge URL.
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.PREVIEW_BASE_URL ?? 'https://siteforge.app'
   const previewUrl = lead.slug
     ? `${baseUrl}/s/${lead.slug}`
     : (lead.site?.vercelUrl ?? lead.previewUrl ?? `${baseUrl}/preview/${lead.slug}`)

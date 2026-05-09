@@ -9,7 +9,7 @@ export function middleware(req: NextRequest) {
   if (pathname === '/') return NextResponse.next()
   if (PUBLIC.some(p => pathname.startsWith(p))) return NextResponse.next()
 
-  const session = req.cookies.get('canvass_session')?.value
+  const session = req.cookies.get('siteforge_session')?.value
   if (!session) {
     return NextResponse.redirect(new URL('/login', req.url))
   }

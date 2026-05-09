@@ -2,8 +2,8 @@ import Link from 'next/link'
 import Logo from '@/components/Logo'
 
 export const metadata = {
-  title: 'Privacy Policy — Website Hustle',
-  description: 'How Website Hustle collects, uses, and protects your information.',
+  title: 'Privacy Policy — SiteForge',
+  description: 'How SiteForge collects, uses, and protects your information.',
 }
 
 export default function PrivacyPage() {
@@ -49,7 +49,7 @@ export default function PrivacyPage() {
 
         <Section title="Your rights">
           You can request a copy or deletion of your data at any time by emailing{' '}
-          <a href="mailto:support@websitehustle.app" style={{ color: '#c8f135' }}>support@websitehustle.app</a>.
+          <a href="mailto:support@siteforge.app" style={{ color: '#c8f135' }}>support@siteforge.app</a>.
           You can opt out of SMS at any time by replying <Code>STOP</Code> to any text we send.
         </Section>
 
@@ -64,12 +64,12 @@ export default function PrivacyPage() {
         </Section>
 
         <Section title="Contact">
-          Questions? Email <a href="mailto:support@websitehustle.app" style={{ color: '#c8f135' }}>support@websitehustle.app</a>{' '}
+          Questions? Email <a href="mailto:support@siteforge.app" style={{ color: '#c8f135' }}>support@siteforge.app</a>{' '}
           or text <strong style={{ color: '#fff' }}>+1 (512) 796-7462</strong>.
         </Section>
 
         <p style={{ marginTop: 40, fontSize: 12, color: '#3a4a2a', textAlign: 'center' }}>
-          © {new Date().getFullYear()} Website Hustle ·{' '}
+          © {new Date().getFullYear()} SiteForge ·{' '}
           <Link href="/sms-consent" style={{ color: '#5a6a4a' }}>SMS Terms</Link> ·{' '}
           <Link href="/" style={{ color: '#5a6a4a' }}>Home</Link>
         </p>

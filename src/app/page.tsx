@@ -298,7 +298,7 @@ export default function LandingPage() {
             {[
               { icon: Briefcase, job: 'Retail/fast food shift',  hours: '8 hours',  pay: '$120',  takehome: 'after taxes ~$95',  bad: true },
               { icon: Car,       job: 'Uber/DoorDash 8 hours',     hours: '8 hours',  pay: '$140',  takehome: 'after gas ~$80',    bad: true },
-              { icon: Sparkles,  job: 'One Website Hustle sale',     hours: '~30 mins', pay: '$119',  takehome: 'after fees: $119',  bad: false },
+              { icon: Sparkles,  job: 'One SiteForge sale',     hours: '~30 mins', pay: '$119',  takehome: 'after fees: $119',  bad: false },
             ].map(({ icon: Icon, job, hours, pay, takehome, bad }) => (
               <div key={job} style={{
                 padding: '30px 26px', borderRadius: 20, position: 'relative',
@@ -525,7 +525,7 @@ export default function LandingPage() {
           <Link href="/privacy" style={{ fontSize: 13, color: '#5a6a4a', textDecoration: 'none' }}>Privacy</Link>
           <Link href="/login" style={{ fontSize: 13, color: '#5a6a4a', textDecoration: 'none' }}>Sign in</Link>
         </div>
-        <p style={{ fontSize: 11, color: '#2a3a1a' }}>© {new Date().getFullYear()} Website Hustle · All rights reserved</p>
+        <p style={{ fontSize: 11, color: '#2a3a1a' }}>© {new Date().getFullYear()} SiteForge · All rights reserved</p>
       </footer>
     </div>
   )

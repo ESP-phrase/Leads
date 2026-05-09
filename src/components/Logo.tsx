@@ -1,6 +1,6 @@
 interface LogoProps {
-  size?: number          // height of the mark in px
-  showText?: boolean     // show "WebsiteHustle" wordmark next to the icon
+  size?: number
+  showText?: boolean
   textSize?: 'sm' | 'md' | 'lg' | 'xl'
   className?: string
 }
@@ -31,7 +31,7 @@ export default function Logo({ size = 28, showText = true, textSize = 'md', clas
       </span>
       {showText && (
         <span style={{ fontWeight: 900, fontSize, letterSpacing: '-0.5px', whiteSpace: 'nowrap' }}>
-          <span style={{ color: '#c8f135' }}>Website</span><span style={{ color: '#fff' }}>Hustle</span>
+          <span style={{ color: '#c8f135' }}>Site</span><span style={{ color: '#fff' }}>Forge</span>
         </span>
       )}
     </span>

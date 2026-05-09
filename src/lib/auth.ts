@@ -6,7 +6,7 @@ export interface Session {
   name: string
 }
 
-const COOKIE = 'canvass_session'
+const COOKIE = 'siteforge_session'
 
 export async function getSession(): Promise<Session | null> {
   const store = await cookies()
