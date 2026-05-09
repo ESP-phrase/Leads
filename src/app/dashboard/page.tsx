@@ -345,10 +345,9 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, onStatu
       {/* Site */}
       <div className="px-4 py-3.5">
         {lead.site ? (
-          <a href={lead.site.vercelUrl ?? lead.previewUrl ?? `/preview/${lead.slug}`} target="_blank"
-             className="flex items-center gap-1.5 text-xs font-medium" style={{ color: '#c8f135', textDecoration: 'none' }}>
-            <CheckCircle2 size={11} /> Live
-          </a>
+          <span className="flex items-center gap-1.5 text-xs font-medium" style={{ color: '#c8f135' }}>
+            <CheckCircle2 size={11} /> Built
+          </span>
         ) : (
           <span className="text-xs" style={{ color: '#2a3a1a' }}>Not built</span>
         )}
@@ -363,9 +362,9 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, onStatu
           </button>
         ) : (
           <a href={lead.site.vercelUrl ?? lead.previewUrl ?? `/preview/${lead.slug}`} target="_blank"
-             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all"
-             style={{ color: '#c8f135', borderColor: '#c8f13530', textDecoration: 'none' }}>
-            <ExternalLink size={11} /> Preview
+             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all"
+             style={{ background: '#c8f135', color: '#0d0e0b', textDecoration: 'none' }}>
+            <ExternalLink size={11} /> Show Site
           </a>
         )}
         <button onClick={() => onSms(lead)} disabled={isSms || !lead.site || !lead.phone}
