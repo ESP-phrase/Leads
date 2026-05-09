@@ -14,10 +14,15 @@ export function getTwilioClient() {
 
 export async function sendSms(to: string, body: string) {
   const client = getTwilioClient()
+
+  // Append opt-out language if not already present (Twilio A2P 10DLC compliance)
+  const hasStop = /\b(stop|opt[- ]?out|unsubscribe)\b/i.test(body)
+  const finalBody = hasStop ? body : `${body}\n\nReply STOP to opt out.`
+
   const message = await client.messages.create({
     from: process.env.TWILIO_PHONE_NUMBER!,
     to,
-    body,
+    body: finalBody,
   })
   return { sid: message.sid, status: message.status }
 }

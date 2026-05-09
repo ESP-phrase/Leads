@@ -30,6 +30,9 @@ model Application {
   experience           String?
   whyJoin              String?
   referralSource       String?
+  smsOptIn             Boolean  @default(false)
+  smsOptInAt           DateTime?
+  smsOptInIp           String?
   status               String   @default("pending")
   // pending → applied, no deposit yet
   // paid_pending      → paid $5, awaiting admin review

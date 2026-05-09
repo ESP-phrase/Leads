@@ -4,7 +4,7 @@ import { getStripe, WORKER_FEE } from '@/lib/stripe'
 
 export async function POST(req: Request) {
   const body = await req.json()
-  const { name, phone, email, state, hoursPerWeek, experience, whyJoin, referralSource } = body
+  const { name, phone, email, state, hoursPerWeek, experience, whyJoin, referralSource, smsOptIn } = body
 
   if (!name?.trim() || !phone?.trim()) {
     return NextResponse.json({ error: 'Name and phone are required' }, { status: 400 })
@@ -12,6 +12,14 @@ export async function POST(req: Request) {
   if (!whyJoin?.trim() || whyJoin.trim().length < 20) {
     return NextResponse.json({ error: 'Tell us a bit more about why you want to join' }, { status: 400 })
   }
+  if (!smsOptIn) {
+    return NextResponse.json({ error: 'You must agree to receive SMS messages to apply' }, { status: 400 })
+  }
+
+  // Capture IP for the opt-in audit trail
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim()
+            ?? req.headers.get('x-real-ip')
+            ?? 'unknown'
 
   // Step 1: Create the application record
   const application = await db.application.create({
@@ -24,6 +32,9 @@ export async function POST(req: Request) {
       experience: experience || null,
       whyJoin: whyJoin.trim(),
       referralSource: referralSource || null,
+      smsOptIn: true,
+      smsOptInAt: new Date(),
+      smsOptInIp: ip,
       status: 'pending',
     },
   })

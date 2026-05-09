@@ -58,6 +58,7 @@ export default function JoinPage() {
   const [experience, setExperience] = useState('')
   const [whyJoin, setWhyJoin] = useState('')
   const [referralSource, setReferralSource] = useState('')
+  const [smsOptIn, setSmsOptIn] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -66,11 +67,12 @@ export default function JoinPage() {
     e.preventDefault()
     if (!name.trim() || !phone.trim()) { setError('Name and phone are required'); return }
     if (!whyJoin.trim() || whyJoin.trim().length < 20) { setError('Tell us a bit more about why you want to join (at least 20 characters)'); return }
+    if (!smsOptIn) { setError('Please agree to receive SMS messages to continue'); return }
     setLoading(true); setError(null)
     const res = await fetch('/api/apply', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, phone, email, state: stateField, hoursPerWeek, experience, whyJoin, referralSource }),
+      body: JSON.stringify({ name, phone, email, state: stateField, hoursPerWeek, experience, whyJoin, referralSource, smsOptIn }),
     })
     const data = await res.json()
     if (res.ok && data.url) {
@@ -290,15 +292,38 @@ export default function JoinPage() {
                     </select>
                   </FormField>
 
+                  {/* SMS opt-in consent */}
+                  <label style={{
+                    display: 'flex', alignItems: 'flex-start', gap: 10,
+                    padding: '12px 14px', borderRadius: 10,
+                    background: smsOptIn ? '#c8f13510' : '#0d0e0b',
+                    border: `1px solid ${smsOptIn ? '#c8f13540' : '#1e2218'}`,
+                    cursor: 'pointer', transition: 'all .15s',
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={smsOptIn}
+                      onChange={e => setSmsOptIn(e.target.checked)}
+                      style={{
+                        width: 16, height: 16, marginTop: 2, flexShrink: 0,
+                        accentColor: '#c8f135', cursor: 'pointer',
+                      }}
+                    />
+                    <span style={{ fontSize: 12, color: '#a0b080', lineHeight: 1.5 }}>
+                      I agree to receive SMS messages from Website Hustle at the phone number above, including
+                      application updates, lead notifications, and pitch templates. <span style={{ color: '#fff', fontWeight: 600 }}>Msg & data rates may apply.</span> Message frequency varies. Reply <span style={{ color: '#c8f135', fontWeight: 700 }}>STOP</span> to unsubscribe or <span style={{ color: '#c8f135', fontWeight: 700 }}>HELP</span> for help. See our <Link href="/sms-consent" style={{ color: '#c8f135', textDecoration: 'underline' }} target="_blank">SMS Terms</Link> &amp; <Link href="/privacy" style={{ color: '#c8f135', textDecoration: 'underline' }} target="_blank">Privacy Policy</Link>.
+                    </span>
+                  </label>
+
                   {error && (
                     <p style={{ background: '#2a0d0d', border: '1px solid #401515', color: '#d45a5a', borderRadius: 10, padding: '8px 12px', fontSize: 13 }}>
                       {error}
                     </p>
                   )}
 
-                  <button type="submit" disabled={loading}
+                  <button type="submit" disabled={loading || !smsOptIn}
                     style={{ background: '#c8f135', color: '#0d0e0b', padding: '13px', borderRadius: 12, fontWeight: 800,
-                             fontSize: 15, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1,
+                             fontSize: 15, border: 'none', cursor: loading || !smsOptIn ? 'not-allowed' : 'pointer', opacity: (loading || !smsOptIn) ? 0.5 : 1,
                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 2 }}>
                     {loading ? 'Redirecting…' : <><DollarSign size={15} />Submit + pay $5 deposit</>}
                   </button>

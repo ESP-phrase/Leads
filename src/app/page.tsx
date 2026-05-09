@@ -519,6 +519,8 @@ export default function LandingPage() {
           <a href="#math" style={{ fontSize: 13, color: '#5a6a4a', textDecoration: 'none' }}>The math</a>
           <a href="#workers" style={{ fontSize: 13, color: '#5a6a4a', textDecoration: 'none' }}>Workers</a>
           <a href="#faq" style={{ fontSize: 13, color: '#5a6a4a', textDecoration: 'none' }}>FAQ</a>
+          <Link href="/sms-consent" style={{ fontSize: 13, color: '#5a6a4a', textDecoration: 'none' }}>SMS Terms</Link>
+          <Link href="/privacy" style={{ fontSize: 13, color: '#5a6a4a', textDecoration: 'none' }}>Privacy</Link>
           <Link href="/login" style={{ fontSize: 13, color: '#5a6a4a', textDecoration: 'none' }}>Sign in</Link>
         </div>
         <p style={{ fontSize: 11, color: '#2a3a1a' }}>© {new Date().getFullYear()} Website Hustle · All rights reserved</p>
