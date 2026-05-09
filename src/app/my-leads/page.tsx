@@ -122,32 +122,66 @@ export default function MyLeadsPage() {
 
         {/* ── Referral Card ── */}
         {referral && (
-          <div className="rounded-xl border border-[#c8f13525] overflow-hidden" style={{ background: '#111310' }}>
-            {/* Header */}
-            <div className="px-5 py-4 border-b border-[#1e2218]" style={{ background: 'linear-gradient(135deg, #c8f13508, transparent)' }}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: '#c8f13520' }}>
-                    <Link2 size={14} style={{ color: '#c8f135' }} />
+          <div className="rounded-2xl overflow-hidden" style={{
+            background: '#111310',
+            border: '1px solid #c8f13540',
+            boxShadow: '0 0 60px #c8f13515',
+          }}>
+            {/* Big header */}
+            <div style={{ background: 'linear-gradient(135deg, #c8f13515, #c8f13505)', padding: '20px 24px', borderBottom: '1px solid #c8f13520' }}>
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div style={{ width: 44, height: 44, borderRadius: 14, background: '#c8f135', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Users size={20} style={{ color: '#0a0b09' }} />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-white">Invite & Earn 15%</p>
-                    <p className="text-xs" style={{ color: '#4a5a3a' }}>
-                      Get 15% of every sale your recruits close — forever
+                    <p className="font-black text-white" style={{ fontSize: 17, letterSpacing: '-0.3px' }}>Invite & Earn 15%</p>
+                    <p className="text-xs" style={{ color: '#6b7a5a' }}>
+                      Every sale your recruits close = <strong style={{ color: '#c8f135' }}>$17.85 in your pocket</strong> — no extra work
                     </p>
                   </div>
                 </div>
-                {referral.totalReferralEarnings > 0 && (
-                  <div className="text-right">
-                    <p className="text-lg font-black" style={{ color: '#c8f135' }}>${referral.totalReferralEarnings}</p>
-                    <p className="text-xs" style={{ color: '#4a5a3a' }}>referral earnings</p>
+                {referral.totalReferralEarnings > 0 ? (
+                  <div className="text-right flex-shrink-0">
+                    <p style={{ fontSize: 26, fontWeight: 900, color: '#c8f135', letterSpacing: '-1px', lineHeight: 1 }}>${referral.totalReferralEarnings}</p>
+                    <p className="text-xs" style={{ color: '#4a5a3a' }}>earned from recruits</p>
+                  </div>
+                ) : (
+                  <div className="text-right flex-shrink-0">
+                    <p style={{ fontSize: 13, color: '#c8f135', fontWeight: 700 }}>Untapped income →</p>
+                    <p className="text-xs" style={{ color: '#3a4a2a' }}>share your link below</p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Link + stats */}
             <div className="p-5 space-y-4">
+              {/* Zero-state explainer when no recruits yet */}
+              {referral.referralCount === 0 && (
+                <div className="rounded-xl p-4" style={{ background: '#0d0e0b', border: '1px solid #1e2218' }}>
+                  <p className="text-xs font-bold mb-3" style={{ color: '#c8f135', textTransform: 'uppercase', letterSpacing: 1 }}>How it works</p>
+                  <div className="space-y-2">
+                    {[
+                      { n: '1', text: 'Share your invite link below with anyone who wants to make money' },
+                      { n: '2', text: 'They apply, get approved, and start closing their own deals' },
+                      { n: '3', text: 'You earn 15% of every $119 they make — forever, automatically' },
+                    ].map(({ n, text }) => (
+                      <div key={n} className="flex items-start gap-3">
+                        <span style={{ width: 20, height: 20, borderRadius: 99, background: '#c8f13520', border: '1px solid #c8f13540',
+                                       color: '#c8f135', fontSize: 10, fontWeight: 900, display: 'flex', alignItems: 'center',
+                                       justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>{n}</span>
+                        <p className="text-xs" style={{ color: '#6b7a5a', lineHeight: 1.6 }}>{text}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 pt-3" style={{ borderTop: '1px solid #1e2218' }}>
+                    <p className="text-xs" style={{ color: '#4a5a3a' }}>
+                      Example: 3 recruits × 10 sales each = <strong style={{ color: '#c8f135' }}>$535 passive/month</strong> on top of your own sales
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Stats row */}
               <div className="grid grid-cols-3 gap-3">
                 {[
@@ -166,10 +200,10 @@ export default function MyLeadsPage() {
               {/* Referral link */}
               {referralLink && (
                 <div>
-                  <p className="text-xs font-semibold mb-2 uppercase tracking-wider" style={{ color: '#3a4a2a' }}>Your invite link</p>
+                  <p className="text-xs font-bold mb-2 uppercase tracking-wider" style={{ color: '#5a6a4a' }}>📤 Your invite link — share this</p>
                   <div className="flex gap-2">
                     <div className="flex-1 rounded-lg px-3 py-2.5 text-xs font-mono truncate"
-                         style={{ background: '#0d0e0b', border: '1px solid #1e2218', color: '#6b7a5a' }}>
+                         style={{ background: '#0d0e0b', border: '1px solid #c8f13530', color: '#8a9a7a' }}>
                       {referralLink}
                     </div>
                     <button onClick={copyReferralLink}
@@ -178,11 +212,11 @@ export default function MyLeadsPage() {
                         ? { background: '#0d2218', color: '#c8f135', border: '1px solid #1a3520' }
                         : { background: '#c8f135', color: '#0d0e0b' }}>
                       <Copy size={11} />
-                      {copied ? 'Copied!' : 'Copy'}
+                      {copied ? 'Copied!' : 'Copy link'}
                     </button>
                   </div>
                   <p className="text-xs mt-2" style={{ color: '#2a3a1a' }}>
-                    Share this link. When someone applies and gets approved, you earn 15% of every sale they close.
+                    Post it in group chats, Reddit, TikTok bio, anywhere. Each approved recruit earns you $17.85 per deal they close.
                   </p>
                 </div>
               )}
@@ -192,7 +226,7 @@ export default function MyLeadsPage() {
                 <div>
                   <button
                     onClick={() => setShowRecruits(v => !v)}
-                    className="flex items-center gap-1.5 text-xs font-semibold w-full py-2 border-t border-[#1e2218] mt-2 pt-3"
+                    className="flex items-center gap-1.5 text-xs font-semibold w-full border-t border-[#1e2218] pt-3"
                     style={{ color: '#4a5a3a' }}>
                     <Users size={12} />
                     Your {referral.referralCount} recruit{referral.referralCount !== 1 ? 's' : ''}

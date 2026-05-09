@@ -5,7 +5,7 @@ import { useState } from 'react'
 import {
   ArrowRight, DollarSign, Zap, CheckCircle, Phone, MessageSquare,
   Globe, Star, TrendingUp, Lock, Clock, ChevronDown,
-  Sparkles, X, Check, Briefcase, Car, Users, UserPlus,
+  Sparkles, X, Check, Briefcase, Car, Users, UserPlus, Link2,
 } from 'lucide-react'
 import Logo from '@/components/Logo'
 
@@ -38,6 +38,14 @@ const FAQS = [
     q: 'Can I do this from my phone?',
     a: 'Yes. Everything works on mobile — your lead list, the SMS sender, the dialer. Most workers run their entire hustle from their phone.',
   },
+  {
+    q: 'Can I make money without selling anything myself?',
+    a: 'Yes — through referrals. Every approved worker gets a unique invite link. Share it. When someone you referred closes a deal, you automatically earn 15% of their $119 commission ($17.85). If you refer 5 workers who each close 10 deals, that\'s $892 in passive income on top of your own sales. Forever, with no extra work.',
+  },
+  {
+    q: 'How does the referral program work exactly?',
+    a: 'After approval you get a unique link like siteforge.app/join?ref=SF-ABC123. Anyone who applies through that link gets tied to you. Once they\'re approved and start closing deals, 15% of every $119 they earn goes to you — automatically, every Friday payout. There\'s no cap and no expiration.',
+  },
 ]
 
 export default function LandingPage() {
@@ -57,7 +65,8 @@ export default function LandingPage() {
           <Logo size={28} textSize="lg" />
           <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
             <a href="#math" style={{ fontSize: 14, color: '#8a9a7a', textDecoration: 'none', fontWeight: 500 }}>The math</a>
-            <a href="#workers" style={{ fontSize: 14, color: '#8a9a7a', textDecoration: 'none', fontWeight: 500 }}>Workers</a>
+            <a href="#referral" style={{ fontSize: 14, color: '#8a9a7a', textDecoration: 'none', fontWeight: 500 }}>Referrals</a>
+            <a href="#workers" style={{ fontSize: 14, color: '#8a9a7a', textDecoration: 'none', fontWeight: 500 }}>How it works</a>
             <a href="#faq" style={{ fontSize: 14, color: '#8a9a7a', textDecoration: 'none', fontWeight: 500 }}>FAQ</a>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
@@ -111,6 +120,7 @@ export default function LandingPage() {
               <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><CheckCircle size={13} style={{ color: '#c8f135' }} /> Weekly payouts</span>
               <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><CheckCircle size={13} style={{ color: '#c8f135' }} /> Work from your phone</span>
               <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><CheckCircle size={13} style={{ color: '#c8f135' }} /> No experience needed</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><CheckCircle size={13} style={{ color: '#c8f135' }} /> Earn 15% on every recruit sale</span>
             </div>
           </div>
 
@@ -168,7 +178,7 @@ export default function LandingPage() {
             { icon: '✓', label: '$5 deposit · refunded if not approved' },
             { icon: '✓', label: 'We review every application in 24 hours' },
             { icon: '✓', label: '$119 per sale · paid weekly via direct deposit' },
-            { icon: '✓', label: 'Stripe-secured · cancel anytime' },
+            { icon: '✓', label: 'Earn 15% on every sale your recruits close' },
           ].map(s => (
             <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{
@@ -280,6 +290,110 @@ export default function LandingPage() {
           <p style={{ textAlign: 'center', fontSize: 11, color: '#3a4a2a', marginTop: 16 }}>
             Based on average ~1 closed deal per 5 hours of focused work
           </p>
+        </div>
+      </section>
+
+      {/* REFERRAL — passive income section */}
+      <section id="referral" style={{ padding: '100px 1.5rem', borderTop: '1px solid #1a1e14', background: '#0d0e0b' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 60 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 16px',
+                          borderRadius: 99, marginBottom: 20, fontSize: 12, fontWeight: 800,
+                          background: '#c8f13518', border: '1px solid #c8f13540', color: '#c8f135' }}>
+              <Users size={12} /> Referral program
+            </div>
+            <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 900, color: '#fff', letterSpacing: '-1px', marginBottom: 16 }}>
+              Recruit once. Get paid <span style={{ color: '#c8f135' }}>forever.</span>
+            </h2>
+            <p style={{ fontSize: 18, color: '#6b7a5a', maxWidth: 560, margin: '0 auto', lineHeight: 1.6 }}>
+              Every approved worker gets a unique invite link. Share it. When someone you referred closes a deal,
+              you pocket <strong style={{ color: '#fff' }}>15% of their $119</strong> — automatically, every Friday.
+            </p>
+          </div>
+
+          {/* Visual flow */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 4, marginBottom: 64, alignItems: 'center' }}>
+            {[
+              { step: '1', icon: Link2, title: 'Share your link', desc: 'You get a unique invite link after approval. Post it anywhere.' },
+              { step: '→', icon: null, title: '', desc: '', arrow: true },
+              { step: '2', icon: UserPlus, title: 'They apply & close', desc: 'Your recruit applies, gets approved, and starts closing deals.' },
+              { step: '→', icon: null, title: '', desc: '', arrow: true },
+              { step: '3', icon: DollarSign, title: 'You earn 15%', desc: 'Every $119 they make puts $17.85 in your pocket. No cap, no expiry.' },
+            ].map((item, i) => item.arrow ? (
+              <div key={i} style={{ display: 'flex', justifyContent: 'center', fontSize: 24, color: '#2a3a1a', fontWeight: 900 }}>→</div>
+            ) : (
+              <div key={i} style={{ padding: '28px 24px', borderRadius: 20, background: '#111310', border: '1px solid #1e2218', textAlign: 'center' }}>
+                <div style={{ width: 48, height: 48, borderRadius: 14, background: '#c8f13520', border: '1px solid #c8f13535',
+                               display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                  {item.icon && <item.icon size={20} style={{ color: '#c8f135' }} />}
+                </div>
+                <p style={{ fontSize: 15, fontWeight: 800, color: '#fff', marginBottom: 8 }}>{item.title}</p>
+                <p style={{ fontSize: 13, color: '#5a6a4a', lineHeight: 1.6 }}>{item.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Passive income calculator */}
+          <div style={{ background: '#111310', borderRadius: 24, border: '1px solid #c8f13530', overflow: 'hidden',
+                        boxShadow: '0 0 80px #c8f13512' }}>
+            <div style={{ padding: '28px 32px', borderBottom: '1px solid #1e2218', background: 'linear-gradient(135deg, #c8f13510, transparent)' }}>
+              <p style={{ fontSize: 12, fontWeight: 800, letterSpacing: 2, color: '#c8f135', textTransform: 'uppercase', marginBottom: 6 }}>Passive income math</p>
+              <h3 style={{ fontSize: 22, fontWeight: 900, color: '#fff', margin: 0 }}>What your recruits earn you</h3>
+            </div>
+            <div style={{ padding: '28px 32px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+                {[
+                  { recruits: 1,  dealsEach: 5,  label: 'One recruit',    glow: false },
+                  { recruits: 3,  dealsEach: 10, label: 'Small network',  glow: false },
+                  { recruits: 10, dealsEach: 10, label: 'Solid network',  glow: true  },
+                  { recruits: 20, dealsEach: 10, label: 'Going big',      glow: false },
+                ].map(({ recruits, dealsEach, label, glow }) => {
+                  const passive = Math.round(recruits * dealsEach * 119 * 0.15)
+                  return (
+                    <div key={label} style={{
+                      padding: '22px 18px', borderRadius: 16, textAlign: 'center', position: 'relative',
+                      background: glow ? 'linear-gradient(135deg, #c8f13518, #c8f13505)' : '#0d0e0b',
+                      border: `1px solid ${glow ? '#c8f13555' : '#1e2218'}`,
+                      boxShadow: glow ? '0 0 40px #c8f13520' : 'none',
+                    }}>
+                      {glow && (
+                        <div style={{ position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)',
+                                      background: '#c8f135', color: '#0a0b09', fontSize: 9, fontWeight: 900,
+                                      padding: '3px 10px', borderRadius: 99, letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
+                          REALISTIC TARGET
+                        </div>
+                      )}
+                      <p style={{ fontSize: 11, color: '#4a5a3a', marginBottom: 4 }}>
+                        {recruits} recruit{recruits !== 1 ? 's' : ''} × {dealsEach} deals
+                      </p>
+                      <p style={{ fontSize: 32, fontWeight: 900, color: glow ? '#c8f135' : '#fff',
+                                  letterSpacing: '-1px', lineHeight: 1, marginBottom: 6 }}>
+                        ${passive.toLocaleString()}
+                      </p>
+                      <p style={{ fontSize: 12, color: '#6b7a5a', fontWeight: 700 }}>{label}</p>
+                      <p style={{ fontSize: 10, color: '#2a3a1a', marginTop: 4 }}>passive income</p>
+                    </div>
+                  )
+                })}
+              </div>
+              <p style={{ textAlign: 'center', fontSize: 12, color: '#2a3a1a', marginTop: 20 }}>
+                Based on 15% of $119 per deal closed by your recruits · stacks on top of your own sales earnings
+              </p>
+            </div>
+          </div>
+
+          {/* Bottom CTA nudge */}
+          <div style={{ textAlign: 'center', marginTop: 40 }}>
+            <p style={{ fontSize: 15, color: '#5a6a4a', marginBottom: 16 }}>
+              Your invite link unlocks the moment you're approved. Apply in 2 minutes.
+            </p>
+            <Link href="/join#apply"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '14px 32px',
+                       borderRadius: 12, fontWeight: 800, fontSize: 15, textDecoration: 'none',
+                       background: '#c8f135', color: '#0a0b09' }}>
+              Get my invite link <ArrowRight size={15} />
+            </Link>
+          </div>
         </div>
       </section>
 
