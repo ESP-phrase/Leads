@@ -129,6 +129,10 @@ export default function LeadsPage() {
             setFeed(prev => [...prev, { kind: 'lead', lead: event.lead, key: event.lead.id }])
           } else if (event.type === 'skip' || event.type === 'existing') {
             setFeed(prev => [...prev, { kind: 'skip', name: event.lead?.name ?? event.name, reason: event.reason ?? 'duplicate', key: `skip-${Date.now()}-${Math.random()}` }])
+          } else if (event.type === 'query') {
+            setCurrentCategory(`Search ${event.index}/${event.total}: ${event.query}`)
+          } else if (event.type === 'info') {
+            setCurrentCategory(event.message)
           } else if (event.type === 'error') {
             setError(event.message)
           }
