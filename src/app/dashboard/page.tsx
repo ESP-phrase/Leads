@@ -34,6 +34,12 @@ export default function DashboardPage() {
   const [sendingId, setSendingId] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<LeadStatus | 'ALL'>('ALL')
   const [showStatusMenu, setShowStatusMenu] = useState(false)
+  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null)
+
+  function showToast(msg: string, ok = true) {
+    setToast({ msg, ok })
+    setTimeout(() => setToast(null), 8000)
+  }
 
   const fetchLeads = useCallback(async () => {
     setLoading(true)
@@ -65,17 +71,26 @@ export default function DashboardPage() {
 
   async function generateSite(lead: Lead) {
     setGeneratingId(lead.id)
-    const res = await fetch('/api/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ leadId: lead.id }),
-    })
-    const data = await res.json()
-    await fetchLeads()
-    setGeneratingId(null)
-    if (data.previewUrl) {
-      window.open(data.previewUrl, '_blank')
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leadId: lead.id }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        showToast(`Build failed: ${data.error ?? 'unknown error'} — ${data.detail ?? ''}`, false)
+      } else if (data.deployError) {
+        showToast(`Site saved but deploy failed: ${data.deployError}`, false)
+      } else {
+        showToast(`Site built! Opening…`)
+        if (data.previewUrl) window.open(data.previewUrl, '_blank')
+      }
+      await fetchLeads()
+    } catch (err) {
+      showToast(`Network error: ${String(err)}`, false)
     }
+    setGeneratingId(null)
   }
 
   async function sendSms(lead: Lead) {
@@ -107,6 +122,16 @@ export default function DashboardPage() {
 
   return (
     <div className="flex min-h-screen" style={{ background: '#0d0e0b', color: '#d4dfc4' }}>
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 max-w-sm px-4 py-3 rounded-xl text-sm font-medium shadow-xl"
+          style={{
+            background: toast.ok ? '#1a3020' : '#3a1515',
+            color: toast.ok ? '#c8f135' : '#f07070',
+            border: `1px solid ${toast.ok ? '#2a5030' : '#5a2020'}`,
+          }}>
+          {toast.msg}
+        </div>
+      )}
       <Sidebar />
 
       <main className="flex-1 flex flex-col min-w-0 overflow-auto">
