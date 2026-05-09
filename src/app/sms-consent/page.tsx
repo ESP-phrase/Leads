@@ -1,9 +1,15 @@
 import Link from 'next/link'
 import Logo from '@/components/Logo'
 
-export const metadata = {
+import type { Metadata } from 'next'
+
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://siteforge.app'
+
+export const metadata: Metadata = {
   title: 'SMS Terms & Consent — SiteForge',
-  description: 'SiteForge SMS messaging program terms, opt-in/opt-out, and consent details.',
+  description: 'SiteForge SMS messaging program terms, opt-in and opt-out instructions, message frequency, and consent details.',
+  alternates: { canonical: `${SITE_URL}/sms-consent` },
+  openGraph: { url: `${SITE_URL}/sms-consent`, title: 'SMS Terms — SiteForge' },
 }
 
 export default function SmsConsentPage() {

@@ -1,9 +1,15 @@
 import Link from 'next/link'
 import Logo from '@/components/Logo'
 
-export const metadata = {
+import type { Metadata } from 'next'
+
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://siteforge.app'
+
+export const metadata: Metadata = {
   title: 'Privacy Policy — SiteForge',
-  description: 'How SiteForge collects, uses, and protects your information.',
+  description: 'How SiteForge collects, uses, and protects your personal information. Read our full privacy policy.',
+  alternates: { canonical: `${SITE_URL}/privacy` },
+  openGraph: { url: `${SITE_URL}/privacy`, title: 'Privacy Policy — SiteForge' },
 }
 
 export default function PrivacyPage() {
