@@ -18,6 +18,29 @@ const STEPS = [
   { n: '03', title: 'Close & get paid', body: 'When they sign up, you earn 60% of the monthly revenue — every single month they stay on. Recurring income, not a one-time bonus.' },
 ]
 
+const INPUT_STYLE: React.CSSProperties = {
+  width: '100%',
+  background: '#0d0e0b',
+  border: '1px solid #1e2218',
+  borderRadius: 10,
+  padding: '10px 12px',
+  color: '#fff',
+  fontSize: 14,
+  outline: 'none',
+  boxSizing: 'border-box',
+}
+
+function FormField({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label style={{ display: 'block', color: '#5a6a4a', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 5 }}>
+        {label}
+      </label>
+      {children}
+    </div>
+  )
+}
+
 const FAQS = [
   { q: 'Do I need sales experience?', a: "No. We give you a proven script, a live preview link to show the business, and training. If you can have a friendly conversation, you can do this." },
   { q: 'How do I get paid?', a: 'Via direct deposit or PayPal, weekly. You earn 60% of every client you close, every month they stay — so one closed deal keeps paying you.' },
@@ -177,103 +200,86 @@ export default function JoinPage() {
       </section>
 
       {/* Apply form */}
-      <section id="apply" style={{ padding: '0 1.5rem 100px' }}>
-        <div style={{ maxWidth: 560, margin: '0 auto' }}>
-          <div style={{ background: '#111310', border: '1px solid #1e2218', borderRadius: 24, padding: '48px 40px' }}>
+      <section id="apply" style={{ padding: '20px 1.5rem 60px', minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
+        <div style={{ maxWidth: 720, margin: '0 auto', width: '100%' }}>
+          <div style={{ background: '#111310', border: '1px solid #1e2218', borderRadius: 20, padding: '28px 32px' }}>
             {submitted ? (
               <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#c8f13515', border: '1px solid #c8f13530',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-                  <CheckCircle size={28} style={{ color: '#c8f135' }} />
+                <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#c8f13515', border: '1px solid #c8f13530',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                  <CheckCircle size={26} style={{ color: '#c8f135' }} />
                 </div>
-                <h3 style={{ color: '#fff', fontSize: 22, fontWeight: 900, marginBottom: 10 }}>Application received!</h3>
-                <p style={{ color: '#6b7a5a', fontSize: 15, lineHeight: 1.7, marginBottom: 16 }}>
+                <h3 style={{ color: '#fff', fontSize: 20, fontWeight: 900, marginBottom: 8 }}>Application received!</h3>
+                <p style={{ color: '#6b7a5a', fontSize: 14, lineHeight: 1.6, marginBottom: 12 }}>
                   We review every application personally. If approved, we&apos;ll text you a $5 activation link within 24 hours.
-                </p>
-                <p style={{ color: '#3a4a2a', fontSize: 13, lineHeight: 1.6 }}>
-                  Keep your phone on — texts come from a number starting with <span style={{ color: '#c8f135', fontWeight: 700 }}>+1 (762) 238-7190</span>
                 </p>
               </div>
             ) : (
               <>
-                <h2 style={{ color: '#fff', fontSize: 24, fontWeight: 900, marginBottom: 6 }}>Apply to join</h2>
-                <p style={{ color: '#4a5a3a', fontSize: 15, marginBottom: 8 }}>Takes ~2 minutes. We review every application within 24 hours.</p>
-                <div style={{ background: '#c8f13510', border: '1px solid #c8f13530', borderRadius: 12, padding: '12px 14px', marginBottom: 24 }}>
-                  <p style={{ color: '#c8f135', fontSize: 13, fontWeight: 700, marginBottom: 4 }}>$5 refundable deposit</p>
-                  <p style={{ color: '#a0b080', fontSize: 12, lineHeight: 1.5 }}>
-                    Submit → pay $5 → we review. <span style={{ color: '#c8f135', fontWeight: 700 }}>Approved:</span> $5 covers your activation. <span style={{ color: '#d4a44a', fontWeight: 700 }}>Rejected:</span> automatic full refund.
-                  </p>
+                {/* Compact header — combines title + deposit notice */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
+                  <div>
+                    <h2 style={{ color: '#fff', fontSize: 22, fontWeight: 900, marginBottom: 2 }}>Apply to join</h2>
+                    <p style={{ color: '#4a5a3a', fontSize: 13 }}>Takes ~2 min · Reviewed within 24 hrs</p>
+                  </div>
+                  <div style={{ background: '#c8f13510', border: '1px solid #c8f13540', borderRadius: 10, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <DollarSign size={14} style={{ color: '#c8f135' }} />
+                    <span style={{ color: '#c8f135', fontSize: 12, fontWeight: 700 }}>$5 deposit · refunded if rejected</span>
+                  </div>
                 </div>
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  <div>
-                    <label style={{ display: 'block', color: '#4a5a3a', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Full name *</label>
-                    <input value={name} onChange={e => setName(e.target.value)} placeholder="Jane Smith" required
-                      style={{ width: '100%', background: '#0d0e0b', border: '1px solid #1e2218', borderRadius: 12,
-                               padding: '12px 16px', color: '#fff', fontSize: 15, outline: 'none', boxSizing: 'border-box' }} />
-                  </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                    <div>
-                      <label style={{ display: 'block', color: '#4a5a3a', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Phone *</label>
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {/* Row 1: name + phone + state */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.4fr 0.8fr', gap: 10 }}>
+                    <FormField label="Full name *">
+                      <input value={name} onChange={e => setName(e.target.value)} placeholder="Jane Smith" required
+                        style={INPUT_STYLE} />
+                    </FormField>
+                    <FormField label="Phone *">
                       <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="555-000-0000" type="tel" required
-                        style={{ width: '100%', background: '#0d0e0b', border: '1px solid #1e2218', borderRadius: 12,
-                                 padding: '12px 16px', color: '#fff', fontSize: 15, outline: 'none', boxSizing: 'border-box' }} />
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', color: '#4a5a3a', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>State *</label>
+                        style={INPUT_STYLE} />
+                    </FormField>
+                    <FormField label="State *">
                       <input value={stateField} onChange={e => setStateField(e.target.value)} placeholder="TX" maxLength={2} required
-                        style={{ width: '100%', background: '#0d0e0b', border: '1px solid #1e2218', borderRadius: 12,
-                                 padding: '12px 16px', color: '#fff', fontSize: 15, outline: 'none', boxSizing: 'border-box', textTransform: 'uppercase' }} />
-                    </div>
+                        style={{ ...INPUT_STYLE, textTransform: 'uppercase' }} />
+                    </FormField>
                   </div>
 
-                  <div>
-                    <label style={{ display: 'block', color: '#4a5a3a', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Email <span style={{ fontWeight: 400, textTransform: 'none' }}>(optional)</span></label>
-                    <input value={email} onChange={e => setEmail(e.target.value)} placeholder="jane@example.com" type="email"
-                      style={{ width: '100%', background: '#0d0e0b', border: '1px solid #1e2218', borderRadius: 12,
-                               padding: '12px 16px', color: '#fff', fontSize: 15, outline: 'none', boxSizing: 'border-box' }} />
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                    <div>
-                      <label style={{ display: 'block', color: '#4a5a3a', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Hours/week *</label>
-                      <select value={hoursPerWeek} onChange={e => setHoursPerWeek(e.target.value)} required
-                        style={{ width: '100%', background: '#0d0e0b', border: '1px solid #1e2218', borderRadius: 12,
-                                 padding: '12px 16px', color: '#fff', fontSize: 15, outline: 'none', boxSizing: 'border-box' }}>
-                        <option value="">Select…</option>
-                        <option value="5">2–5 hrs</option>
-                        <option value="10">5–10 hrs</option>
-                        <option value="20">10–20 hrs</option>
-                        <option value="35">20+ hrs (full-time)</option>
+                  {/* Row 2: email + hours + experience */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 10 }}>
+                    <FormField label="Email (optional)">
+                      <input value={email} onChange={e => setEmail(e.target.value)} placeholder="jane@example.com" type="email"
+                        style={INPUT_STYLE} />
+                    </FormField>
+                    <FormField label="Hours/wk *">
+                      <select value={hoursPerWeek} onChange={e => setHoursPerWeek(e.target.value)} required style={INPUT_STYLE}>
+                        <option value="">Select</option>
+                        <option value="5">2–5</option>
+                        <option value="10">5–10</option>
+                        <option value="20">10–20</option>
+                        <option value="35">20+</option>
                       </select>
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', color: '#4a5a3a', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Sales experience</label>
-                      <select value={experience} onChange={e => setExperience(e.target.value)}
-                        style={{ width: '100%', background: '#0d0e0b', border: '1px solid #1e2218', borderRadius: 12,
-                                 padding: '12px 16px', color: '#fff', fontSize: 15, outline: 'none', boxSizing: 'border-box' }}>
-                        <option value="">Select…</option>
-                        <option value="none">None — willing to learn</option>
-                        <option value="some">Some (retail/service)</option>
-                        <option value="lots">Lots (B2B/closing)</option>
+                    </FormField>
+                    <FormField label="Experience">
+                      <select value={experience} onChange={e => setExperience(e.target.value)} style={INPUT_STYLE}>
+                        <option value="">Select</option>
+                        <option value="none">None</option>
+                        <option value="some">Some</option>
+                        <option value="lots">Lots</option>
                       </select>
-                    </div>
+                    </FormField>
                   </div>
 
-                  <div>
-                    <label style={{ display: 'block', color: '#4a5a3a', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Why do you want to join? *</label>
-                    <textarea value={whyJoin} onChange={e => setWhyJoin(e.target.value)} rows={4}
-                      placeholder="A few sentences about you and why this fits — short and honest is best."
-                      style={{ width: '100%', background: '#0d0e0b', border: '1px solid #1e2218', borderRadius: 12,
-                               padding: '12px 16px', color: '#fff', fontSize: 15, outline: 'none', boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit' }} />
-                    <p style={{ fontSize: 11, color: '#3a4a2a', marginTop: 6 }}>{whyJoin.length}/20 characters minimum</p>
-                  </div>
+                  {/* Why join */}
+                  <FormField label={`Why do you want to join? * — ${whyJoin.length}/20 min`}>
+                    <textarea value={whyJoin} onChange={e => setWhyJoin(e.target.value)} rows={3}
+                      placeholder="A few sentences about you and why this fits…"
+                      style={{ ...INPUT_STYLE, resize: 'vertical', fontFamily: 'inherit' }} />
+                  </FormField>
 
-                  <div>
-                    <label style={{ display: 'block', color: '#4a5a3a', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>How did you hear about us? <span style={{ fontWeight: 400, textTransform: 'none' }}>(optional)</span></label>
-                    <select value={referralSource} onChange={e => setReferralSource(e.target.value)}
-                      style={{ width: '100%', background: '#0d0e0b', border: '1px solid #1e2218', borderRadius: 12,
-                               padding: '12px 16px', color: '#fff', fontSize: 15, outline: 'none', boxSizing: 'border-box' }}>
+                  {/* Referral */}
+                  <FormField label="How did you hear about us? (optional)">
+                    <select value={referralSource} onChange={e => setReferralSource(e.target.value)} style={INPUT_STYLE}>
                       <option value="">Select…</option>
                       <option value="tiktok">TikTok</option>
                       <option value="instagram">Instagram</option>
@@ -282,21 +288,22 @@ export default function JoinPage() {
                       <option value="search">Google search</option>
                       <option value="other">Other</option>
                     </select>
-                  </div>
+                  </FormField>
 
                   {error && (
-                    <p style={{ background: '#2a0d0d', border: '1px solid #401515', color: '#d45a5a', borderRadius: 10, padding: '10px 14px', fontSize: 13 }}>
+                    <p style={{ background: '#2a0d0d', border: '1px solid #401515', color: '#d45a5a', borderRadius: 10, padding: '8px 12px', fontSize: 13 }}>
                       {error}
                     </p>
                   )}
+
                   <button type="submit" disabled={loading}
-                    style={{ background: '#c8f135', color: '#0d0e0b', padding: '14px', borderRadius: 12, fontWeight: 800,
-                             fontSize: 16, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1,
-                             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 4 }}>
-                    {loading ? 'Redirecting…' : <><DollarSign size={16} />Submit + pay $5 deposit</>}
+                    style={{ background: '#c8f135', color: '#0d0e0b', padding: '13px', borderRadius: 12, fontWeight: 800,
+                             fontSize: 15, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1,
+                             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 2 }}>
+                    {loading ? 'Redirecting…' : <><DollarSign size={15} />Submit + pay $5 deposit</>}
                   </button>
-                  <p style={{ fontSize: 11, color: '#3a4a2a', textAlign: 'center', marginTop: 4 }}>
-                    Stripe-secured · Refunded automatically if rejected · 7-day money-back guarantee
+                  <p style={{ fontSize: 11, color: '#3a4a2a', textAlign: 'center' }}>
+                    Stripe-secured · Auto-refunded if rejected · 7-day money-back guarantee
                   </p>
                 </form>
               </>
