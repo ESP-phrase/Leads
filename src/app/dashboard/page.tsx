@@ -298,9 +298,9 @@ export default function DashboardPage() {
 
               {/* Column headers */}
               <div className="grid border-b border-[#1a1e14]"
-                   style={{ gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr 180px' }}>
+                   style={{ gridTemplateColumns: '2fr 1.2fr 0.8fr 0.9fr 1fr 0.7fr 230px' }}>
                 {['Business', 'Location', 'Rating', 'Status', 'Assigned', 'Site', 'Actions'].map(h => (
-                  <div key={h} className="px-4 py-2.5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#2a3a1a' }}>
+                  <div key={h} className="px-3 py-2.5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#2a3a1a' }}>
                     {h}
                   </div>
                 ))}
@@ -344,9 +344,9 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoici
 
   return (
     <div className="grid items-center border-b border-[#161a11] hover:bg-[#ffffff02] transition-colors"
-         style={{ gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr 180px', background: isEven ? 'transparent' : '#0f1009' }}>
+         style={{ gridTemplateColumns: '2fr 1.2fr 0.8fr 0.9fr 1fr 0.7fr 230px', background: isEven ? 'transparent' : '#0f1009' }}>
 
-      <div className="px-4 py-3.5">
+      <div className="px-3 py-3.5">
         <p className="text-sm font-semibold text-white leading-tight">{lead.name}</p>
         {lead.phone && (
           <div className="flex items-center gap-1 mt-0.5 text-xs" style={{ color: '#3a4a2a' }}>
@@ -356,12 +356,12 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoici
         )}
       </div>
 
-      <div className="px-4 py-3.5">
+      <div className="px-3 py-3.5">
         <p className="text-sm" style={{ color: '#6b7a5a' }}>{lead.city ?? '—'}</p>
         {lead.category && <p className="text-xs mt-0.5" style={{ color: '#3a4a2a' }}>{lead.category}</p>}
       </div>
 
-      <div className="px-4 py-3.5">
+      <div className="px-3 py-3.5">
         {lead.rating ? (
           <div className="flex items-center gap-1.5">
             <Star size={11} fill="#c8f135" stroke="none" />
@@ -371,7 +371,7 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoici
         ) : <span className="text-sm" style={{ color: '#2a3a1a' }}>—</span>}
       </div>
 
-      <div className="px-4 py-3.5">
+      <div className="px-3 py-3.5">
         <select value={lead.status} onChange={e => onStatusChange(lead.id, e.target.value as LeadStatus)}
           className={clsx('text-xs font-semibold px-2.5 py-1 rounded-full focus:outline-none cursor-pointer appearance-none', STATUS_STYLE[lead.status])}
           style={{ background: 'inherit', border: 'none' }}>
@@ -380,7 +380,7 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoici
       </div>
 
       {/* Assigned worker */}
-      <div className="px-4 py-3.5">
+      <div className="px-3 py-3.5">
         <select
           value={(lead as Lead & { workerId?: string | null }).workerId ?? ''}
           onChange={e => onAssign(lead.id, e.target.value || null)}
@@ -392,7 +392,7 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoici
       </div>
 
       {/* Site */}
-      <div className="px-4 py-3.5">
+      <div className="px-3 py-3.5">
         {lead.site ? (
           <span className="flex items-center gap-1.5 text-xs font-medium" style={{ color: '#c8f135' }}>
             <CheckCircle2 size={11} /> Built
@@ -402,37 +402,40 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoici
         )}
       </div>
 
-      <div className="px-4 py-3.5 flex items-center gap-1.5">
+      <div className="px-3 py-3.5 flex items-center gap-1">
         {!lead.site ? (
           <button onClick={() => onGenerate(lead)} disabled={isGen}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-40"
+            title="Build website with AI"
+            className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px] font-bold transition-all disabled:opacity-40 flex-shrink-0"
             style={{ background: '#c8f135', color: '#0d0e0b' }}>
-            <Globe size={11} />{isGen ? 'Building…' : 'Build site'}
+            <Globe size={10} />{isGen ? '…' : 'Build'}
           </button>
         ) : (
           <a href={lead.site.vercelUrl ?? lead.previewUrl ?? `/preview/${lead.slug}`} target="_blank"
-             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all"
+             title="Open site in new tab"
+             className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px] font-bold transition-all flex-shrink-0"
              style={{ background: '#c8f135', color: '#0d0e0b', textDecoration: 'none' }}>
-            <ExternalLink size={11} /> Show Site
+            <ExternalLink size={10} /> Show
           </a>
         )}
         <button onClick={() => onSms(lead)} disabled={isSms || !lead.site || !lead.phone}
           title={!lead.site ? 'Build site first' : !lead.phone ? 'No phone' : 'Send SMS with preview link'}
-          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-[#1e2218] hover:border-[#2e3828] disabled:opacity-25 transition-all"
+          className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px] font-medium border border-[#1e2218] hover:border-[#2e3828] disabled:opacity-25 transition-all flex-shrink-0"
           style={{ color: '#4a5a3a' }}>
-          <MessageSquare size={11} />{isSms ? '…' : 'SMS'}
+          <MessageSquare size={10} />{isSms ? '…' : 'SMS'}
         </button>
         <button onClick={() => onInvoice(lead)} disabled={isInv || !lead.site}
           title={!lead.site ? 'Build site first' : lead.invoicePaid ? 'Already paid' : 'Send $299 invoice'}
-          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border disabled:opacity-25 transition-all"
+          className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px] font-medium border disabled:opacity-25 transition-all flex-shrink-0"
           style={{
             borderColor: lead.invoicePaid ? '#2a5030' : '#1e2218',
             color: lead.invoicePaid ? '#c8f135' : '#4a5a3a',
           }}>
-          <Receipt size={11} />{isInv ? '…' : lead.invoicePaid ? 'Paid ✓' : 'Invoice'}
+          <Receipt size={10} />{isInv ? '…' : lead.invoicePaid ? '✓' : 'Bill'}
         </button>
         <Link href="/dialer"
-          className="flex items-center px-2 py-1.5 rounded-lg border border-[#1e2218] hover:border-[#2e3828] transition-all"
+          title="Open dialer"
+          className="flex items-center px-1.5 py-1.5 rounded-md border border-[#1e2218] hover:border-[#2e3828] transition-all flex-shrink-0"
           style={{ color: '#4a5a3a' }}>
           <PhoneCall size={11} />
         </Link>

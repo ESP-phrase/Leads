@@ -5,6 +5,7 @@ import { Search, MapPin, Tag, Star, ChevronRight, Globe, X, CheckCircle, Message
 import type { Lead } from '@/types'
 import Sidebar from '@/components/Sidebar'
 import { formatPhone } from '@/lib/utils'
+import { SMS_TEMPLATES } from '@/lib/sms-templates'
 
 const CATEGORIES = [
   // Home services
@@ -53,6 +54,7 @@ export default function LeadsPage() {
   const [toasts, setToasts] = useState<Toast[]>([])
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null)
   const [smsTemplate, setSmsTemplate] = useState('')
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
   const feedRef = useRef<HTMLDivElement>(null)
 
   const leads = feed.filter((i): i is Extract<FeedItem, { kind: 'lead' }> => i.kind === 'lead').map(i => i.lead)
@@ -72,10 +74,14 @@ export default function LeadsPage() {
     if (!lead.phone) return
     setSendingId(lead.id)
     try {
+      const payload: { leadId: string; message?: string; templateId?: string } = { leadId: lead.id }
+      if (selectedTemplateId) payload.templateId = selectedTemplateId
+      else if (smsTemplate.trim()) payload.message = smsTemplate.trim()
+
       const res = await fetch('/api/sms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ leadId: lead.id, message: smsTemplate.trim() || undefined }),
+        body: JSON.stringify(payload),
       })
       if (res.ok) {
         setSentIds(prev => new Set(prev).add(lead.id))
@@ -240,18 +246,51 @@ export default function LeadsPage() {
 
             <div>
               <label className="block text-xs font-semibold mb-1.5" style={{ color: '#4a5a3a' }}>
-                <MessageSquare size={11} className="inline mr-1" />SMS MESSAGE
+                <MessageSquare size={11} className="inline mr-1" />SMS TEMPLATE
               </label>
+              <select
+                value={selectedTemplateId}
+                onChange={e => {
+                  setSelectedTemplateId(e.target.value)
+                  if (e.target.value) setSmsTemplate('')
+                }}
+                className="w-full rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[#c8f13540] mb-2"
+                style={{ background: '#0d0e0b', border: '1px solid #1e2218' }}>
+                <option value="">— Default (preview link) —</option>
+                <optgroup label="First touch">
+                  {SMS_TEMPLATES.filter(t => t.stage === 'first-touch').map(t => (
+                    <option key={t.id} value={t.id}>{t.emoji} {t.label}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="Follow-up">
+                  {SMS_TEMPLATES.filter(t => t.stage === 'follow-up').map(t => (
+                    <option key={t.id} value={t.id}>{t.emoji} {t.label}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="Closing">
+                  {SMS_TEMPLATES.filter(t => t.stage === 'closing').map(t => (
+                    <option key={t.id} value={t.id}>{t.emoji} {t.label}</option>
+                  ))}
+                </optgroup>
+              </select>
               <textarea
-                value={smsTemplate}
-                onChange={e => setSmsTemplate(e.target.value)}
-                placeholder="Leave blank to use the default preview link message…"
-                rows={3}
-                className="w-full rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#2a3a1a] focus:outline-none focus:ring-1 focus:ring-[#c8f13540] resize-none"
+                value={selectedTemplateId
+                  ? SMS_TEMPLATES.find(t => t.id === selectedTemplateId)?.body ?? ''
+                  : smsTemplate}
+                onChange={e => {
+                  if (selectedTemplateId) setSelectedTemplateId('')
+                  setSmsTemplate(e.target.value)
+                }}
+                placeholder="Or write a custom message — use {name}, {business}, {link}, {city} for auto-fill…"
+                rows={5}
+                disabled={!!selectedTemplateId}
+                className="w-full rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#2a3a1a] focus:outline-none focus:ring-1 focus:ring-[#c8f13540] resize-none disabled:opacity-70"
                 style={{ background: '#0d0e0b', border: '1px solid #1e2218' }}
               />
               <p className="text-xs mt-1" style={{ color: '#2a3a1a' }}>
-                {smsTemplate.length > 0 ? `${smsTemplate.length} chars · custom` : 'Using default template'}
+                {selectedTemplateId ? 'Template auto-fills name, business, and preview URL when sending'
+                  : smsTemplate.length > 0 ? `${smsTemplate.length} chars · custom`
+                  : 'Using default template'}
               </p>
             </div>
 

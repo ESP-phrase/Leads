@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Search, PhoneCall, Users, LogOut } from 'lucide-react'
+import { LayoutDashboard, Search, PhoneCall, Users, LogOut, DollarSign } from 'lucide-react'
 import clsx from 'clsx'
 
 const links = [
@@ -10,6 +10,7 @@ const links = [
   { href: '/leads',     label: 'Find Leads', icon: Search },
   { href: '/dialer',    label: 'DialFlow',   icon: PhoneCall },
   { href: '/workers',   label: 'Workers',    icon: Users },
+  { href: '/earnings',  label: 'Earnings',   icon: DollarSign },
 ]
 
 export default function Sidebar() {
