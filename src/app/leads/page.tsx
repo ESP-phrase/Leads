@@ -96,8 +96,7 @@ interface QueueItem { query: string; pageToken?: string; city?: string; category
 export default function LeadsPage() {
   const [city, setCity] = useState('')
   const [cityLoading, setCityLoading] = useState(false)
-  const [multiCityOpen, setMultiCityOpen] = useState(false)
-  const [selectedCities, setSelectedCities] = useState<Set<string>>(new Set())
+  const [addedCities, setAddedCities] = useState<string[]>([])
   const [citySuggestions, setCitySuggestions] = useState<string[]>([])
   const [cityFocused, setCityFocused] = useState(false)
   const [activeSuggestion, setActiveSuggestion] = useState(-1)
@@ -132,8 +131,8 @@ export default function LeadsPage() {
     fetch('https://ipapi.co/json/', { cache: 'no-store' })
       .then(r => r.json())
       .then(d => {
-        if (d.city && d.region_code) setCity(`${d.city}, ${d.region_code}`)
-        else if (d.city) setCity(d.city)
+        const detected = d.city && d.region_code ? `${d.city}, ${d.region_code}` : d.city
+        if (detected) setAddedCities([detected])
       })
       .catch(() => {})
       .finally(() => setCityLoading(false))
@@ -153,12 +152,20 @@ export default function LeadsPage() {
     }, 220)
   }
 
-  function selectCity(s: string) {
-    setCity(s)
+  function addCity(s: string) {
+    const trimmed = s.trim()
+    if (!trimmed) return
+    setAddedCities(prev => prev.includes(trimmed) ? prev : [...prev, trimmed])
+    setCity('')
     setCitySuggestions([])
-    setCityFocused(false)
     setActiveSuggestion(-1)
-    cityInputRef.current?.blur()
+    cityInputRef.current?.focus()
+  }
+
+  function selectCity(s: string) { addCity(s) }
+
+  function removeCity(c: string) {
+    setAddedCities(prev => prev.filter(x => x !== c))
   }
 
   function handleCityKeyDown(e: React.KeyboardEvent) {
@@ -289,10 +296,7 @@ export default function LeadsPage() {
   }, [])
 
   async function handleScrape() {
-    const activeCities = selectedCities.size > 0
-      ? [...selectedCities]
-      : city.split(/[;\n]+/).map(c => c.trim()).filter(Boolean)
-
+    const activeCities = addedCities.length > 0 ? addedCities : city.trim() ? [city.trim()] : []
     if (!activeCities.length || !category) { setError('City and category are required'); return }
 
     setFeed([]); setDone(false); setError(null); setStarted(true)
@@ -341,8 +345,29 @@ export default function LeadsPage() {
           <div className="flex-1 p-5 space-y-4 overflow-y-auto">
             <div className="relative">
               <label className="block text-xs font-semibold mb-1.5" style={{ color: '#4a5a3a' }}>
-                <MapPin size={11} className="inline mr-1" />CITY
+                <MapPin size={11} className="inline mr-1" />CITIES
               </label>
+
+              {/* City pills */}
+              {addedCities.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {addedCities.map(c => (
+                    <span key={c} className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold"
+                      style={{ background: '#c8f13518', border: '1px solid #c8f13535', color: '#c8f135' }}>
+                      {c}
+                      <button onClick={() => removeCity(c)} className="ml-0.5 opacity-60 hover:opacity-100" style={{ lineHeight: 1 }}>×</button>
+                    </span>
+                  ))}
+                  {addedCities.length > 1 && (
+                    <button onClick={() => setAddedCities([])} className="text-xs px-2 py-1 rounded-lg"
+                      style={{ color: '#4a5a3a', border: '1px solid #1e2218' }}>
+                      clear all
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Input */}
               <div className="relative">
                 <input
                   ref={cityInputRef}
@@ -352,9 +377,14 @@ export default function LeadsPage() {
                   onBlur={() => setTimeout(() => { setCityFocused(false); setCitySuggestions([]) }, 150)}
                   onKeyDown={e => {
                     handleCityKeyDown(e)
-                    if (e.key === 'Enter' && activeSuggestion < 0) handleScrape()
+                    if (e.key === 'Enter' && activeSuggestion < 0 && city.trim()) {
+                      e.preventDefault()
+                      addCity(city.trim())
+                    } else if (e.key === 'Enter' && activeSuggestion < 0 && !city.trim()) {
+                      handleScrape()
+                    }
                   }}
-                  placeholder={cityLoading ? 'Detecting location…' : 'City, State — or paste multiple separated by semicolons'}
+                  placeholder={cityLoading ? 'Detecting location…' : 'Type a city, press Enter to add…'}
                   autoComplete="off"
                   className="w-full rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#3a4a2a] focus:outline-none focus:ring-1 focus:ring-[#c8f13540]"
                   style={{ background: '#0d0e0b', border: '1px solid #1e2218', paddingRight: 32 }}
@@ -389,67 +419,9 @@ export default function LeadsPage() {
                 </div>
               )}
 
-              {!cityLoading && city && !cityFocused && selectedCities.size === 0 && (
-                <p className="text-xs mt-1" style={{ color: '#2a3a1a' }}>
-                  📍 {city}
-                </p>
-              )}
-
-              {/* Multi-city toggle */}
-              <button
-                onClick={() => setMultiCityOpen(o => !o)}
-                className="mt-2 text-xs font-semibold flex items-center gap-1 transition-colors"
-                style={{ color: multiCityOpen ? '#c8f135' : '#3a5a2a' }}
-              >
-                <span style={{ fontSize: 15, lineHeight: 1 }}>{multiCityOpen ? '−' : '+'}</span>
-                {selectedCities.size > 0
-                  ? `${selectedCities.size} cities selected`
-                  : 'Add multiple cities'}
-              </button>
-
-              {multiCityOpen && (
-                <div className="mt-2 rounded-xl overflow-hidden" style={{ border: '1px solid #1e2218', background: '#0d0e0b' }}>
-                  <div className="flex items-center justify-between px-3 py-2 border-b border-[#1e2218]">
-                    <span className="text-xs font-semibold" style={{ color: '#4a5a3a' }}>SELECT CITIES</span>
-                    {selectedCities.size > 0 && (
-                      <button onClick={() => setSelectedCities(new Set())} className="text-xs" style={{ color: '#c8f13560' }}>
-                        Clear all
-                      </button>
-                    )}
-                  </div>
-                  <div className="overflow-y-auto" style={{ maxHeight: 200 }}>
-                    {POPULAR_CITIES.map(c => {
-                      const checked = selectedCities.has(c)
-                      return (
-                        <button
-                          key={c}
-                          onClick={() => setSelectedCities(prev => {
-                            const next = new Set(prev)
-                            checked ? next.delete(c) : next.add(c)
-                            return next
-                          })}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-left transition-colors"
-                          style={{
-                            color: checked ? '#c8f135' : '#5a7a4a',
-                            background: checked ? '#c8f13508' : 'transparent',
-                            borderBottom: '1px solid #141814',
-                          }}
-                        >
-                          <span style={{
-                            width: 14, height: 14, borderRadius: 4, flexShrink: 0,
-                            border: `1.5px solid ${checked ? '#c8f135' : '#2a3a1a'}`,
-                            background: checked ? '#c8f135' : 'transparent',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          }}>
-                            {checked && <span style={{ color: '#080808', fontSize: 9, fontWeight: 900, lineHeight: 1 }}>✓</span>}
-                          </span>
-                          {c}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
+              <p className="text-xs mt-1.5" style={{ color: '#2a3a1a' }}>
+                Press Enter after each city. Add as many as you want.
+              </p>
             </div>
 
             <div>
