@@ -78,7 +78,7 @@ export default function MyLeadsPage() {
           <div className="text-right">
             <p className="text-sm font-bold text-white">{leads.length} leads assigned</p>
             <p className="text-xs" style={{ color: '#4a5a3a' }}>
-              {leads.filter(l => sentIds.has(l.id)).size ?? [...sentIds].filter(id => leads.find(l => l.id === id)).length} SMS sent · {[...calledIds].filter(id => leads.find(l => l.id === id)).length} called
+              {[...sentIds].filter(id => leads.find(l => l.id === id)).length} SMS sent · {[...calledIds].filter(id => leads.find(l => l.id === id)).length} called
             </p>
           </div>
           <button onClick={handleLogout}
