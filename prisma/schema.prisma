@@ -8,14 +8,16 @@ datasource db {
 }
 
 model Worker {
-  id        String   @id @default(cuid())
-  name      String
-  phone     String?
-  email     String?
-  role      String   @default("Agent")
-  active    Boolean  @default(true)
-  leads     Lead[]
-  createdAt DateTime @default(now())
+  id              String   @id @default(cuid())
+  name            String
+  phone           String?
+  email           String?
+  role            String   @default("Agent")
+  active          Boolean  @default(true)
+  stripeSessionId String?
+  paidAt          DateTime?
+  leads           Lead[]
+  createdAt       DateTime @default(now())
 }
 
 model Lead {
@@ -39,6 +41,10 @@ model Lead {
 
   site        GeneratedSite?
   smsLogs     SmsLog[]
+
+  invoiceUrl  String?
+  invoicePaid Boolean  @default(false)
+  invoicedAt  DateTime?
 
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt

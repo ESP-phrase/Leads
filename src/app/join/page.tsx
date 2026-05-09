@@ -22,7 +22,7 @@ const FAQS = [
   { q: 'How do I get paid?', a: 'Via direct deposit or PayPal, weekly. You earn 60% of every client you close, every month they stay — so one closed deal keeps paying you.' },
   { q: 'How many hours do I need to work?', a: "As many or as few as you want. Most reps start with 1–2 hours per day and scale from there. There's no minimum requirement." },
   { q: 'What if a client cancels?', a: "You stop earning that client's share. But your other clients keep paying. That's why we encourage you to build a portfolio of 10–20+ clients over time." },
-  { q: 'Is there a cost to join?', a: 'Zero. No fees, no training costs, no startup costs. We only make money when you make money.' },
+  { q: 'Is there a cost to join?', a: 'There is a one-time $5 activation fee to join. This covers account setup and access to our lead tools. After that, there are no recurring fees — we only make money when you make money.' },
 ]
 
 export default function JoinPage() {
@@ -37,16 +37,18 @@ export default function JoinPage() {
     e.preventDefault()
     if (!name.trim() || !phone.trim()) { setError('Name and phone are required'); return }
     setLoading(true); setError(null)
-    const res = await fetch('/api/apply', {
+    const res = await fetch('/api/stripe/checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, phone, email }),
     })
-    if (res.ok) { setSubmitted(true) } else {
-      const { error: e } = await res.json().catch(() => ({ error: 'Something went wrong' }))
-      setError(e)
+    const data = await res.json()
+    if (res.ok && data.url) {
+      window.location.href = data.url
+    } else {
+      setError(data.error ?? 'Something went wrong')
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   return (

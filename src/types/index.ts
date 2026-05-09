@@ -14,6 +14,9 @@ export interface Lead {
   status: LeadStatus
   notes: string | null
   previewUrl: string | null
+  invoiceUrl: string | null
+  invoicePaid: boolean
+  invoicedAt: string | null
   site: GeneratedSite | null
   smsLogs: SmsLog[]
   createdAt: string

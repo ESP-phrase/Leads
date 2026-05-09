@@ -6,7 +6,7 @@ import {
   Globe, MessageSquare, ExternalLink, Star, Phone,
   RefreshCw, Plus, ChevronDown, TrendingUp, Users,
   DollarSign, Zap, PhoneCall, ArrowRight, BarChart3,
-  Search, CheckCircle2,
+  Search, CheckCircle2, Receipt,
 } from 'lucide-react'
 import type { Lead, LeadStatus } from '@/types'
 import { statusLabel, formatPhone } from '@/lib/utils'
@@ -32,6 +32,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [generatingId, setGeneratingId] = useState<string | null>(null)
   const [sendingId, setSendingId] = useState<string | null>(null)
+  const [invoicingId, setInvoicingId] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<LeadStatus | 'ALL'>('ALL')
   const [showStatusMenu, setShowStatusMenu] = useState(false)
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null)
@@ -91,6 +92,28 @@ export default function DashboardPage() {
       showToast(`Network error: ${String(err)}`, false)
     }
     setGeneratingId(null)
+  }
+
+  async function sendInvoice(lead: Lead) {
+    setInvoicingId(lead.id)
+    try {
+      const res = await fetch('/api/invoice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leadId: lead.id }),
+      })
+      const data = await res.json()
+      if (res.ok && data.invoiceUrl) {
+        await fetchLeads()
+        window.open(data.invoiceUrl, '_blank')
+        showToast('Invoice created — $299 payment link opened!')
+      } else {
+        showToast(`Invoice failed: ${data.error ?? 'unknown'}`, false)
+      }
+    } catch (err) {
+      showToast(`Error: ${String(err)}`, false)
+    }
+    setInvoicingId(null)
   }
 
   async function sendSms(lead: Lead) {
@@ -286,8 +309,8 @@ export default function DashboardPage() {
               {/* Rows */}
               {filtered.map((lead, i) => (
                 <Row key={lead.id} lead={lead} statuses={STATUSES} workers={workers} isEven={i % 2 === 0}
-                     generatingId={generatingId} sendingId={sendingId}
-                     onStatusChange={updateStatus} onAssign={assignWorker} onGenerate={generateSite} onSms={sendSms} />
+                     generatingId={generatingId} sendingId={sendingId} invoicingId={invoicingId}
+                     onStatusChange={updateStatus} onAssign={assignWorker} onGenerate={generateSite} onSms={sendSms} onInvoice={sendInvoice} />
               ))}
 
               {/* Add leads prompt */}
@@ -308,15 +331,16 @@ export default function DashboardPage() {
   )
 }
 
-function Row({ lead, statuses, workers, isEven, generatingId, sendingId, onStatusChange, onAssign, onGenerate, onSms }: {
+function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoicingId, onStatusChange, onAssign, onGenerate, onSms, onInvoice }: {
   lead: Lead; statuses: LeadStatus[]; workers: { id: string; name: string }[]; isEven: boolean
-  generatingId: string | null; sendingId: string | null
+  generatingId: string | null; sendingId: string | null; invoicingId: string | null
   onStatusChange: (id: string, s: LeadStatus) => void
   onAssign: (id: string, workerId: string | null) => void
-  onGenerate: (l: Lead) => void; onSms: (l: Lead) => void
+  onGenerate: (l: Lead) => void; onSms: (l: Lead) => void; onInvoice: (l: Lead) => void
 }) {
   const isGen = generatingId === lead.id
   const isSms = sendingId === lead.id
+  const isInv = invoicingId === lead.id
 
   return (
     <div className="grid items-center border-b border-[#161a11] hover:bg-[#ffffff02] transition-colors"
@@ -397,6 +421,15 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, onStatu
           className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-[#1e2218] hover:border-[#2e3828] disabled:opacity-25 transition-all"
           style={{ color: '#4a5a3a' }}>
           <MessageSquare size={11} />{isSms ? '…' : 'SMS'}
+        </button>
+        <button onClick={() => onInvoice(lead)} disabled={isInv || !lead.site}
+          title={!lead.site ? 'Build site first' : lead.invoicePaid ? 'Already paid' : 'Send $299 invoice'}
+          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border disabled:opacity-25 transition-all"
+          style={{
+            borderColor: lead.invoicePaid ? '#2a5030' : '#1e2218',
+            color: lead.invoicePaid ? '#c8f135' : '#4a5a3a',
+          }}>
+          <Receipt size={11} />{isInv ? '…' : lead.invoicePaid ? 'Paid ✓' : 'Invoice'}
         </button>
         <Link href="/dialer"
           className="flex items-center px-2 py-1.5 rounded-lg border border-[#1e2218] hover:border-[#2e3828] transition-all"
