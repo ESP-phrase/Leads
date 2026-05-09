@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Worker {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  email     String?
+  role      String   @default("Agent")
+  active    Boolean  @default(true)
+  leads     Lead[]
+  createdAt DateTime @default(now())
+}
+
+model Lead {
+  id          String     @id @default(cuid())
+  name        String
+  phone       String?
+  address     String?
+  city        String?
+  state       String?
+  category    String?
+  rating      Float?
+  reviewCount Int?
+  placeId     String?    @unique
+  hasWebsite  Boolean    @default(false)
+  slug        String?    @unique
+  status      LeadStatus @default(FOUND)
+  notes       String?
+  previewUrl  String?
+  workerId    String?
+  worker      Worker?    @relation(fields: [workerId], references: [id])
+
+  site        GeneratedSite?
+  smsLogs     SmsLog[]
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model GeneratedSite {
+  id           String   @id @default(cuid())
+  leadId       String   @unique
+  lead         Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  headline     String
+  subheadline  String
+  services     String
+  aboutText    String
+  cityServed   String
+  phone        String?
+  address      String?
+  primaryColor String   @default("#2563eb")
+  template     String   @default("modern")
+  vercelUrl    String?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model SmsLog {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  message   String
+  status    String   @default("pending")
+  twilioSid String?
+  sentAt    DateTime @default(now())
+}
+
+enum LeadStatus {
+  FOUND
+  CALLED
+  TEXTED
+  INTERESTED
+  CLOSED
+  NOT_INTERESTED
+}
