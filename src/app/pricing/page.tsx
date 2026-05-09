@@ -21,10 +21,8 @@ const OPERATOR_FEATURES = [
   'Unlimited leads, any city',
   'Automated 4-step drip sequences',
   'In-browser WebRTC dialer',
-  'Priority lead quality (4.5★+ only)',
   'Bulk SMS campaigns',
   'Advanced earnings analytics',
-  'Referral network dashboard',
   'Priority support',
 ]
 
@@ -99,33 +97,33 @@ export default function PricingPage() {
       </nav>
 
       <main style={{
-        maxWidth: 960, margin: '0 auto', padding: '32px 1.5rem 24px',
+        maxWidth: 960, margin: '0 auto', padding: '20px 1.5rem 16px',
         textAlign: 'center', position: 'relative', zIndex: 1,
         flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center',
         width: '100%',
       }}>
 
         {/* Label */}
-        <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 4, color: '#c8f135', marginBottom: 14, opacity: 0.9 }}>// PRICING</p>
+        <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 4, color: '#c8f135', marginBottom: 10, opacity: 0.9 }}>// PRICING</p>
 
         {/* Headline */}
-        <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3.6rem)', fontWeight: 900, letterSpacing: '-1.5px', lineHeight: 1.05, color: '#fff', marginBottom: 10 }}>
+        <h1 style={{ fontSize: 'clamp(1.8rem, 4.5vw, 3.2rem)', fontWeight: 900, letterSpacing: '-1.5px', lineHeight: 1.05, color: '#fff', marginBottom: 8 }}>
           Start free. Upgrade when you&apos;re{' '}
           <em style={{ fontStyle: 'italic', color: '#c8f135', textShadow: '0 0 60px #c8f13580' }}>winning.</em>
         </h1>
-        <p style={{ fontSize: 15, color: '#444', marginBottom: 28 }}>No commitments. Upgrade anytime.</p>
+        <p style={{ fontSize: 14, color: '#444', marginBottom: 20 }}>No commitments. Upgrade anytime.</p>
 
         {/* Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 14, marginBottom: 14, textAlign: 'left' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 12, marginBottom: 12, textAlign: 'left' }}>
 
           {/* Starter */}
           <div style={{
             borderRadius: 18, border: '1px solid #1c1c1c', background: '#0d0d0d',
-            padding: '24px 28px', position: 'relative',
+            padding: '18px 24px', position: 'relative',
           }}>
             <div style={{ position: 'absolute', top: 20, right: 20, fontSize: 10, fontWeight: 900, padding: '4px 12px', borderRadius: 99, background: '#1c2b10', color: '#c8f135', letterSpacing: 2, border: '1px solid #c8f13330' }}>FREE</div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
               <div style={{ width: 42, height: 42, borderRadius: 11, background: '#c8f13518', border: '1px solid #c8f13330', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Zap size={19} style={{ color: '#c8f135' }} />
               </div>
@@ -135,18 +133,18 @@ export default function PricingPage() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 5, marginBottom: 18 }}>
-              <span style={{ fontSize: 54, fontWeight: 900, color: '#fff', letterSpacing: '-3px', lineHeight: 1 }}>$0</span>
-              <span style={{ fontSize: 14, color: '#333', paddingBottom: 8 }}>/month</span>
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 5, marginBottom: 12 }}>
+              <span style={{ fontSize: 44, fontWeight: 900, color: '#fff', letterSpacing: '-3px', lineHeight: 1 }}>$0</span>
+              <span style={{ fontSize: 13, color: '#333', paddingBottom: 6 }}>/month</span>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
               {STARTER_FEATURES.map(f => <CheckItem key={f} text={f} />)}
             </div>
 
             <Link href="/join#apply" style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              padding: '13px', borderRadius: 11, fontWeight: 700, fontSize: 14,
+              padding: '11px', borderRadius: 11, fontWeight: 700, fontSize: 14,
               textDecoration: 'none', border: '1px solid #2a3a1a', color: '#c8f135', background: 'transparent',
             }}>
               Start for free <ArrowRight size={14} />
@@ -156,12 +154,12 @@ export default function PricingPage() {
           {/* Operator */}
           <div style={{
             borderRadius: 18, border: '1px solid #c8f13545', background: '#0d0d0b',
-            padding: '24px 28px', position: 'relative',
+            padding: '18px 24px', position: 'relative',
             boxShadow: '0 0 80px #c8f13515, inset 0 0 40px #c8f1350a',
           }}>
             <div style={{ position: 'absolute', top: 20, right: 20, fontSize: 10, fontWeight: 900, padding: '4px 12px', borderRadius: 99, background: '#c8f135', color: '#080808', letterSpacing: 2 }}>MOST POPULAR</div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
               <div style={{ width: 42, height: 42, borderRadius: 11, background: '#c8f135', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Flame size={19} style={{ color: '#080808' }} />
               </div>
@@ -171,18 +169,18 @@ export default function PricingPage() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 5, marginBottom: 18 }}>
-              <span style={{ fontSize: 54, fontWeight: 900, color: '#c8f135', letterSpacing: '-3px', lineHeight: 1 }}>$29</span>
-              <span style={{ fontSize: 14, color: '#555', paddingBottom: 8 }}>/month</span>
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 5, marginBottom: 12 }}>
+              <span style={{ fontSize: 44, fontWeight: 900, color: '#c8f135', letterSpacing: '-3px', lineHeight: 1 }}>$29</span>
+              <span style={{ fontSize: 13, color: '#555', paddingBottom: 6 }}>/month</span>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
               {OPERATOR_FEATURES.map(f => <CheckItem key={f} text={f} bright />)}
             </div>
 
             <Link href="/join#apply" style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              padding: '13px', borderRadius: 11, fontWeight: 800, fontSize: 14,
+              padding: '11px', borderRadius: 11, fontWeight: 800, fontSize: 14,
               textDecoration: 'none', background: '#c8f135', color: '#080808',
             }}>
               Start 7-day free trial <ArrowRight size={14} />
@@ -202,7 +200,7 @@ export default function PricingPage() {
             { icon: Headphones, label: 'Human support',    sub: 'when you need it' },
           ].map(({ icon: Icon, label, sub }, i) => (
             <div key={label} style={{
-              padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left',
+              padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left',
               borderRight: i < 3 ? '1px solid #161616' : undefined,
             }}>
               <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#c8f13510', border: '1px solid #c8f13522', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
