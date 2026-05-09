@@ -2,6 +2,30 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { slugify } from '@/lib/utils'
 
+async function isShopify(url: string): Promise<boolean> {
+  try {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 6000)
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; SiteForge/1.0)' },
+      redirect: 'follow',
+    })
+    clearTimeout(timer)
+    const html = await res.text()
+    return (
+      html.includes('cdn.shopify.com') ||
+      html.includes('Shopify.theme') ||
+      html.includes('shopify-payment-button') ||
+      html.includes('window.Shopify') ||
+      html.includes('/cart.js') ||
+      res.headers.get('x-shopify-stage') !== null
+    )
+  } catch {
+    return false
+  }
+}
+
 // Processes ONE search query (one page) and returns results as JSON.
 // The client calls this repeatedly, driving the queue — so switching tabs never kills the scrape.
 
@@ -61,7 +85,11 @@ export async function POST(req: Request) {
         )
         const { result: d = {} } = await detailsRes.json()
 
-        if (d.website)                                { skipped.push({ name: d.name ?? place.name, reason: 'website' }); return }
+        if (d.website) {
+          const shopify = await isShopify(d.website)
+          if (!shopify) { skipped.push({ name: d.name ?? place.name, reason: 'website' }); return }
+          // Shopify site — save as a lead with hasShopify flag for a different pitch
+        }
         if ((d.rating ?? 0) < minRating)              { skipped.push({ name: d.name ?? place.name, reason: 'rating' }); return }
         if ((d.user_ratings_total ?? 0) < minReviews) { skipped.push({ name: d.name ?? place.name, reason: 'reviews' }); return }
 
@@ -81,7 +109,9 @@ export async function POST(req: Request) {
             rating: d.rating ?? null,
             reviewCount: d.user_ratings_total ?? null,
             placeId: place.place_id,
-            hasWebsite: false,
+            hasWebsite: !!d.website,
+            hasShopify: !!d.website,
+            websiteUrl: d.website ?? null,
             slug,
           },
           include: { site: true, smsLogs: true },

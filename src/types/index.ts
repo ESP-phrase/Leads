@@ -10,6 +10,8 @@ export interface Lead {
   reviewCount: number | null
   placeId: string | null
   hasWebsite: boolean
+  hasShopify: boolean
+  websiteUrl: string | null
   slug: string | null
   status: LeadStatus
   notes: string | null

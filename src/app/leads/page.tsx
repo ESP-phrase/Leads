@@ -601,7 +601,12 @@ export default function LeadsPage() {
                           <CheckCircle size={15} style={{ color: '#c8f135' }} />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-white truncate">{item.lead.name}</p>
+                          <div className="flex items-center gap-1.5 truncate">
+                            <p className="text-sm font-semibold text-white truncate">{item.lead.name}</p>
+                            {item.lead.hasShopify && (
+                              <span className="text-xs font-bold px-1.5 py-0.5 rounded flex-shrink-0" style={{ background: '#96bf48', color: '#fff', fontSize: 9 }}>SHOPIFY</span>
+                            )}
+                          </div>
                           <p className="text-xs truncate" style={{ color: '#4a5a3a' }}>
                             {[item.lead.category, item.lead.city].filter(Boolean).join(' · ')}
                             {item.lead.phone && <span className="ml-2">{formatPhone(item.lead.phone)}</span>}

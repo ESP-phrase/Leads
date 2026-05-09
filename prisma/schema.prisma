@@ -66,6 +66,8 @@ model Lead {
   reviewCount Int?
   placeId     String?    @unique
   hasWebsite  Boolean    @default(false)
+  hasShopify  Boolean    @default(false)
+  websiteUrl  String?
   slug        String?    @unique
   status      LeadStatus @default(FOUND)
   notes       String?
