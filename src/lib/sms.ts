@@ -1,44 +1,74 @@
-import twilio from 'twilio'
+// Telnyx REST API — no SDK needed, just fetch
+// Env vars needed:
+//   TELNYX_API_KEY      — your Telnyx API v2 key (starts with KEY...)
+//   TELNYX_PHONE_NUMBER — your Telnyx number in E.164, e.g. +15551234567
+//   OPERATOR_PHONE_NUMBER — your personal number for the dial-through call feature
 
-export function getTwilioClient() {
-  const accountSid = process.env.TWILIO_ACCOUNT_SID
-  const apiKey = process.env.TWILIO_API_KEY
-  const apiSecret = process.env.TWILIO_API_SECRET
+const TELNYX_API = 'https://api.telnyx.com/v2'
 
-  if (apiKey && apiSecret && accountSid) {
-    return twilio(apiKey, apiSecret, { accountSid })
+function telnyxHeaders() {
+  return {
+    'Authorization': `Bearer ${process.env.TELNYX_API_KEY}`,
+    'Content-Type': 'application/json',
   }
-  // fallback to auth token
-  return twilio(accountSid, process.env.TWILIO_AUTH_TOKEN)
 }
 
-export async function sendSms(to: string, body: string) {
-  const client = getTwilioClient()
+export async function sendSms(to: string, body: string): Promise<{ sid: string; status: string }> {
+  const from = process.env.TELNYX_PHONE_NUMBER
+  if (!from) throw new Error('TELNYX_PHONE_NUMBER not set')
+  if (!process.env.TELNYX_API_KEY) throw new Error('TELNYX_API_KEY not set')
 
-  // Append opt-out language if not already present (Twilio A2P 10DLC compliance)
+  // Append opt-out language if not already present (A2P compliance)
   const hasStop = /\b(stop|opt[- ]?out|unsubscribe)\b/i.test(body)
-  const finalBody = hasStop ? body : `${body}\n\nReply STOP to opt out.`
+  const text = hasStop ? body : `${body}\n\nReply STOP to opt out.`
 
-  const message = await client.messages.create({
-    from: process.env.TWILIO_PHONE_NUMBER!,
-    to,
-    body: finalBody,
+  const res = await fetch(`${TELNYX_API}/messages`, {
+    method: 'POST',
+    headers: telnyxHeaders(),
+    body: JSON.stringify({ from, to, text }),
   })
-  return { sid: message.sid, status: message.status }
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(`Telnyx SMS failed: ${JSON.stringify(err)}`)
+  }
+
+  const data = await res.json()
+  const msg = data.data
+  return { sid: msg.id, status: msg.to?.[0]?.status ?? 'queued' }
 }
 
 export async function initiateCall(to: string): Promise<{ sid: string; status: string }> {
+  const from = process.env.TELNYX_PHONE_NUMBER
   const operatorPhone = process.env.OPERATOR_PHONE_NUMBER
+  if (!from) throw new Error('TELNYX_PHONE_NUMBER not set')
   if (!operatorPhone) throw new Error('OPERATOR_PHONE_NUMBER not set')
+  if (!process.env.TELNYX_API_KEY) throw new Error('TELNYX_API_KEY not set')
 
-  const client = getTwilioClient()
-  // Calls operator first. When they pick up, they're connected to the lead.
-  const call = await client.calls.create({
-    from: process.env.TWILIO_PHONE_NUMBER!,
-    to: operatorPhone,
-    twiml: `<Response><Say>Connecting you to ${to} now.</Say><Dial>${to}</Dial></Response>`,
+  // Call the operator first. When they pick up they get connected to the lead.
+  // Uses Telnyx TeXML for the call flow (same concept as TwiML).
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://siteforge.app'
+
+  const res = await fetch(`${TELNYX_API}/calls`, {
+    method: 'POST',
+    headers: telnyxHeaders(),
+    body: JSON.stringify({
+      connection_id: process.env.TELNYX_CONNECTION_ID, // SIP connection or TeXML app ID
+      from,
+      to: operatorPhone,
+      webhook_url: `${baseUrl}/api/telnyx/voice`,
+      client_state: Buffer.from(JSON.stringify({ leadPhone: to })).toString('base64'),
+    }),
   })
-  return { sid: call.sid, status: call.status }
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(`Telnyx call failed: ${JSON.stringify(err)}`)
+  }
+
+  const data = await res.json()
+  const call = data.data
+  return { sid: call.call_control_id, status: call.state ?? 'initiated' }
 }
 
 export function buildPreviewMessage(businessName: string, previewUrl: string) {

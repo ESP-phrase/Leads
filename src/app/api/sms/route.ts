@@ -50,12 +50,12 @@ export async function POST(req: Request) {
     text = buildPreviewMessage(lead.name, previewUrl)
   }
 
-  let twilioSid: string | null = null
+  let messageSid: string | null = null
   let status = 'sent'
 
   try {
     const result = await sendSms(lead.phone, text)
-    twilioSid = result.sid
+    messageSid = result.sid
     status = result.status
   } catch (err) {
     console.error('SMS error:', err)
@@ -63,7 +63,7 @@ export async function POST(req: Request) {
   }
 
   const log = await db.smsLog.create({
-    data: { leadId, message: text, status, twilioSid },
+    data: { leadId, message: text, status, messageSid },
   })
 
   // Don't downgrade status — only set TEXTED if not already in a more advanced stage

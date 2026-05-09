@@ -50,7 +50,7 @@ export async function GET(req: Request) {
     try {
       const result = await sendSms(lead.phone!, text)
       await db.smsLog.create({
-        data: { leadId: lead.id, message: text, status: result.status, twilioSid: result.sid },
+        data: { leadId: lead.id, message: text, status: result.status, messageSid: result.sid },
       })
       sent.push({ leadId: lead.id, status: result.status })
     } catch (err) {

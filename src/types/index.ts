@@ -53,6 +53,6 @@ export interface SmsLog {
   leadId: string
   message: string
   status: string
-  twilioSid: string | null
+  messageSid: string | null
   sentAt: string
 }

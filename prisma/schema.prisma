@@ -105,13 +105,13 @@ model GeneratedSite {
 }
 
 model SmsLog {
-  id        String   @id @default(cuid())
-  leadId    String
-  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  message   String
-  status    String   @default("pending")
-  twilioSid String?
-  sentAt    DateTime @default(now())
+  id         String   @id @default(cuid())
+  leadId     String
+  lead       Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  message    String
+  status     String   @default("pending")
+  messageSid String?
+  sentAt     DateTime @default(now())
 }
 
 enum LeadStatus {

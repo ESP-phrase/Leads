@@ -48,7 +48,7 @@ export async function POST(req: Request) {
     try {
       const result = await sendSms(lead.phone, text)
       await db.smsLog.create({
-        data: { leadId: lead.id, message: text, status: result.status, twilioSid: result.sid },
+        data: { leadId: lead.id, message: text, status: result.status, messageSid: result.sid },
       })
       if (['FOUND', 'CALLED'].includes(lead.status)) {
         await db.lead.update({ where: { id: lead.id }, data: { status: 'TEXTED' } })
