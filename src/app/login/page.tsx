@@ -35,7 +35,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <span className="font-black text-3xl" style={{ color: '#c8f135' }}>
-            Can<span className="text-white">vass</span>
+            Website<span className="text-white">Hustle</span>
           </span>
           <p className="text-sm mt-2" style={{ color: '#3a4a2a' }}>Sign in to continue</p>
         </div>

@@ -15,8 +15,8 @@ export async function POST(req: Request) {
         currency: 'usd',
         unit_amount: WORKER_FEE,
         product_data: {
-          name: 'Canvass Worker Signup',
-          description: 'One-time activation fee to join the Canvass team. You earn 40% on every site sold.',
+          name: 'Website Hustle — Worker Signup',
+          description: 'One-time activation fee to join the Website Hustle team. You earn 40% on every site sold.',
         },
       },
       quantity: 1,

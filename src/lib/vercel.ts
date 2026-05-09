@@ -188,7 +188,7 @@ export function renderSiteHtml(data: SiteData): string {
 <!-- FOOTER -->
 <footer style="background:#0a0a0a;color:#374151;padding:28px 1.5rem;text-align:center;font-size:13px">
   <p style="color:#6b7280">© ${year} ${businessName} · ${city}</p>
-  <p style="margin-top:4px;font-size:11px">Site by Canvass</p>
+  <p style="margin-top:4px;font-size:11px">Site by Website Hustle</p>
 </footer>
 
 </body>

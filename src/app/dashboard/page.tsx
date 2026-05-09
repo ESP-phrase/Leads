@@ -329,7 +329,7 @@ export default function DashboardPage() {
                    style={{ background: '#c8f13515', border: '1px solid #c8f13525' }}>
                 <Zap size={24} style={{ color: '#c8f135' }} />
               </div>
-              <h2 className="text-xl font-black text-white mb-2">Welcome to Canvass</h2>
+              <h2 className="text-xl font-black text-white mb-2">Welcome to Website Hustle</h2>
               <p className="text-sm mb-8 max-w-md mx-auto" style={{ color: '#4a5a3a' }}>
                 You&apos;re 3 steps away from your first closed deal. Here&apos;s how to get started.
               </p>

@@ -27,7 +27,7 @@ export default function Sidebar() {
            style={{ background: '#111310', borderRight: '1px solid #1e2218' }}>
       <div className="px-5 py-5 border-b border-[#1e2218]">
         <span className="font-black text-lg tracking-tight" style={{ color: '#c8f135' }}>
-          Can<span className="text-white">vass</span>
+          Website<span className="text-white">Hustle</span>
         </span>
       </div>
       <nav className="flex-1 px-3 py-4 space-y-0.5">
