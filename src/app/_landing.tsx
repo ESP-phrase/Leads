@@ -294,93 +294,143 @@ export default function LandingPage() {
       </section>
 
       {/* REFERRAL — passive income section */}
-      <section id="referral" style={{ padding: '100px 1.5rem', borderTop: '1px solid #1a1e14', background: '#0d0e0b' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+      <section id="referral" style={{ padding: '100px 1.5rem', borderTop: '1px solid #111', background: '#000', position: 'relative', overflow: 'hidden' }}>
 
-          {/* Header */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 60, alignItems: 'center', marginBottom: 80 }}>
-            <div>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px',
-                            borderRadius: 99, marginBottom: 22, fontSize: 12, fontWeight: 800,
-                            background: '#c8f13518', border: '1px solid #c8f13540', color: '#c8f135' }}>
-                <Users size={12} /> Referral program
+        {/* Floating coin — left */}
+        <div style={{ position: 'absolute', left: '4%', top: '18%', pointerEvents: 'none', userSelect: 'none' }}>
+          <div style={{
+            width: 100, height: 100, borderRadius: '50%',
+            background: 'radial-gradient(circle at 32% 28%, #e8ff70, #c8f135 45%, #6a9000)',
+            boxShadow: '0 0 60px #c8f13560, 0 12px 40px rgba(0,0,0,0.6)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transform: 'rotate(-18deg) perspective(300px) rotateX(15deg)',
+          }}>
+            <Users size={40} style={{ color: '#0a0b09' }} />
+          </div>
+        </div>
+
+        {/* Floating coin — right */}
+        <div style={{ position: 'absolute', right: '4%', top: '12%', pointerEvents: 'none', userSelect: 'none' }}>
+          <div style={{
+            width: 120, height: 120, borderRadius: '50%',
+            background: 'radial-gradient(circle at 32% 28%, #e8ff70, #c8f135 45%, #6a9000)',
+            boxShadow: '0 0 80px #c8f13570, 0 16px 48px rgba(0,0,0,0.6)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transform: 'rotate(12deg) perspective(300px) rotateX(15deg)',
+          }}>
+            <DollarSign size={50} style={{ color: '#0a0b09' }} />
+          </div>
+        </div>
+
+        <div style={{ maxWidth: 900, margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
+
+          {/* Badge */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 18px',
+                        borderRadius: 99, marginBottom: 28, fontSize: 13, fontWeight: 700,
+                        background: '#111', border: '1px solid #2a2a2a', color: '#c8f135' }}>
+            <Users size={14} /> Referral program
+          </div>
+
+          {/* Headline */}
+          <h2 style={{ fontSize: 'clamp(3rem, 7vw, 5.5rem)', fontWeight: 900, lineHeight: 1.0,
+                       color: '#fff', letterSpacing: '-2px', marginBottom: 24 }}>
+            Recruit once.<br />
+            Get paid{' '}
+            <em style={{ fontStyle: 'italic', color: '#c8f135',
+                         textShadow: '0 0 60px #c8f13590, 0 0 120px #c8f13540' }}>
+              forever.
+            </em>
+          </h2>
+
+          {/* Subtext */}
+          <p style={{ fontSize: 18, color: '#888', lineHeight: 1.65, maxWidth: 620, margin: '0 auto 60px', fontWeight: 400 }}>
+            Every approved worker gets a unique invite link. Share it. When
+            someone you referred closes a deal, you pocket{' '}
+            <strong style={{ color: '#fff' }}>15% of their $119</strong> —
+            automatically, every Friday.
+          </p>
+
+          {/* 3 Steps */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr auto 1fr', gap: 12, alignItems: 'center', marginBottom: 40 }}>
+            {/* Step 1 */}
+            <div style={{ padding: '28px 20px', borderRadius: 18, textAlign: 'center', background: '#0d0e0b', border: '1px solid #1e2218', position: 'relative' }}>
+              <span style={{ position: 'absolute', top: 14, left: 16, fontSize: 11, fontWeight: 800, color: '#2a3a1a', letterSpacing: 1 }}>01</span>
+              <div style={{ width: 56, height: 56, borderRadius: '50%', margin: '0 auto 18px', background: '#0a0b09', border: '1px solid #c8f13540', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px #c8f13520' }}>
+                <Link2 size={22} style={{ color: '#c8f135' }} />
               </div>
-              <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 900, color: '#fff', letterSpacing: '-1px', marginBottom: 20, lineHeight: 1.05 }}>
-                Recruit once.<br />Get paid <span style={{ color: '#c8f135' }}>forever.</span>
-              </h2>
-              <p style={{ fontSize: 17, color: '#6b7a5a', lineHeight: 1.65, marginBottom: 32 }}>
-                Share your unique invite link. Every time someone you recruited closes a deal,
-                you automatically earn <strong style={{ color: '#fff' }}>15% of their $119</strong> — every Friday, forever, no extra work.
-              </p>
-              <Link href="/join#apply"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '14px 28px',
-                         borderRadius: 12, fontWeight: 800, fontSize: 14, textDecoration: 'none',
-                         background: '#c8f135', color: '#0a0b09' }}>
-                Get my invite link <ArrowRight size={14} />
-              </Link>
+              <p style={{ fontSize: 16, fontWeight: 800, color: '#fff', marginBottom: 10 }}>Share your link</p>
+              <p style={{ fontSize: 13, color: '#5a6a4a', lineHeight: 1.65 }}>You get a unique invite link after approval. Post it anywhere.</p>
             </div>
-
-            {/* Steps — vertical list */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-              {[
-                { n: '1', icon: Link2,     title: 'Share your link',     body: 'You get a personal invite link the moment you\'re approved. Post it on social, text it to friends, put it anywhere.' },
-                { n: '2', icon: UserPlus,  title: 'They apply & get approved', body: 'Anyone who signs up through your link gets tied to you. Once they\'re activated, the clock starts.' },
-                { n: '3', icon: DollarSign, title: 'You earn 15% of every sale they close', body: '$17.85 lands in your account automatically every time your recruit closes a deal. No cap, no expiry.' },
-              ].map(({ n, icon: Icon, title, body }, i) => (
-                <div key={n} style={{ display: 'flex', gap: 20, paddingBottom: i < 2 ? 28 : 0, marginBottom: i < 2 ? 28 : 0,
-                                      borderBottom: i < 2 ? '1px solid #1a1e14' : 'none' }}>
-                  <div style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 12,
-                                background: '#c8f13520', border: '1px solid #c8f13535',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Icon size={17} style={{ color: '#c8f135' }} />
-                  </div>
-                  <div>
-                    <p style={{ fontSize: 15, fontWeight: 800, color: '#fff', marginBottom: 6 }}>{title}</p>
-                    <p style={{ fontSize: 13, color: '#5a6a4a', lineHeight: 1.65 }}>{body}</p>
-                  </div>
-                </div>
-              ))}
+            {/* Arrow */}
+            <div style={{ fontSize: 22, color: '#2a3a1a', fontWeight: 700, padding: '0 4px' }}>→</div>
+            {/* Step 2 */}
+            <div style={{ padding: '28px 20px', borderRadius: 18, textAlign: 'center', background: '#0d0e0b', border: '1px solid #1e2218', position: 'relative' }}>
+              <span style={{ position: 'absolute', top: 14, left: 16, fontSize: 11, fontWeight: 800, color: '#2a3a1a', letterSpacing: 1 }}>02</span>
+              <div style={{ width: 56, height: 56, borderRadius: '50%', margin: '0 auto 18px', background: '#0a0b09', border: '1px solid #c8f13540', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px #c8f13520' }}>
+                <UserPlus size={22} style={{ color: '#c8f135' }} />
+              </div>
+              <p style={{ fontSize: 16, fontWeight: 800, color: '#fff', marginBottom: 10 }}>They apply &amp; close</p>
+              <p style={{ fontSize: 13, color: '#5a6a4a', lineHeight: 1.65 }}>Your recruit applies, gets approved, and starts closing deals.</p>
+            </div>
+            {/* Arrow */}
+            <div style={{ fontSize: 22, color: '#2a3a1a', fontWeight: 700, padding: '0 4px' }}>→</div>
+            {/* Step 3 */}
+            <div style={{ padding: '28px 20px', borderRadius: 18, textAlign: 'center', background: '#0d0e0b', border: '1px solid #1e2218', position: 'relative' }}>
+              <span style={{ position: 'absolute', top: 14, left: 16, fontSize: 11, fontWeight: 800, color: '#2a3a1a', letterSpacing: 1 }}>03</span>
+              <div style={{ width: 56, height: 56, borderRadius: '50%', margin: '0 auto 18px', background: '#0a0b09', border: '1px solid #c8f13540', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px #c8f13520' }}>
+                <DollarSign size={22} style={{ color: '#c8f135' }} />
+              </div>
+              <p style={{ fontSize: 16, fontWeight: 800, color: '#fff', marginBottom: 10 }}>You earn 15%</p>
+              <p style={{ fontSize: 13, color: '#5a6a4a', lineHeight: 1.65 }}>Every $119 they make puts $17.85 in your pocket. No cap, no expiry.</p>
             </div>
           </div>
 
-          {/* Passive income table */}
-          <div style={{ background: '#111310', borderRadius: 20, border: '1px solid #1e2218', overflow: 'hidden' }}>
-            <div style={{ padding: '22px 28px', borderBottom: '1px solid #1e2218', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-              <div>
-                <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 2, color: '#c8f135', textTransform: 'uppercase', marginBottom: 4 }}>Passive income examples</p>
-                <p style={{ fontSize: 15, fontWeight: 700, color: '#fff' }}>What your network earns you — on top of your own sales</p>
+          {/* Feature strip */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 32 }}>
+            {[
+              { icon: TrendingUp,    label: 'Lifetime earnings',   sub: 'Earn forever from every approved recruit.' },
+              { icon: Zap,           label: 'Automatic payouts',   sub: 'Paid out automatically every Friday.' },
+              { icon: Star,          label: 'No limits',           sub: 'No cap on earnings. Refer more, earn more.' },
+              { icon: CheckCircle,   label: 'Always on',           sub: 'The system works 24/7 for you.' },
+            ].map(({ icon: Icon, label, sub }) => (
+              <div key={label} style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: '16px 18px',
+                                        borderRadius: 14, background: '#0d0e0b', border: '1px solid #1e2218', textAlign: 'left' }}>
+                <div style={{ width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+                              background: '#c8f13518', border: '1px solid #c8f13530',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Icon size={15} style={{ color: '#c8f135' }} />
+                </div>
+                <div>
+                  <p style={{ fontSize: 13, fontWeight: 800, color: '#fff', marginBottom: 3 }}>{label}</p>
+                  <p style={{ fontSize: 12, color: '#4a5a3a', lineHeight: 1.5 }}>{sub}</p>
+                </div>
               </div>
-              <div style={{ fontSize: 12, color: '#3a4a2a', fontStyle: 'italic' }}>15% of $119 per deal</div>
+            ))}
+          </div>
+
+          {/* Bottom CTA bar */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20,
+                        background: '#0d0e0b', border: '1px solid #1e2218', borderRadius: 20, padding: '28px 32px' }}>
+            <div style={{ textAlign: 'left' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: '#c8f13520', border: '1px solid #c8f13535',
+                               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <TrendingUp size={20} style={{ color: '#c8f135' }} />
+                </div>
+                <div>
+                  <p style={{ fontSize: 18, fontWeight: 800, color: '#fff' }}>Turn your network</p>
+                  <p style={{ fontSize: 18, fontWeight: 900, color: '#c8f135', letterSpacing: '-0.5px' }}>into your income.</p>
+                </div>
+              </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 1, background: '#1a1e14' }}>
-              {[
-                { recruits: 1,  deals: 5,  label: '1 recruit',   sub: '5 deals/mo',   glow: false },
-                { recruits: 3,  deals: 10, label: '3 recruits',  sub: '10 deals each', glow: false },
-                { recruits: 10, deals: 10, label: '10 recruits', sub: '10 deals each', glow: true  },
-                { recruits: 20, deals: 10, label: '20 recruits', sub: '10 deals each', glow: false },
-              ].map(({ recruits, deals, label, sub, glow }) => {
-                const passive = Math.round(recruits * deals * 119 * 0.15)
-                return (
-                  <div key={label} style={{
-                    padding: '28px 24px', textAlign: 'center', position: 'relative',
-                    background: glow ? 'linear-gradient(160deg, #c8f13514, #111310)' : '#111310',
-                  }}>
-                    {glow && (
-                      <div style={{ position: 'absolute', top: 14, right: 14,
-                                    background: '#c8f135', color: '#0a0b09', fontSize: 9, fontWeight: 900,
-                                    padding: '3px 8px', borderRadius: 6, letterSpacing: '0.5px' }}>
-                        TARGET
-                      </div>
-                    )}
-                    <p style={{ fontSize: 13, fontWeight: 700, color: '#6b7a5a', marginBottom: 10 }}>{label}</p>
-                    <p style={{ fontSize: 'clamp(2rem, 4vw, 2.5rem)', fontWeight: 900,
-                                color: glow ? '#c8f135' : '#fff', letterSpacing: '-1.5px', lineHeight: 1, marginBottom: 8 }}>
-                      ${passive.toLocaleString()}
-                    </p>
-                    <p style={{ fontSize: 11, color: '#3a4a2a' }}>{sub} · /month</p>
-                  </div>
-                )
-              })}
+            <div style={{ textAlign: 'center' }}>
+              <Link href="/join#apply"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '18px 40px',
+                         borderRadius: 12, fontWeight: 900, fontSize: 16, textDecoration: 'none',
+                         background: '#c8f135', color: '#0a0b09', whiteSpace: 'nowrap' }}>
+                Get your invite link <ArrowRight size={16} />
+              </Link>
+              <p style={{ fontSize: 11, color: '#2a3a1a', marginTop: 8 }}>Start sharing. Start earning. Every Friday.</p>
             </div>
           </div>
 
