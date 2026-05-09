@@ -11,11 +11,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const application = await db.application.findUnique({ where: { id } })
   if (!application) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-  // ── REJECT: refund the $5 deposit + send SMS ──
+  // ── REJECT: refund the $5 deposit (if paid) + send SMS ──
   if (action === 'reject') {
     let refundedSid: string | null = null
 
-    if (application.stripePaymentIntent) {
+    if (application.stripePaymentIntent && process.env.STRIPE_SECRET_KEY) {
       try {
         const refund = await getStripe().refunds.create({
           payment_intent: application.stripePaymentIntent,
@@ -45,7 +45,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   // ── APPROVE: create Worker + activate, send welcome SMS ──
   if (action === 'approve') {
-    if (application.status === 'pending') {
+    // If Stripe is configured, require they paid the deposit first.
+    // If Stripe isn't configured, allow approval directly so the flow still works in dev.
+    if (application.status === 'pending' && process.env.STRIPE_SECRET_KEY) {
       return NextResponse.json({ error: 'Application has not paid the deposit yet' }, { status: 400 })
     }
 

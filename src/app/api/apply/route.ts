@@ -39,7 +39,17 @@ export async function POST(req: Request) {
     },
   })
 
-  // Step 2: Immediately create a Stripe checkout session for $5 (refunded if rejected)
+  // Step 2: Try to create a Stripe checkout session. Falls back gracefully if Stripe isn't configured.
+  if (!process.env.STRIPE_SECRET_KEY) {
+    // Stripe not configured yet — application is saved, admin will manually send payment link later
+    return NextResponse.json({
+      ok: true,
+      applicationId: application.id,
+      url: null,
+      stripeUnavailable: true,
+    })
+  }
+
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.PREVIEW_BASE_URL ?? 'http://localhost:3002'
 
   try {
@@ -68,7 +78,14 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true, applicationId: application.id, url: session.url })
   } catch (err) {
-    return NextResponse.json({ error: `Stripe error: ${err}` }, { status: 500 })
+    // Stripe failed — but application is saved. Don't block the user.
+    console.error('Stripe checkout failed (application saved):', err)
+    return NextResponse.json({
+      ok: true,
+      applicationId: application.id,
+      url: null,
+      stripeUnavailable: true,
+    })
   }
 }
 

@@ -10,6 +10,12 @@ export async function POST(req: Request) {
   if (!lead) return NextResponse.json({ error: 'Lead not found' }, { status: 404 })
   if (!lead.site) return NextResponse.json({ error: 'No site built yet' }, { status: 400 })
 
+  if (!process.env.STRIPE_SECRET_KEY) {
+    return NextResponse.json({
+      error: 'Stripe not configured yet. Add STRIPE_SECRET_KEY to env vars to send invoices.',
+    }, { status: 503 })
+  }
+
   // Create a Stripe payment link
   const paymentLink = await getStripe().paymentLinks.create({
     line_items: [{

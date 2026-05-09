@@ -78,6 +78,10 @@ export default function JoinPage() {
     if (res.ok && data.url) {
       // Redirect to Stripe checkout for the refundable $5 deposit
       window.location.href = data.url
+    } else if (res.ok && data.stripeUnavailable) {
+      // Stripe isn't configured yet — application saved, show success message
+      setSubmitted(true)
+      setLoading(false)
     } else {
       setError(data.error ?? 'Something went wrong')
       setLoading(false)
