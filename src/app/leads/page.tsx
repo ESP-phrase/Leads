@@ -7,6 +7,19 @@ import Sidebar from '@/components/Sidebar'
 import { formatPhone } from '@/lib/utils'
 import { SMS_TEMPLATES } from '@/lib/sms-templates'
 
+const POPULAR_CITIES = [
+  'New York, NY', 'Los Angeles, CA', 'Chicago, IL', 'Houston, TX', 'Phoenix, AZ',
+  'Philadelphia, PA', 'San Antonio, TX', 'San Diego, CA', 'Dallas, TX', 'Jacksonville, FL',
+  'Austin, TX', 'Fort Worth, TX', 'Columbus, OH', 'Charlotte, NC', 'Indianapolis, IN',
+  'San Francisco, CA', 'Seattle, WA', 'Denver, CO', 'Nashville, TN', 'Oklahoma City, OK',
+  'El Paso, TX', 'Washington, DC', 'Las Vegas, NV', 'Louisville, KY', 'Memphis, TN',
+  'Portland, OR', 'Baltimore, MD', 'Milwaukee, WI', 'Albuquerque, NM', 'Tucson, AZ',
+  'Fresno, CA', 'Sacramento, CA', 'Kansas City, MO', 'Mesa, AZ', 'Atlanta, GA',
+  'Omaha, NE', 'Colorado Springs, CO', 'Raleigh, NC', 'Miami, FL', 'Minneapolis, MN',
+  'Cleveland, OH', 'Tampa, FL', 'Tulsa, OK', 'Arlington, TX', 'New Orleans, LA',
+  'Bakersfield, CA', 'Wichita, KS', 'Aurora, CO', 'Anaheim, CA', 'Santa Ana, CA',
+]
+
 const CATEGORIES = [
   'Plumber', 'Electrician', 'HVAC', 'Roofer', 'Painter', 'Handyman',
   'House cleaning', 'Landscaping', 'Pest control', 'Carpet cleaning',
@@ -83,6 +96,8 @@ interface QueueItem { query: string; pageToken?: string; city?: string; category
 export default function LeadsPage() {
   const [city, setCity] = useState('')
   const [cityLoading, setCityLoading] = useState(false)
+  const [multiCityOpen, setMultiCityOpen] = useState(false)
+  const [selectedCities, setSelectedCities] = useState<Set<string>>(new Set())
   const [citySuggestions, setCitySuggestions] = useState<string[]>([])
   const [cityFocused, setCityFocused] = useState(false)
   const [activeSuggestion, setActiveSuggestion] = useState(-1)
@@ -274,13 +289,16 @@ export default function LeadsPage() {
   }, [])
 
   async function handleScrape() {
-    if (!city.trim() || !category) { setError('City and category are required'); return }
+    const activeCities = selectedCities.size > 0
+      ? [...selectedCities]
+      : city.split(/[;\n]+/).map(c => c.trim()).filter(Boolean)
+
+    if (!activeCities.length || !category) { setError('City and category are required'); return }
 
     setFeed([]); setDone(false); setError(null); setStarted(true)
     setLoading(true); setCurrentLabel(null); runningRef.current = true
 
-    // Support comma-separated cities e.g. "Houston, TX; Dallas, TX; Austin, TX"
-    const cities = city.split(/[,;\n]+/).map(c => c.trim()).filter(Boolean)
+    const cities = activeCities
     const isAll = category.toLowerCase() === 'all' || category.toLowerCase() === 'all categories'
     const allQueries: QueueItem[] = []
 
@@ -371,10 +389,66 @@ export default function LeadsPage() {
                 </div>
               )}
 
-              {!cityLoading && city && !cityFocused && (
+              {!cityLoading && city && !cityFocused && selectedCities.size === 0 && (
                 <p className="text-xs mt-1" style={{ color: '#2a3a1a' }}>
                   📍 {city}
                 </p>
+              )}
+
+              {/* Multi-city toggle */}
+              <button
+                onClick={() => setMultiCityOpen(o => !o)}
+                className="mt-2 text-xs font-semibold flex items-center gap-1 transition-colors"
+                style={{ color: multiCityOpen ? '#c8f135' : '#3a5a2a' }}
+              >
+                <span style={{ fontSize: 15, lineHeight: 1 }}>{multiCityOpen ? '−' : '+'}</span>
+                {selectedCities.size > 0
+                  ? `${selectedCities.size} cities selected`
+                  : 'Add multiple cities'}
+              </button>
+
+              {multiCityOpen && (
+                <div className="mt-2 rounded-xl overflow-hidden" style={{ border: '1px solid #1e2218', background: '#0d0e0b' }}>
+                  <div className="flex items-center justify-between px-3 py-2 border-b border-[#1e2218]">
+                    <span className="text-xs font-semibold" style={{ color: '#4a5a3a' }}>SELECT CITIES</span>
+                    {selectedCities.size > 0 && (
+                      <button onClick={() => setSelectedCities(new Set())} className="text-xs" style={{ color: '#c8f13560' }}>
+                        Clear all
+                      </button>
+                    )}
+                  </div>
+                  <div className="overflow-y-auto" style={{ maxHeight: 200 }}>
+                    {POPULAR_CITIES.map(c => {
+                      const checked = selectedCities.has(c)
+                      return (
+                        <button
+                          key={c}
+                          onClick={() => setSelectedCities(prev => {
+                            const next = new Set(prev)
+                            checked ? next.delete(c) : next.add(c)
+                            return next
+                          })}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-left transition-colors"
+                          style={{
+                            color: checked ? '#c8f135' : '#5a7a4a',
+                            background: checked ? '#c8f13508' : 'transparent',
+                            borderBottom: '1px solid #141814',
+                          }}
+                        >
+                          <span style={{
+                            width: 14, height: 14, borderRadius: 4, flexShrink: 0,
+                            border: `1.5px solid ${checked ? '#c8f135' : '#2a3a1a'}`,
+                            background: checked ? '#c8f135' : 'transparent',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          }}>
+                            {checked && <span style={{ color: '#080808', fontSize: 9, fontWeight: 900, lineHeight: 1 }}>✓</span>}
+                          </span>
+                          {c}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
               )}
             </div>
 
