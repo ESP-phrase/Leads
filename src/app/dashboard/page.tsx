@@ -38,8 +38,8 @@ export default function DashboardPage() {
   const fetchLeads = useCallback(async () => {
     setLoading(true)
     const [leadsRes, workersRes] = await Promise.all([fetch('/api/leads'), fetch('/api/workers')])
-    setLeads(await leadsRes.json())
-    setWorkers(await workersRes.json())
+    if (leadsRes.ok) setLeads(await leadsRes.json())
+    if (workersRes.ok) setWorkers(await workersRes.json())
     setLoading(false)
   }, [])
 
