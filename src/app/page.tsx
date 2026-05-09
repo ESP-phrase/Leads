@@ -15,12 +15,12 @@ const FAQS = [
     a: 'Yes. We charge local businesses $299 for a custom website. You get 40% ($119) when they buy. It\'s a real product solving a real problem — most local businesses (plumbers, salons, mechanics) still don\'t have a website in 2025.',
   },
   {
-    q: 'Why is there a $5 fee?',
-    a: 'It covers your account activation, lead access, SMS credits, and screens out tire-kickers. The $5 is only charged after you\'re approved — applying is free. You\'ll make it back on your first sale 23x over. Refunded if you cancel within 7 days.',
+    q: 'Why is there a $5 deposit?',
+    a: 'It screens out tire-kickers and covers your account activation. You pay $5 when you submit your app. If approved, the $5 covers your account. If rejected, we refund it automatically (5–10 business days back to your card). No risk to you.',
   },
   {
     q: 'How does the application process work?',
-    a: 'You fill out a 2-minute form. We review every application personally — usually within 24 hours. If you\'re a good fit, we text you a $5 activation link. Pay → instant access. If not, we\'ll let you know honestly.',
+    a: 'Submit the 2-minute form → pay the $5 deposit → we review within 24 hours. Approved: you get a welcome text and instant access. Rejected: automatic full refund.',
   },
   {
     q: 'Do I need sales experience?',
@@ -163,10 +163,10 @@ export default function LandingPage() {
       <section style={{ borderTop: '1px solid #1a1e14', borderBottom: '1px solid #1a1e14', padding: '36px 1.5rem', background: '#0d0e0b' }}>
         <div style={{ maxWidth: 1000, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20 }}>
           {[
-            { icon: '✓', label: 'Apply free · we review every application' },
-            { icon: '✓', label: '$5 only charged if you\'re approved' },
+            { icon: '✓', label: '$5 deposit · refunded if not approved' },
+            { icon: '✓', label: 'We review every application in 24 hours' },
             { icon: '✓', label: '$119 per sale · paid weekly via direct deposit' },
-            { icon: '✓', label: 'Cancel anytime · refund within 7 days' },
+            { icon: '✓', label: 'Stripe-secured · cancel anytime' },
           ].map(s => (
             <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{
@@ -437,10 +437,10 @@ export default function LandingPage() {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 18, position: 'relative' }}>
           {[
-            { step: '01', title: 'Apply (free)',    desc: 'Tell us about yourself in 2 minutes. We review every app personally.', icon: UserPlus },
-            { step: '02', title: 'Get approved + activate', desc: 'If accepted, we text you a $5 activation link. Pay → instant access.', icon: DollarSign },
-            { step: '03', title: 'Send the pitch',  desc: 'Pick a template, hit send. They see their custom website preview.', icon: MessageSquare },
-            { step: '04', title: 'Get paid',        desc: 'Cash hits your account every Friday for every closed deal.', icon: CheckCircle },
+            { step: '01', title: 'Apply + $5 deposit', desc: 'Submit the 2-min form and put down a refundable $5 deposit.', icon: UserPlus },
+            { step: '02', title: 'We review',          desc: 'Approved within 24 hours: $5 covers activation. Rejected: automatic refund.', icon: DollarSign },
+            { step: '03', title: 'Send the pitch',     desc: 'Pick a template, hit send. They see their custom website preview.', icon: MessageSquare },
+            { step: '04', title: 'Get paid',           desc: 'Cash hits your account every Friday for every closed deal.', icon: CheckCircle },
           ].map(({ step, title, desc, icon: Icon }) => (
             <div key={step} style={{ padding: '32px 24px', borderRadius: 18, border: '1px solid #1e2218', background: '#111310', position: 'relative' }}>
               <div style={{ position: 'absolute', top: 16, right: 18, fontSize: 36, fontWeight: 900, color: '#1e2218', letterSpacing: '-2px' }}>

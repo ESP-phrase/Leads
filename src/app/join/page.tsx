@@ -50,12 +50,13 @@ export default function JoinPage() {
       body: JSON.stringify({ name, phone, email, state: stateField, hoursPerWeek, experience, whyJoin, referralSource }),
     })
     const data = await res.json()
-    if (res.ok) {
-      setSubmitted(true)
+    if (res.ok && data.url) {
+      // Redirect to Stripe checkout for the refundable $5 deposit
+      window.location.href = data.url
     } else {
       setError(data.error ?? 'Something went wrong')
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   return (
@@ -195,8 +196,13 @@ export default function JoinPage() {
             ) : (
               <>
                 <h2 style={{ color: '#fff', fontSize: 24, fontWeight: 900, marginBottom: 6 }}>Apply to join</h2>
-                <p style={{ color: '#4a5a3a', fontSize: 15, marginBottom: 8 }}>Takes ~2 minutes. We review every application.</p>
-                <p style={{ color: '#5a6a4a', fontSize: 13, marginBottom: 32 }}>If approved, we&apos;ll text you a $5 activation link within 24 hours.</p>
+                <p style={{ color: '#4a5a3a', fontSize: 15, marginBottom: 8 }}>Takes ~2 minutes. We review every application within 24 hours.</p>
+                <div style={{ background: '#c8f13510', border: '1px solid #c8f13530', borderRadius: 12, padding: '12px 14px', marginBottom: 24 }}>
+                  <p style={{ color: '#c8f135', fontSize: 13, fontWeight: 700, marginBottom: 4 }}>$5 refundable deposit</p>
+                  <p style={{ color: '#a0b080', fontSize: 12, lineHeight: 1.5 }}>
+                    Submit → pay $5 → we review. <span style={{ color: '#c8f135', fontWeight: 700 }}>Approved:</span> $5 covers your activation. <span style={{ color: '#d4a44a', fontWeight: 700 }}>Rejected:</span> automatic full refund.
+                  </p>
+                </div>
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <div>
                     <label style={{ display: 'block', color: '#4a5a3a', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Full name *</label>
@@ -286,10 +292,10 @@ export default function JoinPage() {
                     style={{ background: '#c8f135', color: '#0d0e0b', padding: '14px', borderRadius: 12, fontWeight: 800,
                              fontSize: 16, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1,
                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 4 }}>
-                    {loading ? 'Submitting…' : <><Phone size={16} />Submit application</>}
+                    {loading ? 'Redirecting…' : <><DollarSign size={16} />Submit + pay $5 deposit</>}
                   </button>
                   <p style={{ fontSize: 11, color: '#3a4a2a', textAlign: 'center', marginTop: 4 }}>
-                    Application is free. $5 activation only charged if approved.
+                    Stripe-secured · Refunded automatically if rejected · 7-day money-back guarantee
                   </p>
                 </form>
               </>

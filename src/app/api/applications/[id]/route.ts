@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { getStripe, WORKER_FEE } from '@/lib/stripe'
+import { getStripe } from '@/lib/stripe'
 import { sendSms } from '@/lib/sms'
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -11,55 +11,58 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const application = await db.application.findUnique({ where: { id } })
   if (!application) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
+  // ── REJECT: refund the $5 deposit + send SMS ──
   if (action === 'reject') {
+    let refundedSid: string | null = null
+
+    if (application.stripePaymentIntent) {
+      try {
+        const refund = await getStripe().refunds.create({
+          payment_intent: application.stripePaymentIntent,
+        })
+        refundedSid = refund.id
+      } catch (err) {
+        console.error('Refund failed:', err)
+      }
+    }
+
     await db.application.update({
       where: { id },
-      data: { status: 'rejected', reviewNotes: notes ?? null, reviewedAt: new Date() },
+      data: {
+        status: refundedSid ? 'rejected_refunded' : 'rejected',
+        reviewNotes: notes ?? null,
+        reviewedAt: new Date(),
+      },
     })
 
-    // Send polite rejection SMS
     try {
       await sendSms(application.phone,
-        `Hi ${application.name.split(' ')[0]}, thanks for applying to Website Hustle. Unfortunately we can't move forward with your application at this time. Best of luck!`)
+        `Hi ${application.name.split(' ')[0]} — thanks for applying to Website Hustle. We can't move forward this time. Your $5 deposit has been refunded automatically (5–10 business days). Best of luck!`)
     } catch { /* ignore */ }
 
-    return NextResponse.json({ ok: true, status: 'rejected' })
+    return NextResponse.json({ ok: true, status: 'rejected', refunded: !!refundedSid })
   }
 
+  // ── APPROVE: create Worker + activate, send welcome SMS ──
   if (action === 'approve') {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.PREVIEW_BASE_URL ?? 'http://localhost:3002'
+    if (application.status === 'pending') {
+      return NextResponse.json({ error: 'Application has not paid the deposit yet' }, { status: 400 })
+    }
 
-    let paymentLink = application.paymentLink
-
-    // Create a Stripe checkout session keyed to this application
-    if (!paymentLink) {
-      try {
-        const session = await getStripe().checkout.sessions.create({
-          mode: 'payment',
-          line_items: [{
-            price_data: {
-              currency: 'usd',
-              unit_amount: WORKER_FEE,
-              product_data: {
-                name: 'Website Hustle — Worker Activation',
-                description: `Welcome ${application.name}! This $5 activation locks in your account and gets you access to leads.`,
-              },
-            },
-            quantity: 1,
-          }],
-          metadata: {
-            applicationId: id,
-            name: application.name,
-            phone: application.phone,
-            email: application.email ?? '',
-          },
-          success_url: `${baseUrl}/join/success?session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: `${baseUrl}/join`,
-        })
-        paymentLink = session.url
-      } catch (err) {
-        return NextResponse.json({ error: `Stripe error: ${err}` }, { status: 500 })
-      }
+    let workerId = application.workerId
+    if (!workerId) {
+      const worker = await db.worker.create({
+        data: {
+          name: application.name,
+          phone: application.phone,
+          email: application.email,
+          role: 'Agent',
+          active: true,
+          paidAt: application.paidAt ?? new Date(),
+          stripeSessionId: application.stripeSessionId,
+        },
+      })
+      workerId = worker.id
     }
 
     await db.application.update({
@@ -68,17 +71,17 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         status: 'approved',
         reviewNotes: notes ?? null,
         reviewedAt: new Date(),
-        paymentLink,
+        workerId,
       },
     })
 
-    // Text the candidate the activation link
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://websitehustle.app'
     try {
       await sendSms(application.phone,
-        `🎉 ${application.name.split(' ')[0]}, you've been approved for Website Hustle! Activate your account ($5) here: ${paymentLink}\n\nEvery sale you close = $119. Welcome to the team!`)
+        `🎉 ${application.name.split(' ')[0]}, you've been approved for Website Hustle! Sign in here: ${baseUrl}/login\n\nUse the phone number you applied with. Your first leads are waiting. Every closed sale = $119. Welcome to the team!`)
     } catch { /* ignore */ }
 
-    return NextResponse.json({ ok: true, status: 'approved', paymentLink })
+    return NextResponse.json({ ok: true, status: 'approved', workerId })
   }
 
   return NextResponse.json({ error: 'Unknown action' }, { status: 400 })

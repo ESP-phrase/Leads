@@ -20,42 +20,24 @@ export async function POST(req: Request) {
     const session = event.data.object
     const md = session.metadata ?? {}
 
-    // Worker activation flow (after approval)
+    // Application deposit paid → mark as paid_pending review
+    // Worker is NOT created until admin approves
     if (md.applicationId) {
       const application = await db.application.findUnique({ where: { id: md.applicationId } })
-      if (application && application.status !== 'paid') {
-        const worker = await db.worker.create({
-          data: {
-            name: application.name,
-            phone: application.phone,
-            email: application.email,
-            role: 'Agent',
-            active: true,
-            stripeSessionId: session.id,
-            paidAt: new Date(),
-          },
-        })
+      if (application && application.status === 'pending') {
         await db.application.update({
           where: { id: application.id },
-          data: { status: 'paid', paidAt: new Date(), workerId: worker.id },
+          data: {
+            status: 'paid_pending',
+            paidAt: new Date(),
+            stripeSessionId: session.id,
+            stripePaymentIntent: typeof session.payment_intent === 'string' ? session.payment_intent : null,
+          },
         })
       }
-    } else if (md.name) {
-      // Legacy direct-signup flow (no application)
-      await db.worker.create({
-        data: {
-          name: md.name,
-          phone: md.phone || null,
-          email: md.email || null,
-          role: 'Agent',
-          active: true,
-          stripeSessionId: session.id,
-          paidAt: new Date(),
-        },
-      })
     }
 
-    // Invoice payment for a lead
+    // Lead invoice paid → mark closed
     if (md.leadId && session.payment_status === 'paid') {
       await db.lead.update({
         where: { id: md.leadId },

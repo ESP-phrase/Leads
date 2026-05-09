@@ -21,22 +21,29 @@ model Worker {
 }
 
 model Application {
-  id             String   @id @default(cuid())
-  name           String
-  phone          String
-  email          String?
-  state          String?
-  hoursPerWeek   Int?
-  experience     String?
-  whyJoin        String?
-  referralSource String?
-  status         String   @default("pending")  // pending, approved, rejected, paid
-  reviewNotes    String?
-  paymentLink    String?
-  reviewedAt     DateTime?
-  paidAt         DateTime?
-  workerId       String?
-  createdAt      DateTime @default(now())
+  id                   String   @id @default(cuid())
+  name                 String
+  phone                String
+  email                String?
+  state                String?
+  hoursPerWeek         Int?
+  experience           String?
+  whyJoin              String?
+  referralSource       String?
+  status               String   @default("pending")
+  // pending → applied, no deposit yet
+  // paid_pending      → paid $5, awaiting admin review
+  // approved          → admin approved, worker created, paid covers activation
+  // rejected_refunded → admin rejected, $5 refunded
+  // rejected          → admin rejected, no payment to refund
+  reviewNotes          String?
+  paymentLink          String?
+  stripeSessionId      String?
+  stripePaymentIntent  String?
+  reviewedAt           DateTime?
+  paidAt               DateTime?
+  workerId             String?
+  createdAt            DateTime @default(now())
 }
 
 model Lead {
