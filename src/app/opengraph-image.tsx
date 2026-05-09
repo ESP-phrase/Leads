@@ -49,10 +49,9 @@ export default function OgImage() {
             background: '#c8f135',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <svg viewBox="0 0 32 32" width="40" height="40">
-              <path d="M5 22 L10 13 L14 19 L18 11 L23 17 L27 9"
-                stroke="#0a0b09" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-              <circle cx="27" cy="9" r="2.2" fill="#0a0b09"/>
+            <svg viewBox="0 0 32 32" width="38" height="38">
+              <path d="M22 9 L10 9 L10 16 L22 16 L22 23 L10 23"
+                stroke="#0a0b09" strokeWidth="3.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
             </svg>
           </div>
           <span style={{ fontSize: 36, fontWeight: 900, letterSpacing: '-1px' }}>
