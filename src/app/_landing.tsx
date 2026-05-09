@@ -76,9 +76,10 @@ export default function LandingPage() {
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Logo size={28} textSize="lg" />
           <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
-            <a href="#math" style={{ fontSize: 14, color: '#8a9a7a', textDecoration: 'none', fontWeight: 500 }}>The math</a>
+            <a href="#math" style={{ fontSize: 14, color: '#8a9a7a', textDecoration: 'none', fontWeight: 500 }}>Earnings</a>
             <a href="#referral" style={{ fontSize: 14, color: '#8a9a7a', textDecoration: 'none', fontWeight: 500 }}>Referrals</a>
-            <a href="#workers" style={{ fontSize: 14, color: '#8a9a7a', textDecoration: 'none', fontWeight: 500 }}>How it works</a>
+            <a href="#how" style={{ fontSize: 14, color: '#8a9a7a', textDecoration: 'none', fontWeight: 500 }}>How it works</a>
+            <Link href="/pricing" style={{ fontSize: 14, color: '#8a9a7a', textDecoration: 'none', fontWeight: 500 }}>Pricing</Link>
             <a href="#faq" style={{ fontSize: 14, color: '#8a9a7a', textDecoration: 'none', fontWeight: 500 }}>FAQ</a>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
@@ -94,45 +95,54 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* HERO — split layout */}
-      <section style={{ padding: '80px 1.5rem 60px', maxWidth: 1200, margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: 60, alignItems: 'center' }}>
+      {/* HERO */}
+      <section style={{ padding: '100px 1.5rem 80px', maxWidth: 1200, margin: '0 auto' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: 80, alignItems: 'center' }}>
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px',
-                          borderRadius: 99, marginBottom: 28, fontSize: 12, fontWeight: 700,
+                          borderRadius: 99, marginBottom: 32, fontSize: 12, fontWeight: 700,
                           background: '#c8f13518', border: '1px solid #c8f13540', color: '#c8f135' }}>
-              <Sparkles size={12} /> Now accepting applications
+              <Sparkles size={12} /> Accepting applications now
             </div>
 
-            <h1 style={{ fontSize: 'clamp(2.75rem, 6vw, 4.5rem)', fontWeight: 900, lineHeight: 0.98,
-                         color: '#fff', marginBottom: 28, letterSpacing: '-2px' }}>
-              Get paid <span style={{ color: '#c8f135' }}>$119</span> every time someone buys a website.
+            <h1 style={{ fontSize: 'clamp(2.8rem, 5.5vw, 4.2rem)', fontWeight: 900, lineHeight: 1.02,
+                         color: '#fff', marginBottom: 24, letterSpacing: '-2px' }}>
+              Local businesses need websites.<br />
+              You have a phone.<br />
+              <span style={{ color: '#c8f135' }}>We pay you $119</span> to connect them.
             </h1>
-            <p style={{ fontSize: 19, color: '#8a9a7a', lineHeight: 1.55, marginBottom: 36, maxWidth: 540 }}>
-              We hand you the leads. We built the website previews. You send a text.
-              When they pay <span style={{ color: '#fff', fontWeight: 700 }}>$299</span>, you keep <span style={{ color: '#c8f135', fontWeight: 700 }}>40%</span>.
+            <p style={{ fontSize: 18, color: '#6b7a5a', lineHeight: 1.7, marginBottom: 40, maxWidth: 500 }}>
+              We build the site. We write the pitch. We handle payment and delivery.
+              You send one text — and collect <strong style={{ color: '#fff' }}>40% of every $299 sale.</strong>
             </p>
 
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 28 }}>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 36 }}>
               <Link href="/join#apply"
-                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '17px 32px',
+                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '18px 36px',
                          borderRadius: 12, fontWeight: 800, fontSize: 16, textDecoration: 'none',
-                         background: '#c8f135', color: '#0a0b09', boxShadow: '0 0 60px #c8f13540' }}>
-                Apply now <ArrowRight size={16} />
+                         background: '#c8f135', color: '#0a0b09', boxShadow: '0 0 60px #c8f13540',
+                         letterSpacing: '-0.3px' }}>
+                Apply — $5 deposit <ArrowRight size={16} />
               </Link>
-              <a href="#math"
-                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '17px 28px',
+              <Link href="/pricing"
+                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '18px 28px',
                          borderRadius: 12, fontWeight: 600, fontSize: 16, textDecoration: 'none',
-                         border: '1px solid #2a3020', color: '#a0b080' }}>
-                See the math
-              </a>
+                         border: '1px solid #2a3020', color: '#8a9a7a' }}>
+                See pricing
+              </Link>
             </div>
 
-            <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', fontSize: 13, color: '#5a6a4a' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><CheckCircle size={13} style={{ color: '#c8f135' }} /> Weekly payouts</span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><CheckCircle size={13} style={{ color: '#c8f135' }} /> Work from your phone</span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><CheckCircle size={13} style={{ color: '#c8f135' }} /> No experience needed</span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><CheckCircle size={13} style={{ color: '#c8f135' }} /> Earn 15% on every recruit sale</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {[
+                '$5 deposit — refunded automatically if you\'re not approved',
+                '$119 flat per closed deal, paid every Friday via direct deposit',
+                'Earn 15% of every sale your recruits close, forever',
+              ].map(t => (
+                <div key={t} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                  <CheckCircle size={14} style={{ color: '#c8f135', flexShrink: 0, marginTop: 2 }} />
+                  <span style={{ fontSize: 13, color: '#5a6a4a', lineHeight: 1.5 }}>{t}</span>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -411,6 +421,109 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* FOLLOW-UP DRIP SEQUENCE */}
+      <section id="how" style={{ padding: '100px 1.5rem', borderTop: '1px solid #1a1e14', background: '#0d0e0b' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: 80, alignItems: 'center' }}>
+
+            {/* Left: copy */}
+            <div>
+              <p style={{ fontSize: 12, fontWeight: 800, letterSpacing: 2, color: '#c8f135', marginBottom: 14, textTransform: 'uppercase' }}>Automated follow-ups</p>
+              <h2 style={{ fontSize: 'clamp(2rem, 4vw, 2.8rem)', fontWeight: 900, color: '#fff', letterSpacing: '-1px', marginBottom: 20, lineHeight: 1.1 }}>
+                Most deals close on follow-up 2 or 3. We send them automatically.
+              </h2>
+              <p style={{ fontSize: 16, color: '#6b7a5a', lineHeight: 1.7, marginBottom: 28 }}>
+                You send the first text. After that, our system automatically follows up with the lead over the next 7 days — so you never lose a deal to forgetfulness.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {[
+                  { icon: MessageSquare, text: '4-step automated drip over 7 days' },
+                  { icon: Phone,         text: 'Each message personalized with the business name' },
+                  { icon: CheckCircle,   text: 'Auto-stops the moment they reply or buy' },
+                  { icon: Zap,           text: 'You see every response in real time on your dashboard' },
+                ].map(({ icon: Icon, text }) => (
+                  <div key={text} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 9, background: '#c8f13518', border: '1px solid #c8f13530', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Icon size={14} style={{ color: '#c8f135' }} />
+                    </div>
+                    <span style={{ fontSize: 14, color: '#8a9a7a' }}>{text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right: drip sequence visual */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+              {[
+                {
+                  day: 'Day 0 — You hit send',
+                  you: true,
+                  msg: "Hey Mike! I put together a free website preview for Mike's Plumbing. Take a look: mike-plumbing.siteforge.app — Want me to make it yours for $299?",
+                  badge: 'First touch',
+                  badgeColor: '#c8f135',
+                },
+                {
+                  day: 'Day 1 — Auto follow-up',
+                  you: true,
+                  msg: "Just following up, Mike — did you get a chance to check out the site? It's mobile-friendly and ready to go live today.",
+                  badge: 'Auto-sent',
+                  badgeColor: '#4a9eff',
+                },
+                {
+                  day: 'Day 3 — Auto follow-up',
+                  you: true,
+                  msg: "Quick note: we can have this live under your own domain by tomorrow. $299 one-time, no monthly fees. Want me to send the link?",
+                  badge: 'Auto-sent',
+                  badgeColor: '#4a9eff',
+                },
+                {
+                  day: 'Day 7 — Final follow-up',
+                  you: true,
+                  msg: "Last message, Mike — if the timing isn't right, no worries. The site will be here whenever you're ready. Just reply and I'll send the link.",
+                  badge: 'Auto-sent',
+                  badgeColor: '#4a9eff',
+                },
+              ].map(({ day, msg, badge, badgeColor }, i) => (
+                <div key={day} style={{ position: 'relative', paddingBottom: i < 3 ? 0 : 0 }}>
+                  {/* Connector line */}
+                  {i < 3 && (
+                    <div style={{ position: 'absolute', left: 16, top: 44, bottom: -8, width: 1, background: '#1e2218', zIndex: 0 }} />
+                  )}
+                  <div style={{ display: 'flex', gap: 14, paddingBottom: i < 3 ? 24 : 0, position: 'relative' }}>
+                    {/* Dot */}
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0, marginTop: 6, zIndex: 1,
+                                  background: i === 0 ? '#c8f135' : '#111310',
+                                  border: `1px solid ${i === 0 ? '#c8f135' : '#2a3a1a'}`,
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ fontSize: 10, fontWeight: 800, color: i === 0 ? '#0a0b09' : '#3a4a2a' }}>{i + 1}</span>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                        <span style={{ fontSize: 11, color: '#3a4a2a', fontWeight: 600 }}>{day}</span>
+                        <span style={{ fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 99,
+                                       background: `${badgeColor}20`, color: badgeColor, border: `1px solid ${badgeColor}40` }}>
+                          {badge}
+                        </span>
+                      </div>
+                      <div style={{ background: '#111310', border: '1px solid #1e2218', borderRadius: '12px 12px 12px 4px',
+                                    padding: '12px 14px', fontSize: 13, color: '#8a9a7a', lineHeight: 1.6 }}>
+                        {msg}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div style={{ marginTop: 16, padding: '14px 16px', borderRadius: 12, background: '#0d2218', border: '1px solid #c8f13530', display: 'flex', alignItems: 'center', gap: 10 }}>
+                <CheckCircle size={16} style={{ color: '#c8f135', flexShrink: 0 }} />
+                <p style={{ fontSize: 13, color: '#a0b080', lineHeight: 1.5 }}>
+                  <strong style={{ color: '#c8f135' }}>Sequence auto-stops</strong> the moment Mike replies or clicks the payment link. You always stay in control.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* WHO THIS IS FOR */}
       <section style={{ padding: '100px 1.5rem', borderTop: '1px solid #1a1e14', background: 'linear-gradient(180deg, #0d0e0b, #0a0b09)' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
@@ -422,15 +535,15 @@ export default function LandingPage() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
             {[
-              { emoji: '🎓', who: 'College students',      why: 'Text between classes. $119 covers a week of groceries. Refer classmates and stack passive income on top.' },
-              { emoji: '🚗', who: 'Gig workers',           why: 'Already have your phone out driving or delivering? Add this between rides. No schedule conflicts.' },
-              { emoji: '🏠', who: 'Stay-at-home parents',  why: 'Work during nap time, after school, whenever. Fully async — no calls required, just texts.' },
-              { emoji: '💼', who: 'Sales people',          why: 'You already know how to pitch. This just removes the product building from the equation.' },
-              { emoji: '🏋️', who: 'Side hustlers',         why: 'Stack it on top of anything. No minimum hours, no quota, no boss. Close one deal a week and make $476/mo.' },
-              { emoji: '🎯', who: 'Entrepreneurs',         why: 'Build a network of workers under you. Their sales are your passive income — run it like a business.' },
-            ].map(({ emoji, who, why }) => (
+              { who: 'College students',      why: 'Text between classes. $119 covers a week of groceries. Refer classmates and stack passive income on top.', tag: 'No schedule needed' },
+              { who: 'Gig workers',           why: 'Already have your phone out between rides or deliveries? Use that idle time to build a second income stream.', tag: 'Fits any gap in your day' },
+              { who: 'Stay-at-home parents',  why: 'Fully async — no calls required, no meetings. Send texts when you have 20 minutes, get paid on Fridays.', tag: 'Work on your schedule' },
+              { who: 'Salespeople',           why: 'If you already know how to pitch, this removes the hard part. The product is built. You just make the intro.', tag: 'Your skills, amplified' },
+              { who: 'Side hustlers',         why: 'Close one deal a week and make $476/month on top of what you\'re already doing. No quotas, no boss.', tag: 'Stack on anything' },
+              { who: 'Entrepreneurs',         why: 'Recruit a team, earn 15% of their sales. Run it like a business — your network\'s work becomes your income.', tag: 'Scale with referrals' },
+            ].map(({ who, why, tag }) => (
               <div key={who} style={{ padding: '28px 24px', borderRadius: 20, background: '#111310', border: '1px solid #1e2218' }}>
-                <div style={{ fontSize: 32, marginBottom: 14 }}>{emoji}</div>
+                <div style={{ display: 'inline-block', padding: '3px 10px', borderRadius: 6, background: '#c8f13515', border: '1px solid #c8f13530', fontSize: 10, fontWeight: 700, color: '#c8f135', letterSpacing: 0.5, marginBottom: 14, textTransform: 'uppercase' }}>{tag}</div>
                 <p style={{ fontSize: 15, fontWeight: 800, color: '#fff', marginBottom: 10 }}>{who}</p>
                 <p style={{ fontSize: 13, color: '#5a6a4a', lineHeight: 1.65 }}>{why}</p>
               </div>
@@ -885,39 +998,52 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* SOCIAL PROOF */}
+      {/* TRANSPARENCY BLOCK — honest numbers, no fake testimonials */}
       <section style={{ padding: '100px 1.5rem', borderTop: '1px solid #1a1e14', background: '#0a0b09' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 56 }}>
-            <p style={{ fontSize: 12, fontWeight: 800, letterSpacing: 2, color: '#c8f135', marginBottom: 10, textTransform: 'uppercase' }}>Early workers</p>
+            <p style={{ fontSize: 12, fontWeight: 800, letterSpacing: 2, color: '#c8f135', marginBottom: 10, textTransform: 'uppercase' }}>Straight talk</p>
             <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 900, color: '#fff', letterSpacing: '-1px' }}>
-              Real results from real people.
+              We&apos;ll be honest with you.
             </h2>
+            <p style={{ fontSize: 17, color: '#5a6a4a', marginTop: 16, maxWidth: 540, margin: '16px auto 0', lineHeight: 1.7 }}>
+              This isn&apos;t passive income out of thin air. Here&apos;s exactly what the work looks like.
+            </p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
             {[
-              { name: 'Marcus T.',   location: 'Houston, TX',    body: 'Closed my first deal on day 3. Sent about 40 texts, got 6 responses, one said yes. $119 hit on Friday. I\'ve referred 2 friends since.', deals: 4,  earned: 476 },
-              { name: 'Destiny R.',  location: 'Atlanta, GA',    body: 'I do Uber part time. I just send texts between rides when I\'m waiting. Closed 3 deals last month without trying hard at all.', deals: 3,  earned: 357 },
-              { name: 'Jordan K.',   location: 'Phoenix, AZ',    body: 'The templates are really good. I was nervous about sales but the texts basically sell themselves — the preview site does all the convincing.', deals: 7,  earned: 833 },
-              { name: 'Aaliyah M.', location: 'Chicago, IL',    body: 'Referred my cousin. She closed 5 deals. I made $89.25 without doing anything extra. This referral thing is actually real.', deals: 9,  earned: 1071 },
-              { name: 'Devon S.',   location: 'Dallas, TX',     body: 'I work full-time. I only text 30 min a day. Closed 2 this week. My referral network has 4 people in it now. Just stacking passive.', deals: 11, earned: 1309 },
-              { name: 'Priya N.',   location: 'Los Angeles, CA', body: 'Skeptical at first because of the $5. But it got refunded when I didn\'t get in the first round, and I reapplied. Now I\'m closing consistently.', deals: 6, earned: 714 },
-            ].map(({ name, location, body, deals, earned }) => (
-              <div key={name} style={{ padding: '28px 26px', borderRadius: 20, background: '#111310', border: '1px solid #1e2218' }}>
-                <div style={{ display: 'flex', gap: 4, marginBottom: 16 }}>
-                  {[1,2,3,4,5].map(i => <Star key={i} size={13} fill="#c8f135" stroke="none" />)}
+              {
+                icon: Check,
+                color: '#c8f135',
+                title: 'Most workers close in their first 50 texts',
+                body: 'That\'s about 1–2 hours of work. Not every business says yes on the first message — that\'s what the automated follow-up drip is for.',
+              },
+              {
+                icon: Check,
+                color: '#c8f135',
+                title: 'The average response rate is around 8–12%',
+                body: 'Out of 50 texts, expect 4–6 responses. Of those, 1–2 will buy. The math works. Scale your volume, scale your income.',
+              },
+              {
+                icon: X,
+                color: '#d45a5a',
+                title: 'This is not "get rich quick"',
+                body: 'You have to put in the texts. Workers who close consistently are the ones who send volume and let the follow-up automation do its job.',
+              },
+              {
+                icon: Check,
+                color: '#c8f135',
+                title: 'The product genuinely sells itself',
+                body: 'Sending a business owner a live preview of their own website — one that already has their name, phone, and services — is the most effective pitch in local sales.',
+              },
+            ].map(({ icon: Icon, color, title, body }) => (
+              <div key={title} style={{ padding: '28px 26px', borderRadius: 20, background: '#111310', border: '1px solid #1e2218' }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: `${color}18`, border: `1px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                  <Icon size={16} style={{ color }} />
                 </div>
-                <p style={{ fontSize: 14, color: '#8a9a7a', lineHeight: 1.7, marginBottom: 20 }}>&ldquo;{body}&rdquo;</p>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 16, borderTop: '1px solid #1e2218' }}>
-                  <div>
-                    <p style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{name}</p>
-                    <p style={{ fontSize: 11, color: '#3a4a2a' }}>{location}</p>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <p style={{ fontSize: 16, fontWeight: 900, color: '#c8f135' }}>${earned.toLocaleString()}</p>
-                    <p style={{ fontSize: 11, color: '#3a4a2a' }}>{deals} deals closed</p>
-                  </div>
-                </div>
+                <p style={{ fontSize: 15, fontWeight: 800, color: '#fff', marginBottom: 10, lineHeight: 1.3 }}>{title}</p>
+                <p style={{ fontSize: 13, color: '#5a6a4a', lineHeight: 1.7 }}>{body}</p>
               </div>
             ))}
           </div>
