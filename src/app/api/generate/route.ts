@@ -54,6 +54,13 @@ export async function POST(req: Request) {
         reviewCount: lead.reviewCount,
         primaryColor,
         slug: lead.slug ?? lead.id,
+        whyChooseUs: content.whyChooseUs,
+        process: content.process,
+        hours: content.hours,
+        serviceArea: content.serviceArea,
+        emergencyAvailable: content.emergencyAvailable,
+        ctaPrimary: content.ctaPrimary,
+        ctaSecondary: content.ctaSecondary,
       })
       vercelUrl = await deployToVercel(lead.slug ?? lead.id, html)
       console.log('[generate] Deployed to Vercel:', vercelUrl)

@@ -35,7 +35,10 @@ export async function GET(req: Request) {
   const failed: { leadId: string; error: string }[] = []
 
   for (const lead of leads) {
-    const previewUrl = lead.site?.vercelUrl ?? lead.previewUrl ?? `${process.env.PREVIEW_BASE_URL}/preview/${lead.slug}`
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.PREVIEW_BASE_URL ?? 'https://websitehustle.app'
+    const previewUrl = lead.slug
+      ? `${baseUrl}/s/${lead.slug}`
+      : (lead.site?.vercelUrl ?? lead.previewUrl ?? `${baseUrl}/preview/${lead.slug}`)
     const text = renderTemplate(followUpTmpl.body, {
       name: lead.name?.split(' ')[0] ?? null,
       business: lead.name,

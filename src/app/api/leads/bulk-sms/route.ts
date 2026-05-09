@@ -30,7 +30,10 @@ export async function POST(req: Request) {
       continue
     }
 
-    const previewUrl = lead.site?.vercelUrl ?? lead.previewUrl ?? `${process.env.PREVIEW_BASE_URL}/preview/${lead.slug}`
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.PREVIEW_BASE_URL ?? 'https://websitehustle.app'
+    const previewUrl = lead.slug
+      ? `${baseUrl}/s/${lead.slug}`
+      : (lead.site?.vercelUrl ?? lead.previewUrl ?? `${baseUrl}/preview/${lead.slug}`)
     const link = templateId === 'closing-payment' && lead.invoiceUrl ? lead.invoiceUrl : previewUrl
 
     const body = tmpl ? tmpl.body : customMessage

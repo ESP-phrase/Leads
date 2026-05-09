@@ -13,8 +13,12 @@ export async function POST(req: Request) {
   if (!lead) return NextResponse.json({ error: 'Lead not found' }, { status: 404 })
   if (!lead.phone) return NextResponse.json({ error: 'Lead has no phone' }, { status: 400 })
 
-  // Always use the live Vercel URL if available, else fall back to local preview
-  const previewUrl = lead.site?.vercelUrl ?? lead.previewUrl ?? `${process.env.PREVIEW_BASE_URL}/preview/${lead.slug}`
+  // Use a branded /s/{slug} link that redirects to the underlying Vercel URL.
+  // This hides the *.vercel.app domain so recipients see a Website Hustle URL.
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.PREVIEW_BASE_URL ?? 'https://websitehustle.app'
+  const previewUrl = lead.slug
+    ? `${baseUrl}/s/${lead.slug}`
+    : (lead.site?.vercelUrl ?? lead.previewUrl ?? `${baseUrl}/preview/${lead.slug}`)
   const paymentLink = lead.invoiceUrl
   const link = templateId?.startsWith('closing-payment') && paymentLink ? paymentLink : previewUrl
 

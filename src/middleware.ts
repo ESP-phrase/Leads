@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const PUBLIC = ['/login', '/join', '/sms-consent', '/privacy', '/api/auth', '/api/stripe', '/api/apply', '/preview', '/_next', '/favicon']
+const PUBLIC = ['/login', '/join', '/sms-consent', '/privacy', '/s/', '/api/auth', '/api/stripe', '/api/apply', '/preview', '/_next', '/favicon']
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl

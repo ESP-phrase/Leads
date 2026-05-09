@@ -12,6 +12,14 @@ interface SiteData {
   reviewCount: number | null
   primaryColor: string
   slug: string
+  // New optional fields from improved generator
+  whyChooseUs?: { title: string; description: string }[]
+  process?: { step: string; description: string }[]
+  hours?: string
+  serviceArea?: string
+  emergencyAvailable?: boolean
+  ctaPrimary?: string
+  ctaSecondary?: string
 }
 
 function starsSvg(rating: number, size = 16) {
@@ -37,15 +45,20 @@ function hexToRgb(hex: string) {
 }
 
 export function renderSiteHtml(data: SiteData): string {
-  const { businessName, headline, subheadline, services, aboutText, phone, address, city, category, rating, reviewCount, primaryColor } = data
+  const {
+    businessName, headline, subheadline, services, aboutText, phone, address,
+    city, category, rating, reviewCount, primaryColor,
+    whyChooseUs = [], process = [], hours, serviceArea, emergencyAvailable,
+    ctaPrimary = 'Get a Free Quote', ctaSecondary = 'See Our Services',
+  } = data
   const rgb = hexToRgb(primaryColor)
   const year = new Date().getFullYear()
 
   const faqs = [
     { q: 'How quickly can you come out?', a: `We offer same-day and next-day availability for most jobs in ${city}. Call us and we'll do our best to fit you in.` },
     { q: 'Do you offer free estimates?', a: 'Yes — all consultations and quotes are completely free with no obligation. We believe you should know the cost before committing.' },
-    { q: 'Are you licensed and insured?', a: `Absolutely. We are fully licensed and insured to operate in ${city} and surrounding areas. Your home and peace of mind are protected.` },
-    { q: 'What areas do you serve?', a: `We proudly serve ${city} and the surrounding communities. Not sure if we cover your area? Give us a call — we're happy to help.` },
+    { q: 'Are you licensed and insured?', a: `Yes. We are fully licensed and insured to operate in ${city} and surrounding areas. Your home and peace of mind are protected.` },
+    { q: 'What areas do you serve?', a: serviceArea ?? `We serve ${city} and the surrounding communities. Not sure if we cover your area? Give us a call.` },
     { q: 'How do I get started?', a: phone ? `Just give us a call at ${phone} or click any "Call Now" button on this page. We'll ask a few quick questions and get you scheduled.` : 'Click the "Free Quote" button above to get in touch. We respond quickly and will work around your schedule.' },
   ]
 
@@ -95,8 +108,8 @@ export function renderSiteHtml(data: SiteData): string {
       <h1 style="font-size:clamp(2rem,5vw,3.25rem);font-weight:900;line-height:1.1;color:#fff;margin-bottom:16px">${headline}</h1>
       <p style="font-size:18px;color:rgba(255,255,255,.78);margin-bottom:36px;line-height:1.65">${subheadline}</p>
       <div class="hero-btns" style="display:flex;flex-wrap:wrap;gap:12px">
-        ${phone ? `<a href="tel:${phone}" style="background:#fff;color:${primaryColor};padding:14px 28px;border-radius:9999px;font-weight:800;font-size:17px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,.15)">${phoneSvg(18)}Call Now</a>` : ''}
-        <a href="#contact" style="background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.45);color:#fff;padding:14px 28px;border-radius:9999px;font-weight:700;font-size:17px">Free Quote →</a>
+        ${phone ? `<a href="tel:${phone}" style="background:#fff;color:${primaryColor};padding:14px 28px;border-radius:9999px;font-weight:800;font-size:17px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,.15)">${phoneSvg(18)}${ctaPrimary}</a>` : ''}
+        <a href="#services" style="background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.45);color:#fff;padding:14px 28px;border-radius:9999px;font-weight:700;font-size:17px">${ctaSecondary} →</a>
       </div>
     </div>
   </div>
@@ -106,8 +119,8 @@ export function renderSiteHtml(data: SiteData): string {
 <section style="background:#111;padding:16px 1.5rem">
   <div style="max-width:1100px;margin:0 auto;display:flex;flex-wrap:wrap;gap:24px;justify-content:center">
     <div style="display:flex;align-items:center;gap:7px;color:#9ca3af;font-size:13px;font-weight:500">${shieldSvg(primaryColor)}Licensed &amp; Insured</div>
-    <div style="display:flex;align-items:center;gap:7px;color:#9ca3af;font-size:13px;font-weight:500">${checkSvg(primaryColor).replace('24"', '14"').replace('24"', '14"')}Free Estimates</div>
-    <div style="display:flex;align-items:center;gap:7px;color:#9ca3af;font-size:13px;font-weight:500">${clockSvg(primaryColor)}Same-Day Available</div>
+    <div style="display:flex;align-items:center;gap:7px;color:#9ca3af;font-size:13px;font-weight:500">${clockSvg(primaryColor)}${hours ?? 'Mon–Sat'}</div>
+    ${emergencyAvailable ? `<div style="display:flex;align-items:center;gap:7px;color:#9ca3af;font-size:13px;font-weight:500">${clockSvg('#fbbf24')}24/7 Emergency Service</div>` : ''}
     <div style="display:flex;align-items:center;gap:7px;color:#9ca3af;font-size:13px;font-weight:500">${starSmSvg(primaryColor)}Serving ${city}</div>
   </div>
 </section>
@@ -134,10 +147,44 @@ export function renderSiteHtml(data: SiteData): string {
   </div>
 </section>
 
+<!-- WHY CHOOSE US -->
+${whyChooseUs.length > 0 ? `<section style="padding:88px 1.5rem;background:#fff;border-top:1px solid #f3f4f6">
+  <div style="max-width:1100px;margin:0 auto">
+    <div style="text-align:center;margin-bottom:52px">
+      <h2 style="font-size:clamp(1.75rem,4vw,2.5rem);font-weight:900;color:#111;margin-bottom:10px">Why Choose Us</h2>
+      <p style="color:#6b7280;font-size:17px">What sets us apart from other ${category.toLowerCase()}s in ${city}.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px">
+      ${whyChooseUs.map((r) => `<div style="padding:28px 24px;border-radius:16px;border:1px solid #f3f4f6;background:#fff">
+        <div style="width:40px;height:40px;border-radius:10px;background:rgba(${rgb},.1);display:flex;align-items:center;justify-content:center;margin-bottom:16px">${checkSvg(primaryColor)}</div>
+        <h3 style="font-size:17px;font-weight:800;color:#111;margin-bottom:8px">${r.title}</h3>
+        <p style="font-size:14px;color:#6b7280;line-height:1.65">${r.description}</p>
+      </div>`).join('')}
+    </div>
+  </div>
+</section>` : ''}
+
+<!-- OUR PROCESS -->
+${process.length > 0 ? `<section style="padding:88px 1.5rem;background:#f9fafb">
+  <div style="max-width:1000px;margin:0 auto">
+    <div style="text-align:center;margin-bottom:52px">
+      <h2 style="font-size:clamp(1.75rem,4vw,2.5rem);font-weight:900;color:#111;margin-bottom:10px">How It Works</h2>
+      <p style="color:#6b7280;font-size:17px">Simple, no surprises. Here's what to expect.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px">
+      ${process.map((p, i) => `<div style="padding:28px 22px;border-radius:16px;background:#fff;border:1px solid #f3f4f6;position:relative">
+        <div style="position:absolute;top:18px;right:22px;font-size:36px;font-weight:900;color:rgba(${rgb},.18);line-height:1">${i + 1}</div>
+        <h3 style="font-size:16px;font-weight:800;color:#111;margin-bottom:8px;padding-right:30px">${p.step}</h3>
+        <p style="font-size:14px;color:#6b7280;line-height:1.65">${p.description}</p>
+      </div>`).join('')}
+    </div>
+  </div>
+</section>` : ''}
+
 <!-- ABOUT -->
-<section id="about" style="padding:88px 1.5rem;background:#f9fafb">
+<section id="about" style="padding:88px 1.5rem;background:#fff">
   <div style="max-width:740px;margin:0 auto;text-align:center">
-    <h2 style="font-size:clamp(1.75rem,4vw,2.5rem);font-weight:900;color:#111;margin-bottom:20px">Why Choose ${businessName}</h2>
+    <h2 style="font-size:clamp(1.75rem,4vw,2.5rem);font-weight:900;color:#111;margin-bottom:20px">About Us</h2>
     <p style="color:#4b5563;font-size:18px;line-height:1.75;margin-bottom:36px">${aboutText}</p>
     ${rating ? `<div style="display:inline-flex;align-items:center;gap:20px;background:#fff;border-radius:20px;padding:20px 32px;box-shadow:0 2px 16px rgba(0,0,0,.07);border:1px solid #f3f4f6">
       <div>
@@ -154,7 +201,7 @@ export function renderSiteHtml(data: SiteData): string {
 </section>
 
 <!-- FAQ -->
-<section id="faq" style="padding:88px 1.5rem;background:#fff">
+<section id="faq" style="padding:88px 1.5rem;background:#f9fafb">
   <div style="max-width:740px;margin:0 auto">
     <div style="text-align:center;margin-bottom:52px">
       <h2 style="font-size:clamp(1.75rem,4vw,2.5rem);font-weight:900;color:#111;margin-bottom:10px">Frequently Asked Questions</h2>
