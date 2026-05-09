@@ -18,14 +18,35 @@ export async function POST(req: Request) {
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object
-    const { name, phone, email } = session.metadata ?? {}
+    const md = session.metadata ?? {}
 
-    if (name) {
+    // Worker activation flow (after approval)
+    if (md.applicationId) {
+      const application = await db.application.findUnique({ where: { id: md.applicationId } })
+      if (application && application.status !== 'paid') {
+        const worker = await db.worker.create({
+          data: {
+            name: application.name,
+            phone: application.phone,
+            email: application.email,
+            role: 'Agent',
+            active: true,
+            stripeSessionId: session.id,
+            paidAt: new Date(),
+          },
+        })
+        await db.application.update({
+          where: { id: application.id },
+          data: { status: 'paid', paidAt: new Date(), workerId: worker.id },
+        })
+      }
+    } else if (md.name) {
+      // Legacy direct-signup flow (no application)
       await db.worker.create({
         data: {
-          name,
-          phone: phone || null,
-          email: email || null,
+          name: md.name,
+          phone: md.phone || null,
+          email: md.email || null,
           role: 'Agent',
           active: true,
           stripeSessionId: session.id,
@@ -33,15 +54,12 @@ export async function POST(req: Request) {
         },
       })
     }
-  }
 
-  if (event.type === 'payment_link.payment_link' || event.type === 'checkout.session.completed') {
-    // Also handle invoice payments for leads
-    const session = event.data.object
-    if (session.metadata?.leadId && session.payment_status === 'paid') {
+    // Invoice payment for a lead
+    if (md.leadId && session.payment_status === 'paid') {
       await db.lead.update({
-        where: { id: session.metadata.leadId },
-        data: { invoicePaid: true },
+        where: { id: md.leadId },
+        data: { invoicePaid: true, status: 'CLOSED' },
       })
     }
   }

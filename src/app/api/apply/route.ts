@@ -1,18 +1,35 @@
+import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 
 export async function POST(req: Request) {
-  const { name, phone, email, message } = await req.json()
+  const body = await req.json()
+  const { name, phone, email, state, hoursPerWeek, experience, whyJoin, referralSource } = body
+
   if (!name?.trim() || !phone?.trim()) {
-    return Response.json({ error: 'Name and phone are required' }, { status: 400 })
+    return NextResponse.json({ error: 'Name and phone are required' }, { status: 400 })
   }
-  const worker = await db.worker.create({
+
+  const application = await db.application.create({
     data: {
       name: name.trim(),
       phone: phone.trim(),
       email: email?.trim() || null,
-      role: 'Applicant',
-      active: false,
+      state: state?.trim() || null,
+      hoursPerWeek: hoursPerWeek ? parseInt(hoursPerWeek) : null,
+      experience: experience || null,
+      whyJoin: whyJoin?.trim() || null,
+      referralSource: referralSource || null,
+      status: 'pending',
     },
   })
-  return Response.json({ ok: true, id: worker.id })
+
+  return NextResponse.json({ ok: true, applicationId: application.id })
+}
+
+export async function GET() {
+  const applications = await db.application.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 200,
+  })
+  return NextResponse.json(applications)
 }

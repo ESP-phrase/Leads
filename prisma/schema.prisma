@@ -20,6 +20,25 @@ model Worker {
   createdAt       DateTime @default(now())
 }
 
+model Application {
+  id             String   @id @default(cuid())
+  name           String
+  phone          String
+  email          String?
+  state          String?
+  hoursPerWeek   Int?
+  experience     String?
+  whyJoin        String?
+  referralSource String?
+  status         String   @default("pending")  // pending, approved, rejected, paid
+  reviewNotes    String?
+  paymentLink    String?
+  reviewedAt     DateTime?
+  paidAt         DateTime?
+  workerId       String?
+  createdAt      DateTime @default(now())
+}
+
 model Lead {
   id          String     @id @default(cuid())
   name        String

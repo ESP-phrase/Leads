@@ -4,37 +4,10 @@ import Link from 'next/link'
 import { useState } from 'react'
 import {
   ArrowRight, DollarSign, Zap, CheckCircle, Phone, MessageSquare,
-  Globe, Star, TrendingUp, Lock, Clock, Quote, ChevronDown,
-  Sparkles, X, Check, Briefcase, Car, Users,
+  Globe, Star, TrendingUp, Lock, Clock, ChevronDown,
+  Sparkles, X, Check, Briefcase, Car, Users, UserPlus,
 } from 'lucide-react'
 import Logo from '@/components/Logo'
-
-const TESTIMONIALS = [
-  {
-    name: 'Marcus J.',
-    role: 'Closed 14 deals in 6 weeks',
-    location: 'Houston, TX',
-    color: '#c8f135',
-    quote: 'Made $1,666 my first month doing this on my lunch break. Just texts. Wild.',
-    initials: 'MJ',
-  },
-  {
-    name: 'Priya S.',
-    role: '$3,200 in 60 days',
-    location: 'Phoenix, AZ',
-    color: '#9b6fd4',
-    quote: 'Used to drive Uber. Now I send templates from the couch and make 3x the money. Not even joking.',
-    initials: 'PS',
-  },
-  {
-    name: 'Devin R.',
-    role: 'First sale in 48 hours',
-    location: 'Charlotte, NC',
-    color: '#4a9eff',
-    quote: 'Skeptical at first. The $5 was the easy part. Made it back the next day plus $114. Now I do this full-time.',
-    initials: 'DR',
-  },
-]
 
 const FAQS = [
   {
@@ -43,7 +16,11 @@ const FAQS = [
   },
   {
     q: 'Why is there a $5 fee?',
-    a: 'It covers your account activation, lead access, SMS credits, and screens out tire-kickers. You\'ll make it back on your first sale 23x over. We refund it if you cancel within 7 days.',
+    a: 'It covers your account activation, lead access, SMS credits, and screens out tire-kickers. The $5 is only charged after you\'re approved — applying is free. You\'ll make it back on your first sale 23x over. Refunded if you cancel within 7 days.',
+  },
+  {
+    q: 'How does the application process work?',
+    a: 'You fill out a 2-minute form. We review every application personally — usually within 24 hours. If you\'re a good fit, we text you a $5 activation link. Pay → instant access. If not, we\'ll let you know honestly.',
   },
   {
     q: 'Do I need sales experience?',
@@ -103,7 +80,7 @@ export default function LandingPage() {
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px',
                           borderRadius: 99, marginBottom: 28, fontSize: 12, fontWeight: 700,
                           background: '#c8f13518', border: '1px solid #c8f13540', color: '#c8f135' }}>
-              <Sparkles size={12} /> 247 active workers · accepting new applicants
+              <Sparkles size={12} /> Now accepting applications
             </div>
 
             <h1 style={{ fontSize: 'clamp(2.75rem, 6vw, 4.5rem)', fontWeight: 900, lineHeight: 0.98,
@@ -120,7 +97,7 @@ export default function LandingPage() {
                 style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '17px 32px',
                          borderRadius: 12, fontWeight: 800, fontSize: 16, textDecoration: 'none',
                          background: '#c8f135', color: '#0a0b09', boxShadow: '0 0 60px #c8f13540' }}>
-                Pay $5 and start <ArrowRight size={16} />
+                Apply now <ArrowRight size={16} />
               </Link>
               <a href="#math"
                 style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '17px 28px',
@@ -182,18 +159,24 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* TRUST STRIP */}
+      {/* HONEST DEAL STRIP — what we promise, not fake numbers */}
       <section style={{ borderTop: '1px solid #1a1e14', borderBottom: '1px solid #1a1e14', padding: '36px 1.5rem', background: '#0d0e0b' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 24 }}>
+        <div style={{ maxWidth: 1000, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20 }}>
           {[
-            { value: '$847K',  label: 'Paid to workers in 2025' },
-            { value: '247',    label: 'Active workers earning now' },
-            { value: '$119',   label: 'Average per closed sale' },
-            { value: '4.9★',   label: 'Worker satisfaction' },
+            { icon: '✓', label: 'Apply free · we review every application' },
+            { icon: '✓', label: '$5 only charged if you\'re approved' },
+            { icon: '✓', label: '$119 per sale · paid weekly via direct deposit' },
+            { icon: '✓', label: 'Cancel anytime · refund within 7 days' },
           ].map(s => (
-            <div key={s.label} style={{ textAlign: 'center' }}>
-              <p style={{ fontSize: 32, fontWeight: 900, color: '#c8f135', letterSpacing: '-1px' }}>{s.value}</p>
-              <p style={{ fontSize: 12, color: '#5a6a4a', marginTop: 4, fontWeight: 500 }}>{s.label}</p>
+            <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{
+                width: 22, height: 22, borderRadius: 99, background: '#c8f13520', border: '1px solid #c8f13540',
+                color: '#c8f135', fontSize: 12, fontWeight: 800,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              }}>
+                {s.icon}
+              </span>
+              <p style={{ fontSize: 13, color: '#a0b080', lineHeight: 1.4, fontWeight: 500 }}>{s.label}</p>
             </div>
           ))}
         </div>
@@ -344,39 +327,61 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* WORKERS — testimonials */}
-      <section id="workers" style={{ padding: '100px 1.5rem', maxWidth: 1200, margin: '0 auto' }}>
+      {/* WHY THIS WORKS — replaces fake testimonials */}
+      <section id="workers" style={{ padding: '100px 1.5rem', maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: 56 }}>
-          <p style={{ fontSize: 12, fontWeight: 800, letterSpacing: 2, color: '#c8f135', marginBottom: 10, textTransform: 'uppercase' }}>Real workers</p>
+          <p style={{ fontSize: 12, fontWeight: 800, letterSpacing: 2, color: '#c8f135', marginBottom: 10, textTransform: 'uppercase' }}>Why this works</p>
           <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 900, color: '#fff', letterSpacing: '-1px' }}>
-            People making it happen.
+            We do the hard parts. <br/>You send the text.
           </h2>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20 }}>
-          {TESTIMONIALS.map((t, i) => (
-            <div key={t.name} style={{
-              padding: '32px 28px', borderRadius: 20, background: '#111310', border: '1px solid #1e2218',
-              transform: i === 1 ? 'translateY(-12px)' : 'none',
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 18 }}>
+          {[
+            {
+              title: 'Real businesses, no cold-sourcing',
+              body: 'We pull pre-vetted local businesses (4+ stars, no website, real phone numbers) directly from Google Maps. You never have to find leads — they\'re waiting in your dashboard.',
+              icon: Globe,
+            },
+            {
+              title: 'Sites built before you call',
+              body: 'Our AI builds them a custom website in 60 seconds. When you send them the link, they see something real — not a sales pitch in the abstract.',
+              icon: Sparkles,
+            },
+            {
+              title: 'Templates do the talking',
+              body: 'Send pre-written SMS messages we\'ve tested. Your name, their business, their preview link — auto-filled. You hit send.',
+              icon: MessageSquare,
+            },
+            {
+              title: 'We handle the payment',
+              body: 'When the business decides to buy, we send them the payment link. No awkward Venmo. No chasing. Stripe processes the $299, and your $119 is queued for payout.',
+              icon: DollarSign,
+            },
+            {
+              title: 'You keep what you close',
+              body: 'No quota, no salary clawbacks, no minimums. Every closed deal pays you $119. Period.',
+              icon: CheckCircle,
+            },
+            {
+              title: 'No experience needed',
+              body: 'If you can text, you can do this. Most workers send their first 50 messages on day one. Some close on day one. Others take a week. The product sells itself.',
+              icon: Lock,
+            },
+          ].map(({ title, body, icon: Icon }) => (
+            <div key={title} style={{
+              padding: '28px 26px', borderRadius: 20, background: '#111310', border: '1px solid #1e2218',
             }}>
-              <Quote size={20} style={{ color: '#c8f13540', marginBottom: 18 }} />
-              <p style={{ fontSize: 16, color: '#d4dfc4', lineHeight: 1.6, marginBottom: 22, fontWeight: 500 }}>
-                &ldquo;{t.quote}&rdquo;
-              </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{
-                  width: 44, height: 44, borderRadius: 99, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: `${t.color}20`, border: `1px solid ${t.color}40`,
-                  fontSize: 14, fontWeight: 800, color: t.color,
-                }}>
-                  {t.initials}
-                </div>
-                <div>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>{t.name}</p>
-                  <p style={{ fontSize: 12, color: t.color, fontWeight: 600 }}>{t.role}</p>
-                  <p style={{ fontSize: 11, color: '#3a4a2a', marginTop: 1 }}>{t.location}</p>
-                </div>
+              <div style={{
+                width: 38, height: 38, borderRadius: 10,
+                background: '#c8f13518', border: '1px solid #c8f13530',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                marginBottom: 18,
+              }}>
+                <Icon size={17} style={{ color: '#c8f135' }} />
               </div>
+              <h3 style={{ fontSize: 16, fontWeight: 800, color: '#fff', marginBottom: 10 }}>{title}</h3>
+              <p style={{ fontSize: 13, color: '#5a6a4a', lineHeight: 1.65 }}>{body}</p>
             </div>
           ))}
         </div>
@@ -417,7 +422,7 @@ export default function LandingPage() {
             style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '18px 40px',
                      borderRadius: 12, fontWeight: 800, fontSize: 16, textDecoration: 'none',
                      background: '#c8f135', color: '#0a0b09', boxShadow: '0 0 80px #c8f13550' }}>
-            Pay $5 and unlock my account <ArrowRight size={16} />
+            Apply now <ArrowRight size={16} />
           </Link>
         </div>
       </section>
@@ -432,8 +437,8 @@ export default function LandingPage() {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 18, position: 'relative' }}>
           {[
-            { step: '01', title: 'Pay $5',          desc: 'Activates your account in 30 seconds.', icon: DollarSign },
-            { step: '02', title: 'Get leads',       desc: 'A queue of pre-vetted local businesses lands in your dashboard.', icon: Users },
+            { step: '01', title: 'Apply (free)',    desc: 'Tell us about yourself in 2 minutes. We review every app personally.', icon: UserPlus },
+            { step: '02', title: 'Get approved + activate', desc: 'If accepted, we text you a $5 activation link. Pay → instant access.', icon: DollarSign },
             { step: '03', title: 'Send the pitch',  desc: 'Pick a template, hit send. They see their custom website preview.', icon: MessageSquare },
             { step: '04', title: 'Get paid',        desc: 'Cash hits your account every Friday for every closed deal.', icon: CheckCircle },
           ].map(({ step, title, desc, icon: Icon }) => (
@@ -498,7 +503,7 @@ export default function LandingPage() {
           style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '20px 48px',
                    borderRadius: 14, fontWeight: 900, fontSize: 18, textDecoration: 'none',
                    background: '#c8f135', color: '#0a0b09', boxShadow: '0 0 100px #c8f13560' }}>
-          Pay $5 and start earning <ArrowRight size={20} />
+          Apply now earning <ArrowRight size={20} />
         </Link>
         <p style={{ fontSize: 12, color: '#3a4a2a', marginTop: 20 }}>
           Stripe-secured · Refunded in 7 days if you change your mind

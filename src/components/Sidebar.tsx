@@ -2,21 +2,39 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Search, PhoneCall, Users, LogOut, DollarSign } from 'lucide-react'
+import { LayoutDashboard, Search, PhoneCall, Users, LogOut, DollarSign, UserPlus } from 'lucide-react'
 import clsx from 'clsx'
 import Logo from '@/components/Logo'
+import { useEffect, useState } from 'react'
 
 const links = [
-  { href: '/dashboard', label: 'Pipeline',   icon: LayoutDashboard },
-  { href: '/leads',     label: 'Find Leads', icon: Search },
-  { href: '/dialer',    label: 'DialFlow',   icon: PhoneCall },
-  { href: '/workers',   label: 'Workers',    icon: Users },
-  { href: '/earnings',  label: 'Earnings',   icon: DollarSign },
+  { href: '/dashboard',     label: 'Pipeline',     icon: LayoutDashboard },
+  { href: '/leads',         label: 'Find Leads',   icon: Search },
+  { href: '/dialer',        label: 'DialFlow',     icon: PhoneCall },
+  { href: '/applications',  label: 'Applications', icon: UserPlus,    badge: 'pending' },
+  { href: '/workers',       label: 'Workers',      icon: Users },
+  { href: '/earnings',      label: 'Earnings',     icon: DollarSign },
 ]
 
 export default function Sidebar() {
   const path = usePathname()
   const router = useRouter()
+  const [pendingCount, setPendingCount] = useState(0)
+
+  useEffect(() => {
+    let cancelled = false
+    async function loadCount() {
+      try {
+        const res = await fetch('/api/apply')
+        if (!res.ok) return
+        const data = await res.json()
+        if (!cancelled) setPendingCount(data.filter((a: { status: string }) => a.status === 'pending').length)
+      } catch { /* ignore */ }
+    }
+    loadCount()
+    const interval = setInterval(loadCount, 60_000)
+    return () => { cancelled = true; clearInterval(interval) }
+  }, [])
 
   async function logout() {
     await fetch('/api/auth/logout', { method: 'POST' })
@@ -30,7 +48,7 @@ export default function Sidebar() {
         <Logo size={24} textSize="md" />
       </div>
       <nav className="flex-1 px-3 py-4 space-y-0.5">
-        {links.map(({ href, label, icon: Icon }) => (
+        {links.map(({ href, label, icon: Icon, badge }) => (
           <Link key={href} href={href}
             className={clsx(
               'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all',
@@ -39,7 +57,13 @@ export default function Sidebar() {
                 : 'text-[#6b7a5a] hover:text-[#a0b080] hover:bg-[#ffffff06]'
             )}>
             <Icon size={16} />
-            {label}
+            <span className="flex-1">{label}</span>
+            {badge === 'pending' && pendingCount > 0 && (
+              <span className="text-xs font-bold px-1.5 py-0.5 rounded-full"
+                style={{ background: '#d4a44a', color: '#0d0e0b', minWidth: 20, textAlign: 'center' }}>
+                {pendingCount}
+              </span>
+            )}
           </Link>
         ))}
       </nav>

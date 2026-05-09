@@ -30,6 +30,11 @@ export default function JoinPage() {
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
+  const [stateField, setStateField] = useState('')
+  const [hoursPerWeek, setHoursPerWeek] = useState('')
+  const [experience, setExperience] = useState('')
+  const [whyJoin, setWhyJoin] = useState('')
+  const [referralSource, setReferralSource] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -37,19 +42,20 @@ export default function JoinPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!name.trim() || !phone.trim()) { setError('Name and phone are required'); return }
+    if (!whyJoin.trim() || whyJoin.trim().length < 20) { setError('Tell us a bit more about why you want to join (at least 20 characters)'); return }
     setLoading(true); setError(null)
-    const res = await fetch('/api/stripe/checkout', {
+    const res = await fetch('/api/apply', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, phone, email }),
+      body: JSON.stringify({ name, phone, email, state: stateField, hoursPerWeek, experience, whyJoin, referralSource }),
     })
     const data = await res.json()
-    if (res.ok && data.url) {
-      window.location.href = data.url
+    if (res.ok) {
+      setSubmitted(true)
     } else {
       setError(data.error ?? 'Something went wrong')
-      setLoading(false)
     }
+    setLoading(false)
   }
 
   return (
@@ -178,34 +184,99 @@ export default function JoinPage() {
                               display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
                   <CheckCircle size={28} style={{ color: '#c8f135' }} />
                 </div>
-                <h3 style={{ color: '#fff', fontSize: 22, fontWeight: 900, marginBottom: 10 }}>You&apos;re on the list!</h3>
-                <p style={{ color: '#4a5a3a', fontSize: 15, lineHeight: 1.7 }}>
-                  We&apos;ll reach out within 24 hours to get you set up. Keep your phone on.
+                <h3 style={{ color: '#fff', fontSize: 22, fontWeight: 900, marginBottom: 10 }}>Application received!</h3>
+                <p style={{ color: '#6b7a5a', fontSize: 15, lineHeight: 1.7, marginBottom: 16 }}>
+                  We review every application personally. If approved, we&apos;ll text you a $5 activation link within 24 hours.
+                </p>
+                <p style={{ color: '#3a4a2a', fontSize: 13, lineHeight: 1.6 }}>
+                  Keep your phone on — texts come from a number starting with <span style={{ color: '#c8f135', fontWeight: 700 }}>+1 (762) 238-7190</span>
                 </p>
               </div>
             ) : (
               <>
                 <h2 style={{ color: '#fff', fontSize: 24, fontWeight: 900, marginBottom: 6 }}>Apply to join</h2>
-                <p style={{ color: '#4a5a3a', fontSize: 15, marginBottom: 32 }}>Takes 60 seconds. We&apos;ll reach out within 24 hours.</p>
+                <p style={{ color: '#4a5a3a', fontSize: 15, marginBottom: 8 }}>Takes ~2 minutes. We review every application.</p>
+                <p style={{ color: '#5a6a4a', fontSize: 13, marginBottom: 32 }}>If approved, we&apos;ll text you a $5 activation link within 24 hours.</p>
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <div>
                     <label style={{ display: 'block', color: '#4a5a3a', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Full name *</label>
-                    <input value={name} onChange={e => setName(e.target.value)} placeholder="Jane Smith"
+                    <input value={name} onChange={e => setName(e.target.value)} placeholder="Jane Smith" required
                       style={{ width: '100%', background: '#0d0e0b', border: '1px solid #1e2218', borderRadius: 12,
                                padding: '12px 16px', color: '#fff', fontSize: 15, outline: 'none', boxSizing: 'border-box' }} />
                   </div>
-                  <div>
-                    <label style={{ display: 'block', color: '#4a5a3a', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Phone number *</label>
-                    <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+1 555 000 0000" type="tel"
-                      style={{ width: '100%', background: '#0d0e0b', border: '1px solid #1e2218', borderRadius: 12,
-                               padding: '12px 16px', color: '#fff', fontSize: 15, outline: 'none', boxSizing: 'border-box' }} />
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <div>
+                      <label style={{ display: 'block', color: '#4a5a3a', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Phone *</label>
+                      <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="555-000-0000" type="tel" required
+                        style={{ width: '100%', background: '#0d0e0b', border: '1px solid #1e2218', borderRadius: 12,
+                                 padding: '12px 16px', color: '#fff', fontSize: 15, outline: 'none', boxSizing: 'border-box' }} />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', color: '#4a5a3a', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>State *</label>
+                      <input value={stateField} onChange={e => setStateField(e.target.value)} placeholder="TX" maxLength={2} required
+                        style={{ width: '100%', background: '#0d0e0b', border: '1px solid #1e2218', borderRadius: 12,
+                                 padding: '12px 16px', color: '#fff', fontSize: 15, outline: 'none', boxSizing: 'border-box', textTransform: 'uppercase' }} />
+                    </div>
                   </div>
+
                   <div>
                     <label style={{ display: 'block', color: '#4a5a3a', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Email <span style={{ fontWeight: 400, textTransform: 'none' }}>(optional)</span></label>
                     <input value={email} onChange={e => setEmail(e.target.value)} placeholder="jane@example.com" type="email"
                       style={{ width: '100%', background: '#0d0e0b', border: '1px solid #1e2218', borderRadius: 12,
                                padding: '12px 16px', color: '#fff', fontSize: 15, outline: 'none', boxSizing: 'border-box' }} />
                   </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <div>
+                      <label style={{ display: 'block', color: '#4a5a3a', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Hours/week *</label>
+                      <select value={hoursPerWeek} onChange={e => setHoursPerWeek(e.target.value)} required
+                        style={{ width: '100%', background: '#0d0e0b', border: '1px solid #1e2218', borderRadius: 12,
+                                 padding: '12px 16px', color: '#fff', fontSize: 15, outline: 'none', boxSizing: 'border-box' }}>
+                        <option value="">Select…</option>
+                        <option value="5">2–5 hrs</option>
+                        <option value="10">5–10 hrs</option>
+                        <option value="20">10–20 hrs</option>
+                        <option value="35">20+ hrs (full-time)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', color: '#4a5a3a', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Sales experience</label>
+                      <select value={experience} onChange={e => setExperience(e.target.value)}
+                        style={{ width: '100%', background: '#0d0e0b', border: '1px solid #1e2218', borderRadius: 12,
+                                 padding: '12px 16px', color: '#fff', fontSize: 15, outline: 'none', boxSizing: 'border-box' }}>
+                        <option value="">Select…</option>
+                        <option value="none">None — willing to learn</option>
+                        <option value="some">Some (retail/service)</option>
+                        <option value="lots">Lots (B2B/closing)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', color: '#4a5a3a', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Why do you want to join? *</label>
+                    <textarea value={whyJoin} onChange={e => setWhyJoin(e.target.value)} rows={4}
+                      placeholder="A few sentences about you and why this fits — short and honest is best."
+                      style={{ width: '100%', background: '#0d0e0b', border: '1px solid #1e2218', borderRadius: 12,
+                               padding: '12px 16px', color: '#fff', fontSize: 15, outline: 'none', boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit' }} />
+                    <p style={{ fontSize: 11, color: '#3a4a2a', marginTop: 6 }}>{whyJoin.length}/20 characters minimum</p>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', color: '#4a5a3a', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>How did you hear about us? <span style={{ fontWeight: 400, textTransform: 'none' }}>(optional)</span></label>
+                    <select value={referralSource} onChange={e => setReferralSource(e.target.value)}
+                      style={{ width: '100%', background: '#0d0e0b', border: '1px solid #1e2218', borderRadius: 12,
+                               padding: '12px 16px', color: '#fff', fontSize: 15, outline: 'none', boxSizing: 'border-box' }}>
+                      <option value="">Select…</option>
+                      <option value="tiktok">TikTok</option>
+                      <option value="instagram">Instagram</option>
+                      <option value="x">X / Twitter</option>
+                      <option value="friend">Friend referral</option>
+                      <option value="search">Google search</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
                   {error && (
                     <p style={{ background: '#2a0d0d', border: '1px solid #401515', color: '#d45a5a', borderRadius: 10, padding: '10px 14px', fontSize: 13 }}>
                       {error}
@@ -215,8 +286,11 @@ export default function JoinPage() {
                     style={{ background: '#c8f135', color: '#0d0e0b', padding: '14px', borderRadius: 12, fontWeight: 800,
                              fontSize: 16, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1,
                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 4 }}>
-                    {loading ? 'Submitting…' : <><Phone size={16} />Apply Now — It&apos;s Free</>}
+                    {loading ? 'Submitting…' : <><Phone size={16} />Submit application</>}
                   </button>
+                  <p style={{ fontSize: 11, color: '#3a4a2a', textAlign: 'center', marginTop: 4 }}>
+                    Application is free. $5 activation only charged if approved.
+                  </p>
                 </form>
               </>
             )}
