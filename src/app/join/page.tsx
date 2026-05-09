@@ -60,7 +60,8 @@ export default function JoinPage() {
   }
 
   return (
-    <div style={{ fontFamily: 'system-ui, -apple-system, sans-serif', background: '#0d0e0b', color: '#d4dfc4', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'system-ui, -apple-system, sans-serif', background: '#0d0e0b', color: '#d4dfc4', minHeight: '100vh', scrollBehavior: 'smooth' }}>
+      <style>{`html { scroll-behavior: smooth }`}</style>
 
       {/* Nav */}
       <nav style={{ borderBottom: '1px solid #1e2218', padding: '0 1.5rem' }}>
@@ -80,13 +81,13 @@ export default function JoinPage() {
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#c8f13515', border: '1px solid #c8f13525',
                       borderRadius: 9999, padding: '6px 16px', marginBottom: 28 }}>
           <Zap size={13} style={{ color: '#c8f135' }} />
-          <span style={{ color: '#c8f135', fontSize: 13, fontWeight: 600 }}>60% commission · Recurring monthly income</span>
+          <span style={{ color: '#c8f135', fontSize: 13, fontWeight: 600 }}>$119 per sale · 40% commission · Paid weekly</span>
         </div>
         <h1 style={{ fontSize: 'clamp(2.2rem, 6vw, 3.75rem)', fontWeight: 900, color: '#fff', lineHeight: 1.08, marginBottom: 20 }}>
           Get Paid to Help Local<br />Businesses Get Online
         </h1>
         <p style={{ fontSize: 18, color: '#4a5a3a', lineHeight: 1.7, marginBottom: 40, maxWidth: 600, margin: '0 auto 40px' }}>
-          We build the website. You make the call. When they sign up, you earn 60% every month — not a one-time cut.
+          We build the website. You send the text. When they pay $299, you keep $119 — every single sale.
         </p>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
           <a href="#apply"

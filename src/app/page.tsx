@@ -64,7 +64,7 @@ export default function LandingPage() {
             <Link href="/login" style={{ fontSize: 14, color: '#8a9a7a', textDecoration: 'none', padding: '8px 16px', fontWeight: 500 }}>
               Sign in
             </Link>
-            <Link href="/join"
+            <Link href="/join#apply"
               style={{ fontSize: 14, fontWeight: 800, padding: '10px 22px', borderRadius: 99,
                        background: '#c8f135', color: '#0a0b09', textDecoration: 'none' }}>
               Start earning →
@@ -93,7 +93,7 @@ export default function LandingPage() {
             </p>
 
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 28 }}>
-              <Link href="/join"
+              <Link href="/join#apply"
                 style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '17px 32px',
                          borderRadius: 12, fontWeight: 800, fontSize: 16, textDecoration: 'none',
                          background: '#c8f135', color: '#0a0b09', boxShadow: '0 0 60px #c8f13540' }}>
@@ -418,7 +418,7 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <Link href="/join"
+          <Link href="/join#apply"
             style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '18px 40px',
                      borderRadius: 12, fontWeight: 800, fontSize: 16, textDecoration: 'none',
                      background: '#c8f135', color: '#0a0b09', boxShadow: '0 0 80px #c8f13550' }}>
@@ -499,7 +499,7 @@ export default function LandingPage() {
           Stop trading hours for $15. Get paid like a closer.
           Your first sale pays back your signup <span style={{ color: '#c8f135', fontWeight: 700 }}>23 times over</span>.
         </p>
-        <Link href="/join"
+        <Link href="/join#apply"
           style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '20px 48px',
                    borderRadius: 14, fontWeight: 900, fontSize: 18, textDecoration: 'none',
                    background: '#c8f135', color: '#0a0b09', boxShadow: '0 0 100px #c8f13560' }}>
