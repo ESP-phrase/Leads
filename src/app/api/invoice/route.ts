@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { stripe, SITE_PRICE } from '@/lib/stripe'
+import { getStripe, SITE_PRICE } from '@/lib/stripe'
 import { db } from '@/lib/db'
 
 export async function POST(req: Request) {
@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   if (!lead.site) return NextResponse.json({ error: 'No site built yet' }, { status: 400 })
 
   // Create a Stripe payment link
-  const paymentLink = await stripe.paymentLinks.create({
+  const paymentLink = await getStripe().paymentLinks.create({
     line_items: [{
       price_data: {
         currency: 'usd',

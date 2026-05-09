@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
+import { getStripe } from '@/lib/stripe'
 import { db } from '@/lib/db'
 
 export async function POST(req: Request) {
@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   let event
   try {
     event = webhookSecret
-      ? stripe.webhooks.constructEvent(body, sig, webhookSecret)
+      ? getStripe().webhooks.constructEvent(body, sig, webhookSecret)
       : JSON.parse(body)
   } catch (err) {
     return NextResponse.json({ error: `Webhook error: ${err}` }, { status: 400 })

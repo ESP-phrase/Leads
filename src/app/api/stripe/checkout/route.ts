@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { stripe, WORKER_FEE } from '@/lib/stripe'
+import { getStripe, WORKER_FEE } from '@/lib/stripe'
 
 // Creates a $5 Stripe checkout session for worker signup
 export async function POST(req: Request) {
@@ -8,7 +8,7 @@ export async function POST(req: Request) {
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.PREVIEW_BASE_URL ?? 'http://localhost:3002'
 
-  const session = await stripe.checkout.sessions.create({
+  const session = await getStripe().checkout.sessions.create({
     mode: 'payment',
     line_items: [{
       price_data: {
