@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Lock, Phone, LogIn } from 'lucide-react'
+import Logo from '@/components/Logo'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -33,10 +34,8 @@ export default function LoginPage() {
       <div style={{ width: '100%', maxWidth: 420 }}>
 
         {/* Logo */}
-        <div className="text-center mb-8">
-          <span className="font-black text-3xl" style={{ color: '#c8f135' }}>
-            Website<span className="text-white">Hustle</span>
-          </span>
+        <div className="text-center mb-8 flex justify-center">
+          <Logo size={42} textSize="xl" />
           <p className="text-sm mt-2" style={{ color: '#3a4a2a' }}>Sign in to continue</p>
         </div>
 

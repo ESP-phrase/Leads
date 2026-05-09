@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Star, MessageSquare, PhoneCall, CheckCircle, Globe, LogOut, Phone } from 'lucide-react'
+import Logo from '@/components/Logo'
 import type { Lead } from '@/types'
 import { formatPhone } from '@/lib/utils'
 
@@ -71,7 +72,7 @@ export default function MyLeadsPage() {
       <div className="border-b border-[#1e2218] px-6 py-4 flex items-center justify-between sticky top-0 z-10"
            style={{ background: '#0d0e0b' }}>
         <div>
-          <span className="font-black text-lg" style={{ color: '#c8f135' }}>Website<span className="text-white">Hustle</span></span>
+          <Logo size={24} textSize="md" />
           {workerName && <span className="text-sm ml-3" style={{ color: '#4a5a3a' }}>Welcome, {workerName}</span>}
         </div>
         <div className="flex items-center gap-3">

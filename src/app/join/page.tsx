@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { DollarSign, Phone, CheckCircle, Zap, Clock, ArrowRight, Star } from 'lucide-react'
+import Logo from '@/components/Logo'
 
 const EARNINGS = [
   { deals: 5,  monthly: 445,  label: 'Part-time' },
@@ -58,7 +59,7 @@ export default function JoinPage() {
       <nav style={{ borderBottom: '1px solid #1e2218', padding: '0 1.5rem' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 60 }}>
           <Link href="/" style={{ textDecoration: 'none' }}>
-            <span style={{ fontWeight: 900, fontSize: 20, color: '#c8f135' }}>Website<span style={{ color: '#fff' }}>Hustle</span></span>
+            <Logo size={26} textSize="md" />
           </Link>
           <Link href="/join#apply"
             style={{ background: '#c8f135', color: '#0d0e0b', padding: '9px 20px', borderRadius: 9999, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>

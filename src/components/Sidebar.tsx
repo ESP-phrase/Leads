@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { LayoutDashboard, Search, PhoneCall, Users, LogOut, DollarSign } from 'lucide-react'
 import clsx from 'clsx'
+import Logo from '@/components/Logo'
 
 const links = [
   { href: '/dashboard', label: 'Pipeline',   icon: LayoutDashboard },
@@ -26,9 +27,7 @@ export default function Sidebar() {
     <aside className="w-[220px] flex-shrink-0 flex flex-col h-screen sticky top-0"
            style={{ background: '#111310', borderRight: '1px solid #1e2218' }}>
       <div className="px-5 py-5 border-b border-[#1e2218]">
-        <span className="font-black text-lg tracking-tight" style={{ color: '#c8f135' }}>
-          Website<span className="text-white">Hustle</span>
-        </span>
+        <Logo size={24} textSize="md" />
       </div>
       <nav className="flex-1 px-3 py-4 space-y-0.5">
         {links.map(({ href, label, icon: Icon }) => (

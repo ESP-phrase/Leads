@@ -7,6 +7,7 @@ import {
   Globe, Star, TrendingUp, Lock, Clock, Quote, ChevronDown,
   Sparkles, X, Check, Briefcase, Car, Users,
 } from 'lucide-react'
+import Logo from '@/components/Logo'
 
 const TESTIMONIALS = [
   {
@@ -76,9 +77,7 @@ export default function LandingPage() {
       {/* Nav */}
       <nav style={{ borderBottom: '1px solid #1a1e14', position: 'sticky', top: 0, zIndex: 50, background: '#0a0b09cc', backdropFilter: 'blur(12px)' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontWeight: 900, fontSize: 21, letterSpacing: '-0.5px' }}>
-            <span style={{ color: '#c8f135' }}>Website</span><span style={{ color: '#fff' }}>Hustle</span>
-          </span>
+          <Logo size={28} textSize="lg" />
           <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
             <a href="#math" style={{ fontSize: 14, color: '#8a9a7a', textDecoration: 'none', fontWeight: 500 }}>The math</a>
             <a href="#workers" style={{ fontSize: 14, color: '#8a9a7a', textDecoration: 'none', fontWeight: 500 }}>Workers</a>
@@ -508,9 +507,9 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer style={{ borderTop: '1px solid #1a1e14', padding: '40px 1.5rem 32px', textAlign: 'center' }}>
-        <p style={{ fontSize: 22, fontWeight: 900, marginBottom: 12 }}>
-          <span style={{ color: '#c8f135' }}>Website</span><span style={{ color: '#fff' }}>Hustle</span>
-        </p>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
+          <Logo size={32} textSize="lg" />
+        </div>
         <div style={{ display: 'flex', gap: 24, justifyContent: 'center', marginBottom: 18, flexWrap: 'wrap' }}>
           <a href="#math" style={{ fontSize: 13, color: '#5a6a4a', textDecoration: 'none' }}>The math</a>
           <a href="#workers" style={{ fontSize: 13, color: '#5a6a4a', textDecoration: 'none' }}>Workers</a>
