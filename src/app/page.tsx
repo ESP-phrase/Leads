@@ -131,7 +131,9 @@ export default function LandingPage() {
                 {/* Conversation */}
                 <div style={{ padding: '20px 16px', minHeight: 320, display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <div style={{ alignSelf: 'flex-end', maxWidth: '80%', background: '#c8f135', color: '#0a0b09', padding: '10px 14px', borderRadius: '18px 18px 4px 18px', fontSize: 13, fontWeight: 500 }}>
-                    Hey Mike — built you a quick site preview for Mike&apos;s Plumbing: mike-plumbing.vercel.app
+                    Hey Mike — I made a sample website for Mike&apos;s Plumbing. Take a look:
+                    <br/>
+                    <span style={{ fontWeight: 700, textDecoration: 'underline' }}>mike-plumbing.vercel.app</span>
                     <br/><br/>
                     Want me to make it yours?
                   </div>
