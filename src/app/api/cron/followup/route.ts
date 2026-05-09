@@ -3,42 +3,106 @@ import { db } from '@/lib/db'
 import { sendSms } from '@/lib/sms'
 import { renderTemplate, SMS_TEMPLATES } from '@/lib/sms-templates'
 
-// This route is hit by Vercel Cron once an hour
-// It finds TEXTED leads that haven't received a follow-up in 24h+
-// and sends them the 24-hour follow-up template automatically
+// Sequence step definitions — must match /api/leads/[id]/sequence/route.ts
+const STEPS = [
+  { templateId: 'first-touch-preview', nextHours: 24  },
+  { templateId: 'follow-up-24h',       nextHours: 48  },
+  { templateId: 'follow-up-value',     nextHours: 96  },
+  { templateId: 'closing-last-chance', nextHours: null },
+]
 
 export async function GET(req: Request) {
-  // Optional auth: require CRON_SECRET so only Vercel/you can trigger it
   const auth = req.headers.get('authorization')
   if (process.env.CRON_SECRET && auth !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000) // 24h ago
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://siteforge.app'
+  const now = new Date()
+  const sent: { leadId: string; step: number; status: string }[] = []
+  const failed: { leadId: string; error: string }[] = []
 
-  // Find leads that were texted 24h+ ago and haven't been followed up since
-  const leads = await db.lead.findMany({
+  // ── 1. Advance active drip sequences ──────────────────────────────
+  const dueSequences = await db.smsSequence.findMany({
+    where: { status: 'active', nextSendAt: { lte: now } },
+    include: { lead: { include: { site: true } } },
+    take: 50,
+  })
+
+  for (const seq of dueSequences) {
+    const lead = seq.lead
+    if (!lead.phone) continue
+
+    const nextStep = seq.currentStep + 1
+    if (nextStep >= STEPS.length) {
+      // Sequence complete
+      await db.smsSequence.update({ where: { id: seq.id }, data: { status: 'completed' } })
+      continue
+    }
+
+    const step = STEPS[nextStep]
+    const tmpl = SMS_TEMPLATES.find(t => t.id === step.templateId)
+    if (!tmpl) continue
+
+    const previewUrl = lead.slug
+      ? `${baseUrl}/s/${lead.slug}`
+      : (lead.site?.vercelUrl ?? `${baseUrl}/preview/${lead.id}`)
+
+    const text = renderTemplate(tmpl.body, {
+      name: lead.name?.split(' ')[0] ?? null,
+      business: lead.name,
+      link: previewUrl,
+      city: lead.city,
+      category: lead.category,
+    })
+
+    try {
+      const result = await sendSms(lead.phone, text)
+      await db.smsLog.create({
+        data: { leadId: lead.id, message: text, status: result.status, messageSid: result.sid },
+      })
+
+      const nextSendAt = step.nextHours
+        ? new Date(Date.now() + step.nextHours * 60 * 60 * 1000)
+        : now
+
+      await db.smsSequence.update({
+        where: { id: seq.id },
+        data: {
+          currentStep: nextStep,
+          status: nextStep === STEPS.length - 1 ? 'completed' : 'active',
+          nextSendAt,
+        },
+      })
+
+      sent.push({ leadId: lead.id, step: nextStep, status: result.status })
+    } catch (err) {
+      failed.push({ leadId: lead.id, error: String(err) })
+    }
+  }
+
+  // ── 2. Legacy: one-off follow-up for TEXTED leads with no sequence ─
+  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000)
+  const legacyLeads = await db.lead.findMany({
     where: {
       status: 'TEXTED',
       phone: { not: null },
+      sequence: null,   // skip leads already in a sequence
       smsLogs: {
         some: { sentAt: { lt: cutoff } },
-        none: { sentAt: { gt: cutoff } }, // no SMS in last 24h
+        none: { sentAt: { gt: cutoff } },
       },
     },
     include: { site: true, smsLogs: { orderBy: { sentAt: 'desc' }, take: 1 } },
-    take: 50, // safety cap
+    take: 50,
   })
 
   const followUpTmpl = SMS_TEMPLATES.find(t => t.id === 'follow-up-24h')!
-  const sent: { leadId: string; status: string }[] = []
-  const failed: { leadId: string; error: string }[] = []
-
-  for (const lead of leads) {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.PREVIEW_BASE_URL ?? 'https://siteforge.app'
+  for (const lead of legacyLeads) {
     const previewUrl = lead.slug
       ? `${baseUrl}/s/${lead.slug}`
-      : (lead.site?.vercelUrl ?? lead.previewUrl ?? `${baseUrl}/preview/${lead.slug}`)
+      : (lead.site?.vercelUrl ?? lead.previewUrl ?? `${baseUrl}/preview/${lead.id}`)
+
     const text = renderTemplate(followUpTmpl.body, {
       name: lead.name?.split(' ')[0] ?? null,
       business: lead.name,
@@ -52,14 +116,15 @@ export async function GET(req: Request) {
       await db.smsLog.create({
         data: { leadId: lead.id, message: text, status: result.status, messageSid: result.sid },
       })
-      sent.push({ leadId: lead.id, status: result.status })
+      sent.push({ leadId: lead.id, step: -1, status: result.status })
     } catch (err) {
       failed.push({ leadId: lead.id, error: String(err) })
     }
   }
 
   return NextResponse.json({
-    checked: leads.length,
+    sequences: dueSequences.length,
+    legacy: legacyLeads.length,
     sent: sent.length,
     failed: failed.length,
     details: { sent, failed },

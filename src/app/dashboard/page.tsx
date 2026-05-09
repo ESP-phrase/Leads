@@ -6,13 +6,16 @@ import {
   Globe, MessageSquare, ExternalLink, Star, Phone,
   RefreshCw, Plus, ChevronDown, TrendingUp, Users,
   DollarSign, Zap, PhoneCall, ArrowRight, BarChart3,
-  Search, CheckCircle2, Receipt, Check, X as XIcon, Layers,
+  Search, CheckCircle2, Receipt, Check, X as XIcon, Layers, Repeat2,
 } from 'lucide-react'
 import { SMS_TEMPLATES } from '@/lib/sms-templates'
 import type { Lead, LeadStatus } from '@/types'
 import { statusLabel, formatPhone } from '@/lib/utils'
 import Sidebar from '@/components/Sidebar'
 import clsx from 'clsx'
+import dynamic from 'next/dynamic'
+
+const Dialer = dynamic(() => import('@/components/Dialer'), { ssr: false })
 
 const STATUSES: LeadStatus[] = ['FOUND', 'CALLED', 'TEXTED', 'INTERESTED', 'CLOSED', 'NOT_INTERESTED']
 
@@ -42,6 +45,8 @@ export default function DashboardPage() {
   const [statusFilter, setStatusFilter] = useState<LeadStatus | 'ALL'>('ALL')
   const [showStatusMenu, setShowStatusMenu] = useState(false)
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null)
+  const [dialerLead, setDialerLead] = useState<Lead | null>(null)
+  const [sequencingId, setSequencingId] = useState<string | null>(null)
 
   function showToast(msg: string, ok = true) {
     setToast({ msg, ok })
@@ -227,6 +232,19 @@ export default function DashboardPage() {
     })
     await fetchLeads()
     setSendingId(null)
+  }
+
+  async function handleSequence(lead: Lead) {
+    setSequencingId(lead.id)
+    const res = await fetch(`/api/leads/${lead.id}/sequence`, { method: 'POST' })
+    if (res.ok) {
+      showToast(`Drip sequence started for ${lead.name}`)
+      await fetchLeads()
+    } else {
+      const { error } = await res.json().catch(() => ({ error: 'Failed' }))
+      showToast(error ?? 'Failed to start sequence', false)
+    }
+    setSequencingId(null)
   }
 
   const filtered = statusFilter === 'ALL' ? leads : leads.filter(l => l.status === statusFilter)
@@ -470,9 +488,12 @@ export default function DashboardPage() {
               {/* Rows */}
               {filtered.map((lead, i) => (
                 <Row key={lead.id} lead={lead} statuses={STATUSES} workers={workers} isEven={i % 2 === 0}
-                     generatingId={generatingId} sendingId={sendingId} invoicingId={invoicingId}
+                     generatingId={generatingId} sendingId={sendingId} invoicingId={invoicingId} sequencingId={sequencingId}
                      selected={selectedIds.has(lead.id)} onToggleSelect={toggleSelect}
-                     onStatusChange={updateStatus} onAssign={assignWorker} onGenerate={generateSite} onSms={sendSms} onInvoice={sendInvoice} />
+                     onStatusChange={updateStatus} onAssign={assignWorker} onGenerate={generateSite}
+                     onSms={sendSms} onInvoice={sendInvoice}
+                     onCall={(l) => setDialerLead(l)}
+                     onSequence={handleSequence} />
               ))}
 
               {/* Add leads prompt */}
@@ -489,21 +510,28 @@ export default function DashboardPage() {
           )}
         </div>
       </main>
+
+      {/* WebRTC Dialer modal */}
+      {dialerLead && (
+        <Dialer lead={dialerLead} onClose={() => setDialerLead(null)} />
+      )}
     </div>
   )
 }
 
-function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoicingId, selected, onToggleSelect, onStatusChange, onAssign, onGenerate, onSms, onInvoice }: {
+function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoicingId, sequencingId, selected, onToggleSelect, onStatusChange, onAssign, onGenerate, onSms, onInvoice, onCall, onSequence }: {
   lead: Lead; statuses: LeadStatus[]; workers: { id: string; name: string }[]; isEven: boolean
-  generatingId: string | null; sendingId: string | null; invoicingId: string | null
+  generatingId: string | null; sendingId: string | null; invoicingId: string | null; sequencingId: string | null
   selected: boolean; onToggleSelect: (id: string) => void
   onStatusChange: (id: string, s: LeadStatus) => void
   onAssign: (id: string, workerId: string | null) => void
   onGenerate: (l: Lead) => void; onSms: (l: Lead) => void; onInvoice: (l: Lead) => void
+  onCall: (l: Lead) => void; onSequence: (l: Lead) => void
 }) {
   const isGen = generatingId === lead.id
   const isSms = sendingId === lead.id
   const isInv = invoicingId === lead.id
+  const isSeq = sequencingId === lead.id
 
   return (
     <div className="grid items-center border-b border-[#161a11] hover:bg-[#ffffff02] transition-colors"
@@ -602,12 +630,18 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoici
           }}>
           <Receipt size={10} />{isInv ? '…' : lead.invoicePaid ? '✓' : 'Bill'}
         </button>
-        <Link href="/dialer"
-          title="Open dialer"
-          className="flex items-center px-1.5 py-1.5 rounded-md border border-[#1e2218] hover:border-[#2e3828] transition-all flex-shrink-0"
-          style={{ color: '#4a5a3a' }}>
-          <PhoneCall size={11} />
-        </Link>
+        <button onClick={() => onCall(lead)} disabled={!lead.phone}
+          title={lead.phone ? 'Call in browser' : 'No phone number'}
+          className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px] font-medium border border-[#1e2218] hover:border-[#2e3828] disabled:opacity-25 transition-all flex-shrink-0"
+          style={{ color: '#4a9eff' }}>
+          <PhoneCall size={10} />Call
+        </button>
+        <button onClick={() => onSequence(lead)} disabled={isSeq || !lead.phone}
+          title={!lead.phone ? 'No phone' : 'Start 4-step SMS drip (Day 0→1→3→7)'}
+          className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px] font-medium border border-[#1e2218] hover:border-[#2e3828] disabled:opacity-25 transition-all flex-shrink-0"
+          style={{ color: '#9b6fd4' }}>
+          <Repeat2 size={10} />{isSeq ? '…' : 'Drip'}
+        </button>
       </div>
     </div>
   )

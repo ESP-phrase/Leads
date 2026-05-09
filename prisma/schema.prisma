@@ -75,6 +75,7 @@ model Lead {
 
   site        GeneratedSite?
   smsLogs     SmsLog[]
+  sequence    SmsSequence?
 
   invoiceUrl  String?
   invoicePaid Boolean  @default(false)
@@ -102,6 +103,18 @@ model GeneratedSite {
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+model SmsSequence {
+  id          String    @id @default(cuid())
+  leadId      String    @unique
+  lead        Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  status      String    @default("active")   // active | stopped | completed
+  currentStep Int       @default(0)          // last step sent (0–3)
+  startedAt   DateTime  @default(now())
+  nextSendAt  DateTime                        // when to send the next step
+  stoppedAt   DateTime?
+  updatedAt   DateTime  @updatedAt
 }
 
 model SmsLog {
