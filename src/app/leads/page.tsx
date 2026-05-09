@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Search, MapPin, Tag, Star, ChevronRight, Globe, X, CheckCircle, MessageSquare, PhoneCall } from 'lucide-react'
+import { Search, MapPin, Tag, Star, ChevronRight, Globe, X, CheckCircle, MessageSquare, PhoneCall, Loader2 } from 'lucide-react'
 import type { Lead } from '@/types'
 import Sidebar from '@/components/Sidebar'
 import { formatPhone } from '@/lib/utils'
@@ -83,6 +83,11 @@ interface QueueItem { query: string; pageToken?: string }
 export default function LeadsPage() {
   const [city, setCity] = useState('')
   const [cityLoading, setCityLoading] = useState(false)
+  const [citySuggestions, setCitySuggestions] = useState<string[]>([])
+  const [cityFocused, setCityFocused] = useState(false)
+  const [activeSuggestion, setActiveSuggestion] = useState(-1)
+  const cityDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const cityInputRef = useRef<HTMLInputElement>(null)
   const [category, setCategory] = useState('')
   const [minRating, setMinRating] = useState(4.0)
   const [minReviews, setMinReviews] = useState(10)
@@ -112,15 +117,42 @@ export default function LeadsPage() {
     fetch('https://ipapi.co/json/', { cache: 'no-store' })
       .then(r => r.json())
       .then(d => {
-        if (d.city && d.region_code) {
-          setCity(`${d.city}, ${d.region_code}`)
-        } else if (d.city) {
-          setCity(d.city)
-        }
+        if (d.city && d.region_code) setCity(`${d.city}, ${d.region_code}`)
+        else if (d.city) setCity(d.city)
       })
-      .catch(() => { /* silently fail — user can type manually */ })
+      .catch(() => {})
       .finally(() => setCityLoading(false))
   }, [])
+
+  // Debounced city autocomplete
+  function handleCityChange(val: string) {
+    setCity(val)
+    setActiveSuggestion(-1)
+    if (cityDebounceRef.current) clearTimeout(cityDebounceRef.current)
+    if (val.trim().length < 2) { setCitySuggestions([]); return }
+    cityDebounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/leads/cities?q=${encodeURIComponent(val)}`)
+        if (res.ok) setCitySuggestions(await res.json())
+      } catch { /* ignore */ }
+    }, 220)
+  }
+
+  function selectCity(s: string) {
+    setCity(s)
+    setCitySuggestions([])
+    setCityFocused(false)
+    setActiveSuggestion(-1)
+    cityInputRef.current?.blur()
+  }
+
+  function handleCityKeyDown(e: React.KeyboardEvent) {
+    if (!citySuggestions.length) return
+    if (e.key === 'ArrowDown') { e.preventDefault(); setActiveSuggestion(i => Math.min(i + 1, citySuggestions.length - 1)) }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveSuggestion(i => Math.max(i - 1, -1)) }
+    else if (e.key === 'Enter' && activeSuggestion >= 0) { e.preventDefault(); selectCity(citySuggestions[activeSuggestion]) }
+    else if (e.key === 'Escape') { setCitySuggestions([]); setActiveSuggestion(-1) }
+  }
 
   const leads = feed.filter((i): i is Extract<FeedItem, { kind: 'lead' }> => i.kind === 'lead').map(i => i.lead)
 
@@ -286,25 +318,60 @@ export default function LeadsPage() {
           </div>
 
           <div className="flex-1 p-5 space-y-4 overflow-y-auto">
-            <div>
+            <div className="relative">
               <label className="block text-xs font-semibold mb-1.5" style={{ color: '#4a5a3a' }}>
                 <MapPin size={11} className="inline mr-1" />CITY
               </label>
               <div className="relative">
                 <input
+                  ref={cityInputRef}
                   type="text" value={city}
-                  onChange={e => setCity(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleScrape()}
-                  placeholder={cityLoading ? 'Detecting location…' : 'Austin, TX'}
+                  onChange={e => handleCityChange(e.target.value)}
+                  onFocus={() => setCityFocused(true)}
+                  onBlur={() => setTimeout(() => { setCityFocused(false); setCitySuggestions([]) }, 150)}
+                  onKeyDown={e => {
+                    handleCityKeyDown(e)
+                    if (e.key === 'Enter' && activeSuggestion < 0) handleScrape()
+                  }}
+                  placeholder={cityLoading ? 'Detecting location…' : 'Type any city…'}
+                  autoComplete="off"
                   className="w-full rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#3a4a2a] focus:outline-none focus:ring-1 focus:ring-[#c8f13540]"
-                  style={{ background: '#0d0e0b', border: '1px solid #1e2218', paddingRight: cityLoading ? 32 : undefined }}
+                  style={{ background: '#0d0e0b', border: '1px solid #1e2218', paddingRight: 32 }}
                 />
-                {cityLoading && (
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs animate-pulse" style={{ color: '#4a5a3a' }}>⌖</span>
-                )}
+                <span className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {cityLoading
+                    ? <Loader2 size={13} className="animate-spin" style={{ color: '#3a4a2a' }} />
+                    : city
+                      ? <MapPin size={13} style={{ color: '#c8f13560' }} />
+                      : <MapPin size={13} style={{ color: '#2a3a1a' }} />}
+                </span>
               </div>
-              {!cityLoading && city && (
-                <p className="text-xs mt-1" style={{ color: '#3a4a2a' }}>📍 Auto-detected · tap to change</p>
+
+              {/* Autocomplete dropdown */}
+              {cityFocused && citySuggestions.length > 0 && (
+                <div className="absolute z-50 w-full mt-1 rounded-xl overflow-hidden shadow-2xl"
+                     style={{ background: '#161810', border: '1px solid #2a3420' }}>
+                  {citySuggestions.map((s, i) => (
+                    <button
+                      key={s}
+                      onMouseDown={() => selectCity(s)}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-left transition-colors"
+                      style={{
+                        background: i === activeSuggestion ? '#c8f13515' : 'transparent',
+                        color: i === activeSuggestion ? '#c8f135' : '#a0b890',
+                        borderBottom: i < citySuggestions.length - 1 ? '1px solid #1e2218' : 'none',
+                      }}>
+                      <MapPin size={11} style={{ color: '#3a5a2a', flexShrink: 0 }} />
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {!cityLoading && city && !cityFocused && (
+                <p className="text-xs mt-1" style={{ color: '#2a3a1a' }}>
+                  📍 {city}
+                </p>
               )}
             </div>
 
