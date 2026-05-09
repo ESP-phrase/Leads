@@ -6,8 +6,9 @@ import {
   Globe, MessageSquare, ExternalLink, Star, Phone,
   RefreshCw, Plus, ChevronDown, TrendingUp, Users,
   DollarSign, Zap, PhoneCall, ArrowRight, BarChart3,
-  Search, CheckCircle2, Receipt,
+  Search, CheckCircle2, Receipt, Check, X as XIcon, Layers,
 } from 'lucide-react'
+import { SMS_TEMPLATES } from '@/lib/sms-templates'
 import type { Lead, LeadStatus } from '@/types'
 import { statusLabel, formatPhone } from '@/lib/utils'
 import Sidebar from '@/components/Sidebar'
@@ -33,6 +34,11 @@ export default function DashboardPage() {
   const [generatingId, setGeneratingId] = useState<string | null>(null)
   const [sendingId, setSendingId] = useState<string | null>(null)
   const [invoicingId, setInvoicingId] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [bulkBuilding, setBulkBuilding] = useState(false)
+  const [bulkSmsing, setBulkSmsing] = useState(false)
+  const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number } | null>(null)
+  const [bulkSmsTemplate, setBulkSmsTemplate] = useState('preview-soft')
   const [statusFilter, setStatusFilter] = useState<LeadStatus | 'ALL'>('ALL')
   const [showStatusMenu, setShowStatusMenu] = useState(false)
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null)
@@ -92,6 +98,102 @@ export default function DashboardPage() {
       showToast(`Network error: ${String(err)}`, false)
     }
     setGeneratingId(null)
+  }
+
+  function toggleSelect(id: string) {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id); else next.add(id)
+      return next
+    })
+  }
+
+  function selectAllVisible() {
+    setSelectedIds(new Set(filtered.map(l => l.id)))
+  }
+
+  function clearSelection() {
+    setSelectedIds(new Set())
+  }
+
+  async function bulkBuild() {
+    const ids = [...selectedIds].filter(id => {
+      const lead = leads.find(l => l.id === id)
+      return lead && !lead.site
+    })
+    if (ids.length === 0) {
+      showToast('No unbuilt leads selected', false); return
+    }
+
+    setBulkBuilding(true)
+    setBulkProgress({ done: 0, total: ids.length })
+
+    try {
+      const res = await fetch('/api/leads/bulk-build', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leadIds: ids }),
+      })
+      if (!res.body) throw new Error('No stream')
+
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+      let done = 0
+      let succeeded = 0
+
+      while (true) {
+        const { done: streamDone, value } = await reader.read()
+        if (streamDone) break
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n\n')
+        buffer = lines.pop() ?? ''
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          const ev = JSON.parse(line.slice(6))
+          if (ev.type === 'success') { done++; succeeded++; setBulkProgress({ done, total: ids.length }) }
+          else if (ev.type === 'fail' || ev.type === 'skip') { done++; setBulkProgress({ done, total: ids.length }) }
+          else if (ev.type === 'done') { showToast(`Built ${ev.succeeded} sites · ${ev.failed} failed`, ev.failed === 0) }
+        }
+      }
+      await fetchLeads()
+      showToast(`Bulk build done: ${succeeded}/${ids.length} sites built!`)
+    } catch (err) {
+      showToast(`Bulk build failed: ${String(err)}`, false)
+    }
+    setBulkBuilding(false)
+    setBulkProgress(null)
+    clearSelection()
+  }
+
+  async function bulkSms() {
+    const ids = [...selectedIds].filter(id => {
+      const lead = leads.find(l => l.id === id)
+      return lead && lead.phone && lead.site
+    })
+    if (ids.length === 0) {
+      showToast('Select leads with phone + built site', false); return
+    }
+
+    setBulkSmsing(true)
+    try {
+      const res = await fetch('/api/leads/bulk-sms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leadIds: ids, templateId: bulkSmsTemplate }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        await fetchLeads()
+        showToast(`Sent ${data.sent} SMS · ${data.failed} failed`, data.failed === 0)
+      } else {
+        showToast(`Bulk SMS failed: ${data.error}`, false)
+      }
+    } catch (err) {
+      showToast(`Bulk SMS failed: ${String(err)}`, false)
+    }
+    setBulkSmsing(false)
+    clearSelection()
   }
 
   async function sendInvoice(lead: Lead) {
@@ -260,6 +362,58 @@ export default function DashboardPage() {
           ) : (
             /* Leads table */
             <div className="rounded-xl border border-[#1e2218] overflow-hidden" style={{ background: '#111310' }}>
+              {/* Bulk action bar */}
+              {selectedIds.size > 0 && (
+                <div className="flex items-center justify-between px-5 py-3 border-b" style={{ background: '#c8f13510', borderColor: '#c8f13530' }}>
+                  <div className="flex items-center gap-3">
+                    <Layers size={14} style={{ color: '#c8f135' }} />
+                    <p className="text-sm font-semibold" style={{ color: '#c8f135' }}>
+                      {selectedIds.size} lead{selectedIds.size !== 1 ? 's' : ''} selected
+                    </p>
+                    <button onClick={clearSelection} className="text-xs hover:underline" style={{ color: '#6b7a5a' }}>
+                      Clear
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button onClick={bulkBuild} disabled={bulkBuilding}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-40"
+                      style={{ background: '#c8f135', color: '#0d0e0b' }}>
+                      <Globe size={11} />
+                      {bulkBuilding && bulkProgress
+                        ? `Building ${bulkProgress.done}/${bulkProgress.total}…`
+                        : `Build All Sites (${[...selectedIds].filter(id => !leads.find(l => l.id === id)?.site).length})`}
+                    </button>
+                    <select value={bulkSmsTemplate} onChange={e => setBulkSmsTemplate(e.target.value)}
+                      className="text-xs rounded-lg px-2 py-1.5 focus:outline-none"
+                      style={{ background: '#0d0e0b', border: '1px solid #2a3a1a', color: '#a0b080' }}>
+                      <optgroup label="First touch">
+                        {SMS_TEMPLATES.filter(t => t.stage === 'first-touch').map(t => (
+                          <option key={t.id} value={t.id}>{t.emoji} {t.label}</option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="Follow-up">
+                        {SMS_TEMPLATES.filter(t => t.stage === 'follow-up').map(t => (
+                          <option key={t.id} value={t.id}>{t.emoji} {t.label}</option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="Closing">
+                        {SMS_TEMPLATES.filter(t => t.stage === 'closing').map(t => (
+                          <option key={t.id} value={t.id}>{t.emoji} {t.label}</option>
+                        ))}
+                      </optgroup>
+                    </select>
+                    <button onClick={bulkSms} disabled={bulkSmsing}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all disabled:opacity-40"
+                      style={{ borderColor: '#c8f13540', color: '#c8f135' }}>
+                      <MessageSquare size={11} />
+                      {bulkSmsing
+                        ? 'Sending…'
+                        : `Send SMS to All (${[...selectedIds].filter(id => { const l = leads.find(l => l.id === id); return l?.phone && l?.site }).length})`}
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Table topbar */}
               <div className="flex items-center justify-between px-5 py-3 border-b border-[#1e2218]">
                 <p className="text-sm font-semibold text-white">
@@ -298,7 +452,14 @@ export default function DashboardPage() {
 
               {/* Column headers */}
               <div className="grid border-b border-[#1a1e14]"
-                   style={{ gridTemplateColumns: '2fr 1.2fr 0.8fr 0.9fr 1fr 0.7fr 230px' }}>
+                   style={{ gridTemplateColumns: '36px 2fr 1.2fr 0.8fr 0.9fr 1fr 0.7fr 230px' }}>
+                <div className="px-3 py-2.5 flex items-center">
+                  <input type="checkbox"
+                    checked={filtered.length > 0 && filtered.every(l => selectedIds.has(l.id))}
+                    onChange={() => filtered.length > 0 && filtered.every(l => selectedIds.has(l.id)) ? clearSelection() : selectAllVisible()}
+                    className="cursor-pointer accent-[#c8f135]"
+                    style={{ width: 14, height: 14 }} />
+                </div>
                 {['Business', 'Location', 'Rating', 'Status', 'Assigned', 'Site', 'Actions'].map(h => (
                   <div key={h} className="px-3 py-2.5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#2a3a1a' }}>
                     {h}
@@ -310,6 +471,7 @@ export default function DashboardPage() {
               {filtered.map((lead, i) => (
                 <Row key={lead.id} lead={lead} statuses={STATUSES} workers={workers} isEven={i % 2 === 0}
                      generatingId={generatingId} sendingId={sendingId} invoicingId={invoicingId}
+                     selected={selectedIds.has(lead.id)} onToggleSelect={toggleSelect}
                      onStatusChange={updateStatus} onAssign={assignWorker} onGenerate={generateSite} onSms={sendSms} onInvoice={sendInvoice} />
               ))}
 
@@ -331,9 +493,10 @@ export default function DashboardPage() {
   )
 }
 
-function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoicingId, onStatusChange, onAssign, onGenerate, onSms, onInvoice }: {
+function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoicingId, selected, onToggleSelect, onStatusChange, onAssign, onGenerate, onSms, onInvoice }: {
   lead: Lead; statuses: LeadStatus[]; workers: { id: string; name: string }[]; isEven: boolean
   generatingId: string | null; sendingId: string | null; invoicingId: string | null
+  selected: boolean; onToggleSelect: (id: string) => void
   onStatusChange: (id: string, s: LeadStatus) => void
   onAssign: (id: string, workerId: string | null) => void
   onGenerate: (l: Lead) => void; onSms: (l: Lead) => void; onInvoice: (l: Lead) => void
@@ -344,7 +507,13 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoici
 
   return (
     <div className="grid items-center border-b border-[#161a11] hover:bg-[#ffffff02] transition-colors"
-         style={{ gridTemplateColumns: '2fr 1.2fr 0.8fr 0.9fr 1fr 0.7fr 230px', background: isEven ? 'transparent' : '#0f1009' }}>
+         style={{ gridTemplateColumns: '36px 2fr 1.2fr 0.8fr 0.9fr 1fr 0.7fr 230px', background: selected ? '#c8f1350c' : isEven ? 'transparent' : '#0f1009' }}>
+
+      <div className="px-3 py-3.5 flex items-center">
+        <input type="checkbox" checked={selected} onChange={() => onToggleSelect(lead.id)}
+          className="cursor-pointer accent-[#c8f135]"
+          style={{ width: 14, height: 14 }} />
+      </div>
 
       <div className="px-3 py-3.5">
         <p className="text-sm font-semibold text-white leading-tight">{lead.name}</p>
