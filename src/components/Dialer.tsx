@@ -81,7 +81,7 @@ export default function Dialer({ lead, onClose }: DialerProps) {
     try {
       const call = clientRef.current.newCall({
         destinationNumber: lead.phone,
-        callerNumber: process.env.NEXT_PUBLIC_TELNYX_PHONE ?? '',
+        callerNumber: process.env.NEXT_PUBLIC_TELNYX_PHONE ?? '+15303241556',
       })
       callRef.current = call
     } catch (err) {
