@@ -28,35 +28,51 @@ export default function Dialer({ lead, onClose }: DialerProps) {
     let mounted = true
     async function loadSdk() {
       try {
+        console.log('[Dialer] Loading Telnyx SDK…')
         const { TelnyxRTC } = await import('@telnyx/webrtc')
+
+        console.log('[Dialer] Fetching token…')
         const tokenRes = await fetch('/api/telnyx/token')
-        if (!tokenRes.ok) throw new Error('Could not get Telnyx token')
-        const { token } = await tokenRes.json()
+        const tokenBody = await tokenRes.json()
+        console.log('[Dialer] Token response:', tokenRes.status, JSON.stringify(tokenBody).slice(0, 80))
+        if (!tokenRes.ok) throw new Error(`Token fetch failed: ${tokenBody.error ?? tokenRes.status}`)
+        const { token } = tokenBody
         if (!token) throw new Error('Telnyx not configured — set TELNYX_SIP_CONNECTION_ID')
 
+        console.log('[Dialer] Creating TelnyxRTC client…')
         const client = new TelnyxRTC({ login_token: token })
 
-        client.on('telnyx.ready', () => { if (mounted) setSdkReady(true) })
+        client.on('telnyx.ready', () => {
+          console.log('[Dialer] SDK ready ✓')
+          if (mounted) setSdkReady(true)
+        })
         client.on('telnyx.error', (err: { message?: string }) => {
+          console.error('[Dialer] SDK error:', err)
           if (mounted) { setErrorMsg(err?.message ?? 'Telnyx error'); setCallState('error') }
         })
-        client.on('telnyx.notification', (notification: { call?: { state: string } }) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        client.on('telnyx.notification', (notification: any) => {
           if (!mounted) return
           const state = notification?.call?.state
+          const cause = notification?.call?.cause
+          console.log('[Dialer] notification:', state, cause ?? '', JSON.stringify(notification).slice(0, 120))
           if (state === 'ringing') setCallState('ringing')
           if (state === 'active') {
             setCallState('active')
             timerRef.current = setInterval(() => setDuration(d => d + 1), 1000)
           }
           if (state === 'destroy' || state === 'hangup') {
+            console.warn('[Dialer] Call ended — cause:', cause)
             setCallState('ended')
             if (timerRef.current) clearInterval(timerRef.current)
           }
         })
 
+        console.log('[Dialer] Connecting…')
         client.connect()
         clientRef.current = client
       } catch (err) {
+        console.error('[Dialer] loadSdk error:', err)
         if (mounted) { setErrorMsg(String(err)); setCallState('error') }
       }
     }
@@ -78,13 +94,18 @@ export default function Dialer({ lead, onClose }: DialerProps) {
     setCallState('connecting')
     setDuration(0)
     setErrorMsg(null)
+    const dest = lead.phone
+    const caller = process.env.NEXT_PUBLIC_TELNYX_PHONE ?? '+15303241556'
+    console.log('[Dialer] newCall → dest:', dest, 'caller:', caller)
     try {
       const call = clientRef.current.newCall({
-        destinationNumber: lead.phone,
-        callerNumber: process.env.NEXT_PUBLIC_TELNYX_PHONE ?? '+15303241556',
+        destinationNumber: dest,
+        callerNumber: caller,
       })
+      console.log('[Dialer] call object:', call)
       callRef.current = call
     } catch (err) {
+      console.error('[Dialer] newCall error:', err)
       setErrorMsg(String(err))
       setCallState('error')
     }

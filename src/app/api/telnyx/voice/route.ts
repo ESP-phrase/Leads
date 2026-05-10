@@ -6,6 +6,8 @@ export async function POST(req: Request) {
   const body = await req.json()
   const { event_type, payload } = body
 
+  console.log('[voice webhook] event:', event_type, 'call_control_id:', payload?.call_control_id, 'state:', payload?.state)
+
   if (event_type === 'call.answered') {
     const clientState = payload?.client_state
     let leadPhone = ''
@@ -13,12 +15,12 @@ export async function POST(req: Request) {
     try {
       const decoded = Buffer.from(clientState, 'base64').toString('utf-8')
       leadPhone = JSON.parse(decoded).leadPhone
-    } catch { /* ignore */ }
+      console.log('[voice webhook] bridging to:', leadPhone)
+    } catch { console.log('[voice webhook] no client_state / not a bridged call') }
 
     if (!leadPhone) return NextResponse.json({ ok: true })
 
-    // Bridge to the lead
-    await fetch(`https://api.telnyx.com/v2/calls/${payload.call_control_id}/actions/transfer`, {
+    const transferRes = await fetch(`https://api.telnyx.com/v2/calls/${payload.call_control_id}/actions/transfer`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${process.env.TELNYX_API_KEY}`,
@@ -26,6 +28,8 @@ export async function POST(req: Request) {
       },
       body: JSON.stringify({ to: leadPhone }),
     })
+    const transferData = await transferRes.json().catch(() => ({}))
+    console.log('[voice webhook] transfer result:', transferRes.status, JSON.stringify(transferData).slice(0, 120))
   }
 
   return NextResponse.json({ ok: true })
