@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 
-// Generates a short-lived Telnyx WebRTC login token for the browser dialer.
-// Requires a Credential Connection in your Telnyx portal.
+// Generates a short-lived Telnyx WebRTC JWT for the browser dialer.
+// Step 1: POST /telephony_credentials → get credential id
+// Step 2: GET  /telephony_credentials/{id}/token → get JWT
 export async function GET() {
   const session = await getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -14,23 +15,43 @@ export async function GET() {
     return NextResponse.json({ error: 'TELNYX_API_KEY or TELNYX_SIP_CONNECTION_ID not set' }, { status: 503 })
   }
 
-  // Create a short-lived telephony credential (token expires in ~1h)
-  const res = await fetch('https://api.telnyx.com/v2/telephony_credentials', {
+  const headers = {
+    'Authorization': `Bearer ${apiKey}`,
+    'Content-Type': 'application/json',
+  }
+
+  // Step 1: create ephemeral credential
+  const credRes = await fetch('https://api.telnyx.com/v2/telephony_credentials', {
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: JSON.stringify({ connection_id: connectionId }),
   })
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    return NextResponse.json({ error: 'Failed to get Telnyx token', detail: err }, { status: 500 })
+  if (!credRes.ok) {
+    const err = await credRes.json().catch(() => ({}))
+    return NextResponse.json({ error: 'Failed to create Telnyx credential', detail: err }, { status: 500 })
   }
 
-  const data = await res.json()
-  const token = data.data?.token ?? null
+  const credData = await credRes.json()
+  const credId = credData.data?.id
 
-  return NextResponse.json({ token })
+  if (!credId) {
+    return NextResponse.json({ error: 'No credential ID returned' }, { status: 500 })
+  }
+
+  // Step 2: exchange credential for a short-lived JWT
+  const tokenRes = await fetch(`https://api.telnyx.com/v2/telephony_credentials/${credId}/token`, {
+    method: 'POST',
+    headers,
+  })
+
+  if (!tokenRes.ok) {
+    const err = await tokenRes.json().catch(() => ({}))
+    return NextResponse.json({ error: 'Failed to get Telnyx JWT', detail: err }, { status: 500 })
+  }
+
+  // Telnyx returns the raw JWT as plain text
+  const token = await tokenRes.text()
+
+  return NextResponse.json({ token: token.replace(/"/g, '') })
 }
