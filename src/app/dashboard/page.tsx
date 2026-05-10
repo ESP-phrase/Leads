@@ -264,7 +264,7 @@ export default function DashboardPage() {
   const isEmpty = !loading && leads.length === 0
 
   return (
-    <div className="flex min-h-screen" style={{ background: '#0d0e0b', color: '#d4dfc4' }}>
+    <div className="flex min-h-screen pb-20 md:pb-0" style={{ background: '#0d0e0b', color: '#d4dfc4' }}>
       {toast && (
         <div className="fixed bottom-6 right-6 z-50 max-w-sm px-4 py-3 rounded-xl text-sm font-medium shadow-xl"
           style={{

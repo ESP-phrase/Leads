@@ -95,7 +95,7 @@ export default function ApplicationsPage() {
   }
 
   return (
-    <div className="flex min-h-screen" style={{ background: '#0d0e0b', color: '#d4dfc4' }}>
+    <div className="flex min-h-screen pb-20 md:pb-0" style={{ background: '#0d0e0b', color: '#d4dfc4' }}>
       <Sidebar />
 
       {toast && (

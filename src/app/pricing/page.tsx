@@ -19,10 +19,10 @@ const STARTER_FEATURES = [
 
 const OPERATOR_FEATURES = [
   'Unlimited leads, any city',
-  'Automated 4-step drip sequences',
+  'Automated drip sequences',
   'In-browser WebRTC dialer',
   'Bulk SMS campaigns',
-  'Advanced earnings analytics',
+  'Earnings analytics',
   'Priority support',
 ]
 
@@ -114,7 +114,7 @@ export default function PricingPage() {
         <p style={{ fontSize: 14, color: '#444', marginBottom: 20 }}>No commitments. Upgrade anytime.</p>
 
         {/* Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 12, marginBottom: 12, textAlign: 'left' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(340px, 100%), 1fr))', gap: 12, marginBottom: 12, textAlign: 'left' }}>
 
           {/* Starter */}
           <div style={{
@@ -138,7 +138,7 @@ export default function PricingPage() {
               <span style={{ fontSize: 13, color: '#333', paddingBottom: 6 }}>/month</span>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 12px', marginBottom: 14 }}>
               {STARTER_FEATURES.map(f => <CheckItem key={f} text={f} />)}
             </div>
 
@@ -174,7 +174,7 @@ export default function PricingPage() {
               <span style={{ fontSize: 13, color: '#555', paddingBottom: 6 }}>/month</span>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 12px', marginBottom: 14 }}>
               {OPERATOR_FEATURES.map(f => <CheckItem key={f} text={f} bright />)}
             </div>
 
@@ -189,8 +189,8 @@ export default function PricingPage() {
         </div>
 
         {/* Trust bar */}
-        <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
+        <div className="trust-bar-grid" style={{
+          display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)',
           borderRadius: 13, border: '1px solid #161616', background: '#0d0d0d', overflow: 'hidden',
         }}>
           {[
@@ -201,7 +201,8 @@ export default function PricingPage() {
           ].map(({ icon: Icon, label, sub }, i) => (
             <div key={label} style={{
               padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left',
-              borderRight: i < 3 ? '1px solid #161616' : undefined,
+              borderRight: i % 2 === 0 ? '1px solid #161616' : undefined,
+              borderBottom: i < 2 ? '1px solid #161616' : undefined,
             }}>
               <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#c8f13510', border: '1px solid #c8f13522', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <Icon size={13} style={{ color: '#c8f135' }} />

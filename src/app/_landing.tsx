@@ -75,7 +75,7 @@ export default function LandingPage() {
       <nav style={{ borderBottom: '1px solid #1a1e14', position: 'sticky', top: 0, zIndex: 50, background: '#0a0b09cc', backdropFilter: 'blur(12px)' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Logo size={28} textSize="lg" />
-          <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
+          <div className="nav-links-desktop" style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
             <a href="#math" style={{ fontSize: 14, color: '#8a9a7a', textDecoration: 'none', fontWeight: 500 }}>Earnings</a>
             <a href="#referral" style={{ fontSize: 14, color: '#8a9a7a', textDecoration: 'none', fontWeight: 500 }}>Referrals</a>
             <a href="#how" style={{ fontSize: 14, color: '#8a9a7a', textDecoration: 'none', fontWeight: 500 }}>How it works</a>
@@ -83,7 +83,7 @@ export default function LandingPage() {
             <a href="#faq" style={{ fontSize: 14, color: '#8a9a7a', textDecoration: 'none', fontWeight: 500 }}>FAQ</a>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
-            <Link href="/login" style={{ fontSize: 14, color: '#8a9a7a', textDecoration: 'none', padding: '8px 16px', fontWeight: 500 }}>
+            <Link href="/login" className="nav-cta-desktop" style={{ fontSize: 14, color: '#8a9a7a', textDecoration: 'none', padding: '8px 16px', fontWeight: 500 }}>
               Sign in
             </Link>
             <Link href="/join#apply"
@@ -97,7 +97,7 @@ export default function LandingPage() {
 
       {/* HERO */}
       <section style={{ padding: '100px 1.5rem 80px', maxWidth: 1200, margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: 80, alignItems: 'center' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(420px, 100%), 1fr))', gap: 80, alignItems: 'center' }}>
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px',
                           borderRadius: 99, marginBottom: 32, fontSize: 12, fontWeight: 700,
@@ -339,7 +339,7 @@ export default function LandingPage() {
       {/* WHAT YOU'RE SELLING */}
       <section style={{ padding: '100px 1.5rem', borderTop: '1px solid #1a1e14', background: '#0a0b09' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: 80, alignItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(420px, 100%), 1fr))', gap: 80, alignItems: 'center' }}>
             <div>
               <p style={{ fontSize: 12, fontWeight: 800, letterSpacing: 2, color: '#c8f135', marginBottom: 14, textTransform: 'uppercase' }}>The product</p>
               <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 900, color: '#fff', letterSpacing: '-1px', marginBottom: 20, lineHeight: 1.05 }}>
@@ -424,7 +424,7 @@ export default function LandingPage() {
       {/* FOLLOW-UP DRIP SEQUENCE */}
       <section id="how" style={{ padding: '100px 1.5rem', borderTop: '1px solid #1a1e14', background: '#0d0e0b' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: 80, alignItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(380px, 100%), 1fr))', gap: 80, alignItems: 'center' }}>
 
             {/* Left: copy */}
             <div>

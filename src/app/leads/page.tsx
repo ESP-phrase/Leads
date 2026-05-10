@@ -94,6 +94,7 @@ interface Toast { id: number; message: string; ok: boolean }
 interface QueueItem { query: string; pageToken?: string; city?: string; category?: string }
 
 export default function LeadsPage() {
+  const [showPanel, setShowPanel] = useState(true)
   const [city, setCity] = useState('')
   const [cityLoading, setCityLoading] = useState(false)
   const [addedCities, setAddedCities] = useState<string[]>([])
@@ -329,17 +330,25 @@ export default function LeadsPage() {
   const skipCount = feed.filter(i => i.kind === 'skip').length
 
   return (
-    <div className="flex min-h-screen" style={{ background: '#0d0e0b', color: '#d4dfc4' }}>
+    <div className="flex min-h-screen pb-20 md:pb-0" style={{ background: '#0d0e0b', color: '#d4dfc4' }}>
       <Sidebar />
       <main className="flex-1 flex min-w-0">
 
         {/* Left: search form */}
-        <div className="w-80 flex-shrink-0 border-r border-[#1e2218] flex flex-col" style={{ background: '#0f100d' }}>
-          <div className="px-5 py-4 border-b border-[#1e2218]">
-            <h1 className="font-bold text-white text-base">Find Leads</h1>
-            <p className="text-xs mt-0.5" style={{ color: '#4a5a3a' }}>
-              Keeps running even when you switch tabs
-            </p>
+        <div className={`${showPanel ? 'flex' : 'hidden'} w-full md:w-80 md:flex flex-shrink-0 border-r border-[#1e2218] flex-col`} style={{ background: '#0f100d' }}>
+          <div className="px-5 py-4 border-b border-[#1e2218] flex items-center justify-between">
+            <div>
+              <h1 className="font-bold text-white text-base">Find Leads</h1>
+              <p className="text-xs mt-0.5" style={{ color: '#4a5a3a' }}>
+                Keeps running even when you switch tabs
+              </p>
+            </div>
+            <button
+              onClick={() => setShowPanel(false)}
+              className="md:hidden flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-[#1e2218]"
+              style={{ color: '#6b7a5a' }}>
+              View Results
+            </button>
           </div>
 
           <div className="flex-1 p-5 space-y-4 overflow-y-auto">
@@ -559,8 +568,16 @@ export default function LeadsPage() {
         </div>
 
         {/* Right: live feed */}
-        <div className="flex-1 flex min-w-0">
+        <div className={`${showPanel ? 'hidden md:flex' : 'flex'} flex-1 min-w-0`}>
           <div className="flex-1 flex flex-col min-w-0">
+            <div className="md:hidden border-b border-[#1e2218] px-4 py-2 flex items-center gap-2" style={{ background: '#111310' }}>
+              <button
+                onClick={() => setShowPanel(p => !p)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-[#1e2218]"
+                style={{ color: '#c8f135', background: '#c8f13510' }}>
+                {showPanel ? 'View Results' : 'Find Leads'}
+              </button>
+            </div>
             {started && (
               <div className="border-b border-[#1e2218] px-6 py-3 flex items-center gap-4" style={{ background: '#111310' }}>
                 {loading && <div className="w-2 h-2 rounded-full flex-shrink-0 animate-pulse" style={{ background: '#c8f135' }} />}

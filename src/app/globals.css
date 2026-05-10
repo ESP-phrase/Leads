@@ -17,3 +17,13 @@
   background: #374151;
   border-radius: 3px;
 }
+
+/* ── Mobile responsive ── */
+@media (max-width: 767px) {
+  .nav-links-desktop { display: none !important; }
+  .nav-cta-desktop   { display: none !important; }
+}
+
+@media (min-width: 640px) {
+  .trust-bar-grid { grid-template-columns: repeat(4, 1fr) !important; }
+}
