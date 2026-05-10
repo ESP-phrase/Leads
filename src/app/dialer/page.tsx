@@ -78,7 +78,7 @@ export default function DialerPage() {
     }
   }
 
-  async function handleTwilioCall() {
+  async function handleCall() {
     if (!current) return
     setCallState('calling')
     try {
@@ -93,7 +93,7 @@ export default function DialerPage() {
       }
       setCallState('ok')
       setQueue(q => q.map((l, i) => i === index ? { ...l, status: 'CALLED' } : l))
-      toast(`Calling ${formatPhone(current.phone!)} via Twilio…`)
+      toast(`Calling ${formatPhone(current.phone!)}…`)
     } catch (err: unknown) {
       setCallState('error')
       toast(err instanceof Error ? err.message : 'Call failed', false)
@@ -260,8 +260,8 @@ export default function DialerPage() {
                   )}
                 </div>
 
-                {/* Twilio call button */}
-                <button onClick={handleTwilioCall}
+                {/* Call button */}
+                <button onClick={handleCall}
                   disabled={callState === 'calling'}
                   className="w-full flex items-center justify-center gap-2 py-3 mb-4 rounded-xl text-sm font-medium border transition-all disabled:opacity-50"
                   style={{
@@ -273,7 +273,7 @@ export default function DialerPage() {
                   {callState === 'calling' ? 'Connecting…'
                     : callState === 'ok' ? 'Call initiated ✓'
                     : callState === 'error' ? 'Failed — retry?'
-                    : 'Auto-call via Twilio'}
+                    : 'Auto-call'}
                 </button>
 
                 {/* Outcomes */}

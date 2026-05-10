@@ -203,7 +203,7 @@ export default function LeadsPage() {
       })
       if (res.ok) { setSentIds(prev => new Set(prev).add(lead.id)); addToast(`SMS sent to ${lead.name}`) }
       else { const { error } = await res.json().catch(() => ({ error: 'Unknown error' })); addToast(error ?? 'SMS failed', false) }
-    } catch { addToast('SMS failed — check Twilio config', false) }
+    } catch { addToast('SMS failed — check Telnyx config', false) }
     setSendingId(null)
   }
 

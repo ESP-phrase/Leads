@@ -47,7 +47,7 @@ export default function PrivacyPage() {
         <Section title="Who we share it with">
           We share data only with service providers required to run the platform:{' '}
           <strong style={{ color: '#fff' }}>Stripe</strong> (payments and refunds),{' '}
-          <strong style={{ color: '#fff' }}>Twilio</strong> (SMS delivery),{' '}
+          <strong style={{ color: '#fff' }}>Telnyx</strong> (SMS delivery),{' '}
           <strong style={{ color: '#fff' }}>Vercel</strong> (hosting), and{' '}
           <strong style={{ color: '#fff' }}>Neon</strong> (database). We do <strong style={{ color: '#fff' }}>never
           sell, rent, or share your phone number</strong> for marketing purposes with anyone.
