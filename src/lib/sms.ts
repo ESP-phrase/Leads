@@ -46,19 +46,25 @@ export async function initiateCall(to: string): Promise<{ sid: string; status: s
   if (!process.env.TELNYX_API_KEY) throw new Error('TELNYX_API_KEY not set')
 
   // Call the operator first. When they pick up they get connected to the lead.
-  // Uses Telnyx TeXML for the call flow (same concept as TwiML).
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://siteforge.app'
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://landline-pink.vercel.app'
+
+  // If calling from Telnyx number to itself (test mode), call operator directly
+  const isSelfTest = to === from
+  const callTo   = isSelfTest ? operatorPhone : operatorPhone
+  const payload: Record<string, string> = {
+    connection_id: process.env.TELNYX_CONNECTION_ID ?? '',
+    from,
+    to: callTo,
+    webhook_url: `${baseUrl}/api/telnyx/voice`,
+  }
+  if (!isSelfTest) {
+    payload.client_state = Buffer.from(JSON.stringify({ leadPhone: to })).toString('base64')
+  }
 
   const res = await fetch(`${TELNYX_API}/calls`, {
     method: 'POST',
     headers: telnyxHeaders(),
-    body: JSON.stringify({
-      connection_id: process.env.TELNYX_CONNECTION_ID, // SIP connection or TeXML app ID
-      from,
-      to: operatorPhone,
-      webhook_url: `${baseUrl}/api/telnyx/voice`,
-      client_state: Buffer.from(JSON.stringify({ leadPhone: to })).toString('base64'),
-    }),
+    body: JSON.stringify(payload),
   })
 
   if (!res.ok) {
