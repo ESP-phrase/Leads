@@ -96,51 +96,51 @@ export default function LandingPage() {
       </nav>
 
       {/* HERO */}
-      <section style={{ padding: '100px 1.5rem 80px', maxWidth: 1200, margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(420px, 100%), 1fr))', gap: 80, alignItems: 'center' }}>
+      <section style={{ padding: 'clamp(32px, 5vh, 64px) 1.5rem clamp(24px, 4vh, 48px)', maxWidth: 1200, margin: '0 auto' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(420px, 100%), 1fr))', gap: 48, alignItems: 'center' }}>
           <div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px',
-                          borderRadius: 99, marginBottom: 32, fontSize: 12, fontWeight: 700,
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '5px 12px',
+                          borderRadius: 99, marginBottom: 18, fontSize: 12, fontWeight: 700,
                           background: '#c8f13518', border: '1px solid #c8f13540', color: '#c8f135' }}>
               <Sparkles size={12} /> Accepting applications now
             </div>
 
-            <h1 style={{ fontSize: 'clamp(2.8rem, 5.5vw, 4.2rem)', fontWeight: 900, lineHeight: 1.02,
-                         color: '#fff', marginBottom: 24, letterSpacing: '-2px' }}>
+            <h1 style={{ fontSize: 'clamp(2rem, 4.2vw, 3.4rem)', fontWeight: 900, lineHeight: 1.04,
+                         color: '#fff', marginBottom: 14, letterSpacing: '-2px' }}>
               Local businesses need websites.<br />
               You have a phone.<br />
               <span style={{ color: '#c8f135' }}>We pay you $119</span> to connect them.
             </h1>
-            <p style={{ fontSize: 18, color: '#6b7a5a', lineHeight: 1.7, marginBottom: 40, maxWidth: 500 }}>
+            <p style={{ fontSize: 16, color: '#6b7a5a', lineHeight: 1.6, marginBottom: 24, maxWidth: 500 }}>
               We build the site. We write the pitch. We handle payment and delivery.
               You send one text — and collect <strong style={{ color: '#fff' }}>40% of every $299 sale.</strong>
             </p>
 
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 36 }}>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 22 }}>
               <Link href="/join#apply"
-                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '18px 36px',
-                         borderRadius: 12, fontWeight: 800, fontSize: 16, textDecoration: 'none',
+                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '14px 28px',
+                         borderRadius: 12, fontWeight: 800, fontSize: 15, textDecoration: 'none',
                          background: '#c8f135', color: '#0a0b09', boxShadow: '0 0 60px #c8f13540',
                          letterSpacing: '-0.3px' }}>
-                Apply — $5 deposit <ArrowRight size={16} />
+                Apply — $5 deposit <ArrowRight size={15} />
               </Link>
               <Link href="/pricing"
-                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '18px 28px',
-                         borderRadius: 12, fontWeight: 600, fontSize: 16, textDecoration: 'none',
+                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '14px 22px',
+                         borderRadius: 12, fontWeight: 600, fontSize: 15, textDecoration: 'none',
                          border: '1px solid #2a3020', color: '#8a9a7a' }}>
                 See pricing
               </Link>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {[
                 '$5 deposit — refunded automatically if you\'re not approved',
                 '$119 flat per closed deal, paid every Friday via direct deposit',
                 'Earn 15% of every sale your recruits close, forever',
               ].map(t => (
                 <div key={t} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                  <CheckCircle size={14} style={{ color: '#c8f135', flexShrink: 0, marginTop: 2 }} />
-                  <span style={{ fontSize: 13, color: '#5a6a4a', lineHeight: 1.5 }}>{t}</span>
+                  <CheckCircle size={13} style={{ color: '#c8f135', flexShrink: 0, marginTop: 2 }} />
+                  <span style={{ fontSize: 12, color: '#5a6a4a', lineHeight: 1.5 }}>{t}</span>
                 </div>
               ))}
             </div>
@@ -148,42 +148,41 @@ export default function LandingPage() {
 
           {/* Right side — phone mockup with SMS */}
           <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
-            <div style={{ width: 320, padding: 14, borderRadius: 38, background: '#1a1e14', boxShadow: '0 40px 100px rgba(0,0,0,0.5), 0 0 80px #c8f13520' }}>
-              <div style={{ background: '#0d0e0b', borderRadius: 28, overflow: 'hidden', border: '1px solid #1e2218' }}>
+            <div style={{ width: 290, padding: 10, borderRadius: 34, background: '#1a1e14', boxShadow: '0 40px 100px rgba(0,0,0,0.5), 0 0 80px #c8f13520' }}>
+              <div style={{ background: '#0d0e0b', borderRadius: 26, overflow: 'hidden', border: '1px solid #1e2218' }}>
                 {/* Phone status bar */}
-                <div style={{ padding: '14px 22px 6px', display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#8a9a7a' }}>
+                <div style={{ padding: '10px 20px 4px', display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#8a9a7a' }}>
                   <span>9:41</span>
                   <span>● ● ●</span>
                 </div>
                 {/* Header */}
-                <div style={{ padding: '12px 18px', borderBottom: '1px solid #1e2218', textAlign: 'center' }}>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>Mike — Mike&apos;s Plumbing</p>
+                <div style={{ padding: '8px 16px', borderBottom: '1px solid #1e2218', textAlign: 'center' }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>Mike — Mike&apos;s Plumbing</p>
                   <p style={{ fontSize: 11, color: '#5a6a4a' }}>(512) 555-0193</p>
                 </div>
                 {/* Conversation */}
-                <div style={{ padding: '20px 16px', minHeight: 320, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <div style={{ alignSelf: 'flex-end', maxWidth: '80%', background: '#c8f135', color: '#0a0b09', padding: '10px 14px', borderRadius: '18px 18px 4px 18px', fontSize: 13, fontWeight: 500 }}>
+                <div style={{ padding: '14px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ alignSelf: 'flex-end', maxWidth: '80%', background: '#c8f135', color: '#0a0b09', padding: '8px 12px', borderRadius: '16px 16px 4px 16px', fontSize: 12, fontWeight: 500 }}>
                     Hey Mike — I made a sample website for Mike&apos;s Plumbing. Take a look:
                     <br/>
                     <span style={{ fontWeight: 700, textDecoration: 'underline' }}>mike-plumbing.vercel.app</span>
-                    <br/><br/>
-                    Want me to make it yours?
+                    <br/>Want me to make it yours?
                   </div>
-                  <div style={{ alignSelf: 'flex-start', maxWidth: '80%', background: '#1e2218', color: '#fff', padding: '10px 14px', borderRadius: '18px 18px 18px 4px', fontSize: 13 }}>
+                  <div style={{ alignSelf: 'flex-start', maxWidth: '80%', background: '#1e2218', color: '#fff', padding: '8px 12px', borderRadius: '16px 16px 16px 4px', fontSize: 12 }}>
                     Holy shit that&apos;s actually really good. How much?
                   </div>
-                  <div style={{ alignSelf: 'flex-end', maxWidth: '80%', background: '#c8f135', color: '#0a0b09', padding: '10px 14px', borderRadius: '18px 18px 4px 18px', fontSize: 13, fontWeight: 500 }}>
+                  <div style={{ alignSelf: 'flex-end', maxWidth: '80%', background: '#c8f135', color: '#0a0b09', padding: '8px 12px', borderRadius: '16px 16px 4px 16px', fontSize: 12, fontWeight: 500 }}>
                     $299 one-time. I&apos;ll send the payment link.
                   </div>
-                  <div style={{ alignSelf: 'flex-start', maxWidth: '80%', background: '#1e2218', color: '#fff', padding: '10px 14px', borderRadius: '18px 18px 18px 4px', fontSize: 13 }}>
+                  <div style={{ alignSelf: 'flex-start', maxWidth: '80%', background: '#1e2218', color: '#fff', padding: '8px 12px', borderRadius: '16px 16px 16px 4px', fontSize: 12 }}>
                     Send it 🤝
                   </div>
                   {/* +$119 notification */}
-                  <div style={{ marginTop: 8, padding: '12px', background: '#c8f13518', border: '1px solid #c8f13540', borderRadius: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <DollarSign size={18} style={{ color: '#c8f135' }} />
+                  <div style={{ marginTop: 4, padding: '10px', background: '#c8f13518', border: '1px solid #c8f13540', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <DollarSign size={16} style={{ color: '#c8f135' }} />
                     <div>
-                      <p style={{ fontSize: 12, color: '#a0b080', fontWeight: 600 }}>Payment received</p>
-                      <p style={{ fontSize: 16, fontWeight: 900, color: '#c8f135' }}>+$119 to your account</p>
+                      <p style={{ fontSize: 11, color: '#a0b080', fontWeight: 600 }}>Payment received</p>
+                      <p style={{ fontSize: 14, fontWeight: 900, color: '#c8f135' }}>+$119 to your account</p>
                     </div>
                   </div>
                 </div>
