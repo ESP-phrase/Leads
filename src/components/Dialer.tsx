@@ -12,6 +12,11 @@ type CallState = 'idle' | 'calling' | 'ringing' | 'active' | 'ended' | 'error'
 
 const LOG_MAX = 30
 
+function safeJson(v: unknown): string {
+  try { return JSON.stringify(v) }
+  catch { return String(v) }
+}
+
 export default function Dialer({ lead, onClose }: DialerProps) {
   const [callState, setCallState] = useState<CallState>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
@@ -23,8 +28,9 @@ export default function Dialer({ lead, onClose }: DialerProps) {
 
   const log = useCallback((msg: string, ok = true) => {
     const t = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
-    setLogs(l => [...l.slice(-LOG_MAX + 1), { t, msg, ok }])
-    console.log(`[Dialer ${t}]`, msg)
+    const safe = typeof msg === 'string' ? msg : safeJson(msg)
+    setLogs(l => [...l.slice(-LOG_MAX + 1), { t, msg: safe, ok }])
+    console.log(`[Dialer ${t}]`, safe)
   }, [])
 
   // Poll call status while active
@@ -64,8 +70,8 @@ export default function Dialer({ lead, onClose }: DialerProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ leadId: lead.id, phone: lead.phone }),
       })
-      const data = await res.json()
-      log(`API response: ${res.status} ${JSON.stringify(data).slice(0, 80)}`, res.ok)
+      const data = await res.json().catch(() => ({}))
+      log(`API response: ${res.status} — ${safeJson(data).slice(0, 100)}`, res.ok)
 
       if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`)
 
