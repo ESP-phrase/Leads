@@ -49,9 +49,8 @@ export default function OgImage() {
             background: '#c8f135',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <svg viewBox="0 0 32 32" width="38" height="38">
-              <path d="M22 9 L10 9 L10 16 L22 16 L22 23 L10 23"
-                stroke="#0a0b09" strokeWidth="3.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+            <svg viewBox="0 0 52 52" width="38" height="38">
+              <polygon points="14,10 14,38 22,30 27,42 31,40 26,28 36,28" fill="#0a0b09"/>
             </svg>
           </div>
           <span style={{ fontSize: 36, fontWeight: 900, letterSpacing: '-1px' }}>

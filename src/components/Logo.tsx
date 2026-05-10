@@ -23,9 +23,8 @@ export default function Logo({ size = 28, showText = true, textSize = 'md', clas
         flexShrink: 0,
         boxShadow: `0 0 ${size * 0.6}px ${size > 28 ? '#c8f13530' : '#c8f13520'}`,
       }}>
-        <svg viewBox="0 0 32 32" width={size * 0.72} height={size * 0.72} xmlns="http://www.w3.org/2000/svg">
-          <path d="M22 9 L10 9 L10 16 L22 16 L22 23 L10 23"
-                stroke="#0a0b09" strokeWidth={3.8} strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+        <svg viewBox="0 0 52 52" width={size * 0.72} height={size * 0.72} xmlns="http://www.w3.org/2000/svg">
+          <polygon points="14,10 14,38 22,30 27,42 31,40 26,28 36,28" fill="#0a0b09"/>
         </svg>
       </span>
       {showText && (
