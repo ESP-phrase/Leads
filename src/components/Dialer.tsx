@@ -180,17 +180,20 @@ export default function Dialer({ lead, onClose }: DialerProps) {
 
       client.on('telnyx.error', (err: unknown) => {
         const code = (err as { error?: { code?: number } })?.error?.code
-        // BYE_SEND_FAILED (44003) is benign — call already ended locally
-        if (code === 44003) {
-          log('Call ended (hangup signal delayed — ok)')
-          return
-        }
-        const msg = (err as { message?: string; error?: { message?: string } })?.error?.message
+        const msg = (err as { error?: { message?: string } })?.error?.message
           ?? (err as { message?: string })?.message
           ?? safeJson(err)
+        // BYE_SEND_FAILED and similar end-of-call errors — treat as normal end
+        if (code === 44003 || code === 44001 || code === 44002) {
+          log('Call ended cleanly')
+          setCallState('ended')
+          setShowFollowUp(true)
+          return
+        }
         log(`WebRTC error: ${msg}`, false)
-        setErrorMsg(msg)
-        setCallState('error')
+        // Still show follow-up even on error if call was in progress
+        setCallState('ended')
+        setShowFollowUp(true)
       })
 
       client.on('telnyx.socket.close', () => {
