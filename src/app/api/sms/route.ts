@@ -9,6 +9,19 @@ export async function POST(req: Request) {
 
   if (!leadId) return NextResponse.json({ error: 'leadId required' }, { status: 400 })
 
+  // Test mode — send to operator phone
+  if (leadId === 'test') {
+    const testPhone = process.env.OPERATOR_PHONE_NUMBER
+    if (!testPhone) return NextResponse.json({ error: 'OPERATOR_PHONE_NUMBER not set' }, { status: 500 })
+    const text = message ?? 'Test SMS from SiteForge dialer.'
+    try {
+      const result = await sendSms(testPhone, text)
+      return NextResponse.json({ log: { status: result.status }, sentText: text })
+    } catch (err) {
+      return NextResponse.json({ error: String(err) }, { status: 500 })
+    }
+  }
+
   const lead = await db.lead.findUnique({ where: { id: leadId }, include: { site: true } })
   if (!lead) return NextResponse.json({ error: 'Lead not found' }, { status: 404 })
   if (!lead.phone) return NextResponse.json({ error: 'Lead has no phone' }, { status: 400 })

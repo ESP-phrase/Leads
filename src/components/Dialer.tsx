@@ -37,11 +37,15 @@ export default function Dialer({ lead, onClose }: DialerProps) {
   const [drafting, setDrafting] = useState(false)
   const [sending, setSending] = useState(false)
   const [smsSent, setSmsSent] = useState(false)
+  const [tone, setTone] = useState('warm')
 
   const clientRef = useRef<unknown>(null)
   const callRef = useRef<unknown>(null)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const callDurationRef = useRef(0)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const remoteAudioRef = useRef<HTMLAudioElement | null>(null)
+  const ringbackRef = useRef<{ ctx: AudioContext; stop: () => void } | null>(null)
 
   const log = useCallback((msg: string, ok = true) => {
     const t = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
@@ -49,13 +53,48 @@ export default function Dialer({ lead, onClose }: DialerProps) {
     console.log(`[Dialer ${t}]`, msg)
   }, [])
 
+  const stopRingback = useCallback(() => {
+    if (ringbackRef.current) {
+      ringbackRef.current.stop()
+      ringbackRef.current.ctx.close().catch(() => {})
+      ringbackRef.current = null
+    }
+  }, [])
+
+  const startRingback = useCallback(() => {
+    stopRingback()
+    try {
+      const ctx = new AudioContext()
+      let stopped = false
+      // US ringback: 440Hz + 480Hz, 2s on / 4s off
+      const play = () => {
+        if (stopped) return
+        const osc1 = ctx.createOscillator()
+        const osc2 = ctx.createOscillator()
+        const gain = ctx.createGain()
+        osc1.frequency.value = 440
+        osc2.frequency.value = 480
+        gain.gain.value = 0.12
+        osc1.connect(gain); osc2.connect(gain); gain.connect(ctx.destination)
+        osc1.start(); osc2.start()
+        osc1.stop(ctx.currentTime + 2); osc2.stop(ctx.currentTime + 2)
+        setTimeout(() => { if (!stopped) play() }, 6000) // 2s on + 4s off
+      }
+      play()
+      ringbackRef.current = { ctx, stop: () => { stopped = true } }
+    } catch { /* audio not supported */ }
+  }, [stopRingback])
+
   const cleanup = useCallback(() => {
     clearInterval(timerRef.current!)
+    stopRingback()
     try { (callRef.current as { hangup?: () => void })?.hangup?.() } catch {}
     try { (clientRef.current as { disconnect?: () => void })?.disconnect?.() } catch {}
     callRef.current = null
     clientRef.current = null
-  }, [])
+    if (audioRef.current) { audioRef.current.srcObject = null; audioRef.current = null }
+    if (remoteAudioRef.current) { remoteAudioRef.current.srcObject = null }
+  }, [stopRingback])
 
   useEffect(() => () => cleanup(), [cleanup])
 
@@ -78,7 +117,14 @@ export default function Dialer({ lead, onClose }: DialerProps) {
       log('Token received ✓')
 
       const { TelnyxRTC } = await import('@telnyx/webrtc')
-      const client = new TelnyxRTC({ login_token: tokenData.token })
+      const client = new TelnyxRTC({
+        login_token: tokenData.token,
+        iceServers: [
+          { urls: 'stun:stun.telnyx.com:3478' },
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' },
+        ],
+      })
       clientRef.current = client
 
       client.on('telnyx.ready', () => {
@@ -88,41 +134,68 @@ export default function Dialer({ lead, onClose }: DialerProps) {
           callerNumber: process.env.NEXT_PUBLIC_TELNYX_PHONE ?? '+15303241556',
           audio: true,
           video: false,
+          remoteElement: remoteAudioRef.current ?? undefined,
         })
         callRef.current = call
 
-        call.on('telnyx.notification', (n: { call: { state: string } }) => {
+        call.on('telnyx.notification', (n: { call: { state: string; remoteStream?: MediaStream } }) => {
           const state = n?.call?.state
           log(`Call state: ${state}`)
           if (state === 'ringing' || state === 'trying') {
             setCallState('ringing')
+            startRingback()
           } else if (state === 'active') {
+            stopRingback()
             setCallState('active')
             timerRef.current = setInterval(() => setDuration(d => d + 1), 1000)
+            // Attach remote audio stream to DOM element
+            const remoteStream = (n.call as { remoteStream?: MediaStream }).remoteStream
+              ?? (callRef.current as { remoteStream?: MediaStream })?.remoteStream
+            if (remoteStream && remoteAudioRef.current) {
+              remoteAudioRef.current.srcObject = remoteStream
+              remoteAudioRef.current.play().catch(e => log(`Audio play error: ${e}`, false))
+              log('Remote audio attached ✓')
+            } else if (remoteStream) {
+              // Fallback: dynamic audio element
+              const el = new Audio()
+              el.srcObject = remoteStream
+              el.autoplay = true
+              el.play().catch(() => {})
+              audioRef.current = el
+              log('Remote audio attached (fallback) ✓')
+            } else {
+              log('No remote stream yet — audio via remoteElement', true)
+            }
           } else if (state === 'hangup' || state === 'destroy' || state === 'done') {
             clearInterval(timerRef.current!)
-            setCallState('ended')
-            // Offer follow-up if call was short / no answer and lead has no site yet,
-            // or always offer it for unanswered calls (< 5s active)
-            if (callDurationRef.current < 5) {
-              setShowFollowUp(true)
+            if (audioRef.current) {
+              audioRef.current.srcObject = null
+              audioRef.current = null
             }
+            setCallState('ended')
+            setShowFollowUp(true)
           }
         })
       })
 
       client.on('telnyx.error', (err: unknown) => {
-        const msg = (err as { message?: string })?.message ?? safeJson(err)
+        const code = (err as { error?: { code?: number } })?.error?.code
+        // BYE_SEND_FAILED (44003) is benign — call already ended locally
+        if (code === 44003) {
+          log('Call ended (hangup signal delayed — ok)')
+          return
+        }
+        const msg = (err as { message?: string; error?: { message?: string } })?.error?.message
+          ?? (err as { message?: string })?.message
+          ?? safeJson(err)
         log(`WebRTC error: ${msg}`, false)
         setErrorMsg(msg)
         setCallState('error')
       })
 
       client.on('telnyx.socket.close', () => {
-        if (['connecting', 'ringing'].includes(callState)) {
-          setCallState('ended')
-          setShowFollowUp(true)
-        }
+        setCallState('ended')
+        setShowFollowUp(true)
       })
 
       log('Connecting to Telnyx…')
@@ -133,13 +206,13 @@ export default function Dialer({ lead, onClose }: DialerProps) {
       setErrorMsg(msg)
       setCallState('error')
     }
-  }, [lead, log, callState])
+  }, [lead, log, callState, startRingback, stopRingback])
 
   const hangup = useCallback(() => {
     log('Hanging up…')
     cleanup()
     setCallState('ended')
-    if (callDurationRef.current < 5) setShowFollowUp(true)
+    setShowFollowUp(true)
   }, [cleanup, log])
 
   const toggleMute = useCallback(() => {
@@ -149,14 +222,14 @@ export default function Dialer({ lead, onClose }: DialerProps) {
     else { call.muteAudio?.(); setMuted(true) }
   }, [muted])
 
-  const draftFollowUp = useCallback(async () => {
+  const draftFollowUp = useCallback(async (selectedTone?: string) => {
     setDrafting(true)
     setDraftMsg('')
     try {
       const res = await fetch('/api/sms/draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ leadId: lead.id }),
+        body: JSON.stringify({ leadId: lead.id, tone: selectedTone ?? tone }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Draft failed')
@@ -177,7 +250,8 @@ export default function Dialer({ lead, onClose }: DialerProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ leadId: lead.id, message: draftMsg, isFollowUp: true }),
       })
-      if (!res.ok) throw new Error('Send failed')
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`)
       setSmsSent(true)
       log('Follow-up SMS sent ✓')
     } catch (err) {
@@ -195,6 +269,8 @@ export default function Dialer({ lead, onClose }: DialerProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: '#00000088' }}>
+      {/* Hidden remote audio element */}
+      <audio ref={remoteAudioRef} autoPlay style={{ display: 'none' }} />
       <div className="rounded-2xl shadow-2xl w-full max-w-sm flex flex-col overflow-hidden" style={{ background: '#111310', border: '1px solid #1e2218' }}>
 
         {/* Header */}
@@ -306,7 +382,7 @@ export default function Dialer({ lead, onClose }: DialerProps) {
                   style={{ background: 'transparent', color: '#a0b890', lineHeight: '1.5' }}
                 />
                 <div className="px-3 py-2.5 flex gap-2 border-t border-[#1e3018]">
-                  <button onClick={draftFollowUp}
+                  <button onClick={() => draftFollowUp(tone)}
                     className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs"
                     style={{ background: '#1e2218', color: '#6b7a5a' }}>
                     <RefreshCw size={10} /> Redraft
@@ -321,11 +397,29 @@ export default function Dialer({ lead, onClose }: DialerProps) {
               </div>
             ) : (
               <div className="px-4 py-4 flex flex-col gap-3">
-                <p className="text-xs" style={{ color: '#4a5a3a' }}>
-                  No answer — send them a link to their preview site?
-                </p>
+                <p className="text-xs" style={{ color: '#4a5a3a' }}>No answer — send a follow-up with their site link?</p>
+                {/* Tone picker */}
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { id: 'warm', label: 'Warm' },
+                    { id: 'casual', label: 'Casual' },
+                    { id: 'direct', label: 'Direct' },
+                    { id: 'corporate', label: 'Corporate' },
+                    { id: 'fomo', label: 'Exclusive' },
+                  ].map(t => (
+                    <button key={t.id} onClick={() => setTone(t.id)}
+                      className="px-2.5 py-1 rounded-full text-xs font-bold transition-all"
+                      style={{
+                        background: tone === t.id ? '#c8f135' : '#1e2218',
+                        color: tone === t.id ? '#0d0e0b' : '#4a5a3a',
+                        border: `1px solid ${tone === t.id ? '#c8f135' : '#2a3a1a'}`,
+                      }}>
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
                 <div className="flex gap-2">
-                  <button onClick={draftFollowUp} disabled={drafting}
+                  <button onClick={() => draftFollowUp(tone)} disabled={drafting}
                     className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-bold"
                     style={{ background: '#c8f135', color: '#0d0e0b', opacity: drafting ? 0.7 : 1 }}>
                     {drafting ? <Loader2 size={12} className="animate-spin" /> : <MessageSquare size={12} />}
