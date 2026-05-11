@@ -1,119 +1,196 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Phone, PhoneOff, X, Loader2, PhoneCall, Volume2, PhoneMissed } from 'lucide-react'
+import { Phone, PhoneOff, X, Loader2, PhoneCall, Volume2, PhoneMissed, Mic, MicOff, MessageSquare, Send, RefreshCw } from 'lucide-react'
 
 interface DialerProps {
-  lead: { id: string; name: string; phone: string | null; category?: string | null; city?: string | null }
+  lead: {
+    id: string
+    name: string
+    phone: string | null
+    category?: string | null
+    city?: string | null
+    previewUrl?: string | null
+    slug?: string | null
+  }
   onClose: () => void
 }
 
-type CallState = 'idle' | 'calling' | 'ringing' | 'active' | 'ended' | 'error'
+type CallState = 'idle' | 'connecting' | 'ringing' | 'active' | 'ended' | 'error'
 
-const LOG_MAX = 30
+const LOG_MAX = 50
 
 function safeJson(v: unknown): string {
-  try { return JSON.stringify(v) }
-  catch { return String(v) }
+  try { return JSON.stringify(v) } catch { return String(v) }
 }
 
 export default function Dialer({ lead, onClose }: DialerProps) {
   const [callState, setCallState] = useState<CallState>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [duration, setDuration] = useState(0)
+  const [muted, setMuted] = useState(false)
   const [logs, setLogs] = useState<{ t: string; msg: string; ok: boolean }[]>([])
-  const [callId, setCallId] = useState<string | null>(null)
+
+  // Follow-up SMS state
+  const [showFollowUp, setShowFollowUp] = useState(false)
+  const [draftMsg, setDraftMsg] = useState('')
+  const [drafting, setDrafting] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [smsSent, setSmsSent] = useState(false)
+
+  const clientRef = useRef<unknown>(null)
+  const callRef = useRef<unknown>(null)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const callDurationRef = useRef(0)
 
   const log = useCallback((msg: string, ok = true) => {
     const t = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
-    const safe = typeof msg === 'string' ? msg : safeJson(msg)
-    setLogs(l => [...l.slice(-LOG_MAX + 1), { t, msg: safe, ok }])
-    console.log(`[Dialer ${t}]`, safe)
+    setLogs(l => [...l.slice(-LOG_MAX + 1), { t, msg: String(msg), ok }])
+    console.log(`[Dialer ${t}]`, msg)
   }, [])
 
-  // Poll call status while ringing/active
-  useEffect(() => {
-    if (callId && (callState === 'ringing' || callState === 'active')) {
-      pollRef.current = setInterval(async () => {
-        try {
-          const res = await fetch(`/api/call/status?callId=${callId}`)
-          if (!res.ok) return
-          const data = await res.json()
-          log(`Poll: ${data.state ?? 'unknown'}`)
-          if (data.state === 'active' && callState !== 'active') {
-            setCallState('active')
-            timerRef.current = setInterval(() => setDuration(d => d + 1), 1000)
-          }
-          if (data.state === 'hangup' || data.state === 'destroyed') {
-            setCallState('ended')
-            clearInterval(pollRef.current!)
-            clearInterval(timerRef.current!)
-          }
-        } catch { /* ignore poll errors */ }
-      }, 2000)
-    }
-    return () => { if (pollRef.current) clearInterval(pollRef.current) }
-  }, [callId, callState, log])
+  const cleanup = useCallback(() => {
+    clearInterval(timerRef.current!)
+    try { (callRef.current as { hangup?: () => void })?.hangup?.() } catch {}
+    try { (clientRef.current as { disconnect?: () => void })?.disconnect?.() } catch {}
+    callRef.current = null
+    clientRef.current = null
+  }, [])
+
+  useEffect(() => () => cleanup(), [cleanup])
+
+  // Track duration for "no answer" detection
+  useEffect(() => { callDurationRef.current = duration }, [duration])
 
   const startCall = useCallback(async () => {
     if (!lead.phone) return
-    setCallState('calling')
-    setDuration(0)
+    setCallState('connecting')
     setErrorMsg(null)
-    log(`Initiating call to ${lead.phone}…`)
+    setDuration(0)
+    setShowFollowUp(false)
+    setSmsSent(false)
+    log('Fetching WebRTC token…')
 
     try {
-      const res = await fetch('/api/call', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ leadId: lead.id, phone: lead.phone }),
+      const tokenRes = await fetch('/api/telnyx/token')
+      const tokenData = await tokenRes.json()
+      if (!tokenRes.ok) throw new Error(tokenData.error ?? 'Token fetch failed')
+      log('Token received ✓')
+
+      const { TelnyxRTC } = await import('@telnyx/webrtc')
+      const client = new TelnyxRTC({ login_token: tokenData.token })
+      clientRef.current = client
+
+      client.on('telnyx.ready', () => {
+        log('WebRTC ready — placing call…')
+        const call = client.newCall({
+          destinationNumber: lead.phone!,
+          callerNumber: process.env.NEXT_PUBLIC_TELNYX_PHONE ?? '+15303241556',
+          audio: true,
+          video: false,
+        })
+        callRef.current = call
+
+        call.on('telnyx.notification', (n: { call: { state: string } }) => {
+          const state = n?.call?.state
+          log(`Call state: ${state}`)
+          if (state === 'ringing' || state === 'trying') {
+            setCallState('ringing')
+          } else if (state === 'active') {
+            setCallState('active')
+            timerRef.current = setInterval(() => setDuration(d => d + 1), 1000)
+          } else if (state === 'hangup' || state === 'destroy' || state === 'done') {
+            clearInterval(timerRef.current!)
+            setCallState('ended')
+            // Offer follow-up if call was short / no answer and lead has no site yet,
+            // or always offer it for unanswered calls (< 5s active)
+            if (callDurationRef.current < 5) {
+              setShowFollowUp(true)
+            }
+          }
+        })
       })
-      const data = await res.json().catch(() => ({}))
-      log(`API response: ${res.status} — ${safeJson(data).slice(0, 100)}`, res.ok)
 
-      if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`)
+      client.on('telnyx.error', (err: unknown) => {
+        const msg = (err as { message?: string })?.message ?? safeJson(err)
+        log(`WebRTC error: ${msg}`, false)
+        setErrorMsg(msg)
+        setCallState('error')
+      })
 
-      setCallId(data.callSid)
-      setCallState('ringing')
-      log(`Your phone is ringing now. Call ID: ${data.callSid?.slice(0, 20)}…`)
+      client.on('telnyx.socket.close', () => {
+        if (['connecting', 'ringing'].includes(callState)) {
+          setCallState('ended')
+          setShowFollowUp(true)
+        }
+      })
+
+      log('Connecting to Telnyx…')
+      client.connect()
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
       log(`Error: ${msg}`, false)
       setErrorMsg(msg)
       setCallState('error')
     }
-  }, [lead, log])
+  }, [lead, log, callState])
 
-  const hangup = useCallback(async () => {
-    if (callId) {
-      log('Hanging up…')
-      await fetch('/api/call/hangup', {
+  const hangup = useCallback(() => {
+    log('Hanging up…')
+    cleanup()
+    setCallState('ended')
+    if (callDurationRef.current < 5) setShowFollowUp(true)
+  }, [cleanup, log])
+
+  const toggleMute = useCallback(() => {
+    const call = callRef.current as { muteAudio?: () => void; unmuteAudio?: () => void } | null
+    if (!call) return
+    if (muted) { call.unmuteAudio?.(); setMuted(false) }
+    else { call.muteAudio?.(); setMuted(true) }
+  }, [muted])
+
+  const draftFollowUp = useCallback(async () => {
+    setDrafting(true)
+    setDraftMsg('')
+    try {
+      const res = await fetch('/api/sms/draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ callId }),
-      }).catch(() => {})
+        body: JSON.stringify({ leadId: lead.id }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Draft failed')
+      setDraftMsg(data.message)
+    } catch (err) {
+      setDraftMsg('')
+      log(`Draft error: ${err instanceof Error ? err.message : String(err)}`, false)
     }
-    clearInterval(timerRef.current!)
-    clearInterval(pollRef.current!)
-    setCallState('ended')
-  }, [callId, log])
+    setDrafting(false)
+  }, [lead.id, log])
 
-  useEffect(() => () => {
-    clearInterval(timerRef.current!)
-    clearInterval(pollRef.current!)
-  }, [])
+  const sendFollowUp = useCallback(async () => {
+    if (!draftMsg) return
+    setSending(true)
+    try {
+      const res = await fetch('/api/sms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leadId: lead.id, message: draftMsg, isFollowUp: true }),
+      })
+      if (!res.ok) throw new Error('Send failed')
+      setSmsSent(true)
+      log('Follow-up SMS sent ✓')
+    } catch (err) {
+      log(`Send error: ${err instanceof Error ? err.message : String(err)}`, false)
+    }
+    setSending(false)
+  }, [draftMsg, lead.id, log])
 
   const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
 
   const stateColor: Record<CallState, string> = {
-    idle: '#3a4a2a', calling: '#d4a44a', ringing: '#4a9eff',
+    idle: '#3a4a2a', connecting: '#d4a44a', ringing: '#4a9eff',
     active: '#c8f135', ended: '#6b7a5a', error: '#d45a5a',
-  }
-  const stateLabel: Record<CallState, string> = {
-    idle: 'Ready', calling: 'Connecting…', ringing: '📱 Your phone is ringing…',
-    active: `Live — ${fmt(duration)}`, ended: 'Call ended', error: errorMsg ?? 'Error',
   }
 
   return (
@@ -137,16 +214,16 @@ export default function Dialer({ lead, onClose }: DialerProps) {
           <button onClick={onClose} style={{ color: '#3a4a2a' }}><X size={16} /></button>
         </div>
 
-        {/* Status */}
+        {/* Call UI */}
         <div className="px-5 py-6 flex flex-col items-center gap-5">
           <div className="w-20 h-20 rounded-full flex items-center justify-center transition-all"
                style={{ background: `${stateColor[callState]}15`, border: `2px solid ${stateColor[callState]}40` }}>
-            {callState === 'calling'
+            {callState === 'connecting'
               ? <Loader2 size={32} className="animate-spin" style={{ color: stateColor[callState] }} />
               : callState === 'ringing'
                 ? <Phone size={32} className="animate-bounce" style={{ color: stateColor[callState] }} />
                 : callState === 'active'
-                  ? <Volume2 size={32} style={{ color: '#c8f135' }} />
+                  ? <Volume2 size={32} className="animate-pulse" style={{ color: '#c8f135' }} />
                   : callState === 'ended'
                     ? <PhoneMissed size={32} style={{ color: '#6b7a5a' }} />
                     : <Phone size={32} style={{ color: stateColor[callState] }} />}
@@ -154,34 +231,42 @@ export default function Dialer({ lead, onClose }: DialerProps) {
 
           <div className="text-center">
             <p className="text-base font-bold text-white font-mono">{lead.phone}</p>
-            <p className="text-sm mt-1 transition-all" style={{ color: stateColor[callState] }}>
-              {stateLabel[callState]}
+            <p className="text-sm mt-1" style={{ color: stateColor[callState] }}>
+              {callState === 'idle' && 'Ready'}
+              {callState === 'connecting' && 'Connecting…'}
+              {callState === 'ringing' && 'Ringing…'}
+              {callState === 'active' && `Live — ${fmt(duration)}`}
+              {callState === 'ended' && (showFollowUp ? 'No answer' : 'Call ended')}
+              {callState === 'error' && (errorMsg ?? 'Error')}
             </p>
-            {callState === 'ringing' && (
-              <p className="text-xs mt-1" style={{ color: '#3a4a2a' }}>
-                Pick up — it will bridge you to {lead.phone}
-              </p>
-            )}
           </div>
 
-          {/* Controls */}
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-center">
             {(callState === 'idle' || callState === 'error') && (
               <button onClick={startCall}
-                className="w-14 h-14 rounded-full flex items-center justify-center"
+                className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg"
                 style={{ background: '#c8f135', color: '#0d0e0b' }}>
                 <Phone size={22} />
               </button>
             )}
-            {(callState === 'calling' || callState === 'ringing' || callState === 'active') && (
-              <button onClick={hangup}
-                className="w-14 h-14 rounded-full flex items-center justify-center"
-                style={{ background: '#d45a5a', color: '#fff' }}>
-                <PhoneOff size={22} />
-              </button>
+            {(callState === 'connecting' || callState === 'ringing' || callState === 'active') && (
+              <>
+                {callState === 'active' && (
+                  <button onClick={toggleMute}
+                    className="w-11 h-11 rounded-full flex items-center justify-center"
+                    style={{ background: muted ? '#d45a5a30' : '#c8f13520', border: `1px solid ${muted ? '#d45a5a60' : '#c8f13540'}`, color: muted ? '#d45a5a' : '#c8f135' }}>
+                    {muted ? <MicOff size={16} /> : <Mic size={16} />}
+                  </button>
+                )}
+                <button onClick={hangup}
+                  className="w-14 h-14 rounded-full flex items-center justify-center"
+                  style={{ background: '#d45a5a', color: '#fff' }}>
+                  <PhoneOff size={22} />
+                </button>
+              </>
             )}
-            {callState === 'ended' && (
-              <button onClick={() => { setCallState('idle'); setDuration(0); setCallId(null) }}
+            {callState === 'ended' && !showFollowUp && (
+              <button onClick={() => { setCallState('idle'); setDuration(0) }}
                 className="w-14 h-14 rounded-full flex items-center justify-center"
                 style={{ background: '#c8f135', color: '#0d0e0b' }}>
                 <Phone size={22} />
@@ -190,11 +275,78 @@ export default function Dialer({ lead, onClose }: DialerProps) {
           </div>
         </div>
 
-        {/* Live log panel */}
+        {/* Follow-up SMS panel */}
+        {callState === 'ended' && showFollowUp && (
+          <div className="mx-4 mb-4 rounded-xl overflow-hidden flex flex-col gap-0" style={{ background: '#0d1a0d', border: '1px solid #1e3018' }}>
+            <div className="px-4 py-3 flex items-center justify-between border-b border-[#1e3018]">
+              <div className="flex items-center gap-2">
+                <MessageSquare size={13} style={{ color: '#c8f135' }} />
+                <p className="text-xs font-bold" style={{ color: '#c8f135' }}>Send follow-up SMS</p>
+              </div>
+              {!smsSent && (
+                <button onClick={() => { setShowFollowUp(false); setCallState('idle'); setDuration(0) }}
+                  className="text-xs" style={{ color: '#3a4a2a' }}>skip</button>
+              )}
+            </div>
+
+            {smsSent ? (
+              <div className="px-4 py-4 flex items-center gap-2">
+                <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#c8f13530' }}>
+                  <Send size={10} style={{ color: '#c8f135' }} />
+                </div>
+                <p className="text-xs font-bold" style={{ color: '#c8f135' }}>Message sent!</p>
+              </div>
+            ) : draftMsg ? (
+              <div className="flex flex-col gap-0">
+                <textarea
+                  value={draftMsg}
+                  onChange={e => setDraftMsg(e.target.value)}
+                  rows={5}
+                  className="w-full px-4 py-3 text-xs font-mono resize-none focus:outline-none"
+                  style={{ background: 'transparent', color: '#a0b890', lineHeight: '1.5' }}
+                />
+                <div className="px-3 py-2.5 flex gap-2 border-t border-[#1e3018]">
+                  <button onClick={draftFollowUp}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs"
+                    style={{ background: '#1e2218', color: '#6b7a5a' }}>
+                    <RefreshCw size={10} /> Redraft
+                  </button>
+                  <button onClick={sendFollowUp} disabled={sending}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-bold"
+                    style={{ background: '#c8f135', color: '#0d0e0b', opacity: sending ? 0.6 : 1 }}>
+                    {sending ? <Loader2 size={11} className="animate-spin" /> : <Send size={11} />}
+                    {sending ? 'Sending…' : 'Send'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="px-4 py-4 flex flex-col gap-3">
+                <p className="text-xs" style={{ color: '#4a5a3a' }}>
+                  No answer — send them a link to their preview site?
+                </p>
+                <div className="flex gap-2">
+                  <button onClick={draftFollowUp} disabled={drafting}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-bold"
+                    style={{ background: '#c8f135', color: '#0d0e0b', opacity: drafting ? 0.7 : 1 }}>
+                    {drafting ? <Loader2 size={12} className="animate-spin" /> : <MessageSquare size={12} />}
+                    {drafting ? 'Drafting…' : 'Draft with AI'}
+                  </button>
+                  <button onClick={() => { setShowFollowUp(false); setCallState('idle'); setDuration(0) }}
+                    className="px-4 py-2.5 rounded-lg text-xs font-bold"
+                    style={{ background: '#1e2218', color: '#6b7a5a' }}>
+                    Skip
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Debug log */}
         {logs.length > 0 && (
           <div className="mx-4 mb-4 rounded-lg overflow-hidden" style={{ background: '#0a0b09', border: '1px solid #1e2218' }}>
             <p className="px-3 py-1.5 text-xs font-bold border-b border-[#1e2218]" style={{ color: '#3a4a2a' }}>Debug log</p>
-            <div className="p-2 max-h-36 overflow-y-auto flex flex-col gap-0.5">
+            <div className="p-2 max-h-28 overflow-y-auto flex flex-col gap-0.5">
               {logs.map((l, i) => (
                 <p key={i} className="text-xs font-mono" style={{ color: l.ok ? '#6b7a5a' : '#d45a5a' }}>
                   <span style={{ color: '#2a3a1a' }}>{l.t} </span>{l.msg}
@@ -203,7 +355,6 @@ export default function Dialer({ lead, onClose }: DialerProps) {
             </div>
           </div>
         )}
-
       </div>
     </div>
   )
