@@ -129,6 +129,13 @@ model SmsLog {
   sentAt     DateTime @default(now())
 }
 
+model PendingCall {
+  id         String   @id @default(cuid())
+  leadId     String
+  leadPhone  String
+  createdAt  DateTime @default(now())
+}
+
 enum LeadStatus {
   FOUND
   CALLED

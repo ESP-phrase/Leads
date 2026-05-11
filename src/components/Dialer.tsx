@@ -33,7 +33,7 @@ export default function Dialer({ lead, onClose }: DialerProps) {
     console.log(`[Dialer ${t}]`, safe)
   }, [])
 
-  // Poll call status while active
+  // Poll call status while ringing/active
   useEffect(() => {
     if (callId && (callState === 'ringing' || callState === 'active')) {
       pollRef.current = setInterval(async () => {
@@ -77,7 +77,7 @@ export default function Dialer({ lead, onClose }: DialerProps) {
 
       setCallId(data.callSid)
       setCallState('ringing')
-      log(`Call initiated — your phone will ring now. Call ID: ${data.callSid?.slice(0, 20)}…`)
+      log(`Your phone is ringing now. Call ID: ${data.callSid?.slice(0, 20)}…`)
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
       log(`Error: ${msg}`, false)
@@ -159,7 +159,7 @@ export default function Dialer({ lead, onClose }: DialerProps) {
             </p>
             {callState === 'ringing' && (
               <p className="text-xs mt-1" style={{ color: '#3a4a2a' }}>
-                Pick up your phone — it will bridge to {lead.phone}
+                Pick up — it will bridge you to {lead.phone}
               </p>
             )}
           </div>

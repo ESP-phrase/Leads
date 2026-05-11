@@ -513,7 +513,7 @@ export default function DashboardPage() {
 
       {/* Test call button — fixed bottom right */}
       <button
-        onClick={() => setDialerLead({ id: 'test', name: 'Test Call (Telnyx → You)', phone: process.env.NEXT_PUBLIC_TELNYX_PHONE ?? '+15303241556' } as Lead)}
+        onClick={() => setDialerLead({ id: 'test', name: 'Test Call (Telnyx → You)', phone: process.env.NEXT_PUBLIC_OPERATOR_PHONE ?? '+15127967462' } as Lead)}
         className="fixed bottom-24 right-4 md:bottom-6 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold shadow-lg transition-all hover:scale-105"
         style={{ background: '#c8f13520', border: '1px solid #c8f13550', color: '#c8f135' }}
         title="Call yourself to test the dialer"

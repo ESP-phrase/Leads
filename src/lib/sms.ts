@@ -45,8 +45,8 @@ export async function initiateCall(to: string): Promise<{ sid: string; status: s
   if (!operatorPhone) throw new Error('OPERATOR_PHONE_NUMBER not set')
   if (!process.env.TELNYX_API_KEY) throw new Error('TELNYX_API_KEY not set')
 
-  // Call the operator first. When they pick up they get connected to the lead.
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://landline-pink.vercel.app'
+  // Always use the public Vercel URL for webhooks — localhost isn't reachable by Telnyx
+  const baseUrl = process.env.TELNYX_WEBHOOK_BASE_URL ?? 'https://landline-pink.vercel.app'
 
   // If calling from Telnyx number to itself (test mode), call operator directly
   const isSelfTest = to === from
