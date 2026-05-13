@@ -137,45 +137,47 @@ export default function Dialer({ lead, onClose }: DialerProps) {
           remoteElement: remoteAudioRef.current ?? undefined,
         })
         callRef.current = call
+      })
 
-        call.on('telnyx.notification', (n: { call: { state: string; remoteStream?: MediaStream } }) => {
-          const state = n?.call?.state
-          log(`Call state: ${state}`)
-          if (state === 'ringing' || state === 'trying') {
-            setCallState('ringing')
-            startRingback()
-          } else if (state === 'active') {
-            stopRingback()
-            setCallState('active')
-            timerRef.current = setInterval(() => setDuration(d => d + 1), 1000)
-            // Attach remote audio stream to DOM element
-            const remoteStream = (n.call as { remoteStream?: MediaStream }).remoteStream
-              ?? (callRef.current as { remoteStream?: MediaStream })?.remoteStream
-            if (remoteStream && remoteAudioRef.current) {
-              remoteAudioRef.current.srcObject = remoteStream
-              remoteAudioRef.current.play().catch(e => log(`Audio play error: ${e}`, false))
-              log('Remote audio attached ✓')
-            } else if (remoteStream) {
-              // Fallback: dynamic audio element
-              const el = new Audio()
-              el.srcObject = remoteStream
-              el.autoplay = true
-              el.play().catch(() => {})
-              audioRef.current = el
-              log('Remote audio attached (fallback) ✓')
-            } else {
-              log('No remote stream yet — audio via remoteElement', true)
-            }
-          } else if (state === 'hangup' || state === 'destroy' || state === 'done') {
-            clearInterval(timerRef.current!)
-            if (audioRef.current) {
-              audioRef.current.srcObject = null
-              audioRef.current = null
-            }
-            setCallState('ended')
-            setShowFollowUp(true)
+      // Telnyx notifications fire on the client, not the call
+      client.on('telnyx.notification', (n: { call?: { state?: string; remoteStream?: MediaStream } }) => {
+        const state = n?.call?.state
+        if (!state) return
+        log(`Call state: ${state}`)
+        if (state === 'ringing' || state === 'trying') {
+          setCallState('ringing')
+          startRingback()
+        } else if (state === 'active') {
+          stopRingback()
+          setCallState('active')
+          timerRef.current = setInterval(() => setDuration(d => d + 1), 1000)
+          // Attach remote audio stream to DOM element
+          const remoteStream = n.call?.remoteStream
+            ?? (callRef.current as { remoteStream?: MediaStream } | null)?.remoteStream
+          if (remoteStream && remoteAudioRef.current) {
+            remoteAudioRef.current.srcObject = remoteStream
+            remoteAudioRef.current.play().catch(e => log(`Audio play error: ${e}`, false))
+            log('Remote audio attached ✓')
+          } else if (remoteStream) {
+            // Fallback: dynamic audio element
+            const el = new Audio()
+            el.srcObject = remoteStream
+            el.autoplay = true
+            el.play().catch(() => {})
+            audioRef.current = el
+            log('Remote audio attached (fallback) ✓')
+          } else {
+            log('No remote stream yet — audio via remoteElement', true)
           }
-        })
+        } else if (state === 'hangup' || state === 'destroy' || state === 'done') {
+          clearInterval(timerRef.current!)
+          if (audioRef.current) {
+            audioRef.current.srcObject = null
+            audioRef.current = null
+          }
+          setCallState('ended')
+          setShowFollowUp(true)
+        }
       })
 
       client.on('telnyx.error', (err: unknown) => {
