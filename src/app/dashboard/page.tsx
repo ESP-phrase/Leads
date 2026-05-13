@@ -6,7 +6,7 @@ import {
   Globe, MessageSquare, ExternalLink, Star, Phone,
   RefreshCw, Plus, ChevronDown, TrendingUp, Users,
   DollarSign, Zap, PhoneCall, ArrowRight, BarChart3,
-  Search, CheckCircle2, Receipt, Check, X as XIcon, Layers, Repeat2,
+  Search, CheckCircle2, Receipt, Check, X as XIcon, Layers, Repeat2, Sparkles,
 } from 'lucide-react'
 import { SMS_TEMPLATES } from '@/lib/sms-templates'
 import type { Lead, LeadStatus } from '@/types'
@@ -47,6 +47,7 @@ export default function DashboardPage() {
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null)
   const [dialerLead, setDialerLead] = useState<Lead | null>(null)
   const [sequencingId, setSequencingId] = useState<string | null>(null)
+  const [enrichingId, setEnrichingId] = useState<string | null>(null)
 
   function showToast(msg: string, ok = true) {
     setToast({ msg, ok })
@@ -245,6 +246,26 @@ export default function DashboardPage() {
       showToast(error ?? 'Failed to start sequence', false)
     }
     setSequencingId(null)
+  }
+
+  async function handleEnrich(lead: Lead) {
+    setEnrichingId(lead.id)
+    try {
+      const res = await fetch(`/api/leads/${lead.id}/enrich`, { method: 'POST' })
+      if (res.ok) {
+        const { result } = await res.json()
+        const conf = result?.confidence ?? 'none'
+        const owner = result?.ownerName ?? 'no owner found'
+        showToast(`Enriched ${lead.name}: ${owner} (${conf})`)
+        await fetchLeads()
+      } else {
+        const { error } = await res.json().catch(() => ({ error: 'Failed' }))
+        showToast(error ?? 'Enrichment failed', false)
+      }
+    } catch {
+      showToast('Enrichment failed', false)
+    }
+    setEnrichingId(null)
   }
 
   const filtered = statusFilter === 'ALL' ? leads : leads.filter(l => l.status === statusFilter)
@@ -488,12 +509,13 @@ export default function DashboardPage() {
               {/* Rows */}
               {filtered.map((lead, i) => (
                 <Row key={lead.id} lead={lead} statuses={STATUSES} workers={workers} isEven={i % 2 === 0}
-                     generatingId={generatingId} sendingId={sendingId} invoicingId={invoicingId} sequencingId={sequencingId}
+                     generatingId={generatingId} sendingId={sendingId} invoicingId={invoicingId} sequencingId={sequencingId} enrichingId={enrichingId}
                      selected={selectedIds.has(lead.id)} onToggleSelect={toggleSelect}
                      onStatusChange={updateStatus} onAssign={assignWorker} onGenerate={generateSite}
                      onSms={sendSms} onInvoice={sendInvoice}
                      onCall={(l) => setDialerLead(l)}
-                     onSequence={handleSequence} />
+                     onSequence={handleSequence}
+                     onEnrich={handleEnrich} />
               ))}
 
               {/* Add leads prompt */}
@@ -529,19 +551,21 @@ export default function DashboardPage() {
   )
 }
 
-function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoicingId, sequencingId, selected, onToggleSelect, onStatusChange, onAssign, onGenerate, onSms, onInvoice, onCall, onSequence }: {
+function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoicingId, sequencingId, enrichingId, selected, onToggleSelect, onStatusChange, onAssign, onGenerate, onSms, onInvoice, onCall, onSequence, onEnrich }: {
   lead: Lead; statuses: LeadStatus[]; workers: { id: string; name: string }[]; isEven: boolean
-  generatingId: string | null; sendingId: string | null; invoicingId: string | null; sequencingId: string | null
+  generatingId: string | null; sendingId: string | null; invoicingId: string | null; sequencingId: string | null; enrichingId: string | null
   selected: boolean; onToggleSelect: (id: string) => void
   onStatusChange: (id: string, s: LeadStatus) => void
   onAssign: (id: string, workerId: string | null) => void
   onGenerate: (l: Lead) => void; onSms: (l: Lead) => void; onInvoice: (l: Lead) => void
-  onCall: (l: Lead) => void; onSequence: (l: Lead) => void
+  onCall: (l: Lead) => void; onSequence: (l: Lead) => void; onEnrich: (l: Lead) => void
 }) {
   const isGen = generatingId === lead.id
   const isSms = sendingId === lead.id
   const isInv = invoicingId === lead.id
   const isSeq = sequencingId === lead.id
+  const isEnr = enrichingId === lead.id
+  const leadAny = lead as Lead & { ownerName?: string | null; enrichmentConfidence?: string | null }
 
   return (
     <div className="grid items-center border-b border-[#161a11] hover:bg-[#ffffff02] transition-colors"
@@ -559,6 +583,14 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoici
           <div className="flex items-center gap-1 mt-0.5 text-xs" style={{ color: '#3a4a2a' }}>
             <Phone size={9} />
             <a href={`tel:${lead.phone}`} className="hover:text-[#6b7a5a] transition-colors">{formatPhone(lead.phone)}</a>
+          </div>
+        )}
+        {leadAny.ownerName && (
+          <div className="flex items-center gap-1 mt-0.5 text-xs" title={`Confidence: ${leadAny.enrichmentConfidence ?? 'unknown'}`}>
+            <Sparkles size={9} style={{ color: '#c8f135' }} />
+            <span style={{ color: leadAny.enrichmentConfidence === 'high' ? '#c8f135' : leadAny.enrichmentConfidence === 'medium' ? '#9b6fd4' : '#4a5a3a' }}>
+              {leadAny.ownerName}
+            </span>
           </div>
         )}
       </div>
@@ -651,6 +683,12 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoici
           className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px] font-medium border border-[#1e2218] hover:border-[#2e3828] disabled:opacity-25 transition-all flex-shrink-0"
           style={{ color: '#9b6fd4' }}>
           <Repeat2 size={10} />{isSeq ? '…' : 'Drip'}
+        </button>
+        <button onClick={() => onEnrich(lead)} disabled={isEnr}
+          title={leadAny.ownerName ? `Owner: ${leadAny.ownerName} (${leadAny.enrichmentConfidence})` : 'Find owner name + contact info'}
+          className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px] font-medium border border-[#1e2218] hover:border-[#2e3828] disabled:opacity-25 transition-all flex-shrink-0"
+          style={{ color: leadAny.ownerName ? '#c8f135' : '#4a5a3a' }}>
+          <Sparkles size={10} />{isEnr ? '…' : leadAny.ownerName ? '✓' : 'Find'}
         </button>
       </div>
     </div>

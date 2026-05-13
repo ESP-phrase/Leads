@@ -83,6 +83,16 @@ model Lead {
   invoicePaid Boolean  @default(false)
   invoicedAt  DateTime?
 
+  // Enrichment (Google Places + website scrape + GPT extraction)
+  ownerName        String?
+  ownerEmail       String?
+  ownerPhone       String?
+  ownerTitle       String?
+  aboutSnippet     String?
+  enrichmentConfidence String?   // 'high' | 'medium' | 'low' | 'none'
+  enrichmentNotes  String?       // raw model output for debugging
+  enrichedAt       DateTime?
+
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }
