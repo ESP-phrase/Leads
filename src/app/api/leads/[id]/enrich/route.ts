@@ -13,6 +13,10 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
     city: lead.city,
     placeId: lead.placeId,
     websiteUrl: lead.websiteUrl,
+    rating: lead.rating,
+    reviewCount: lead.reviewCount,
+    hasWebsite: lead.hasWebsite,
+    phone: lead.phone,
   })
 
   const updated = await db.lead.update({
@@ -26,6 +30,8 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
       enrichmentConfidence: result.confidence,
       enrichmentNotes: `sources: ${result.sources.join(',')} | ${result.notes}`.slice(0, 500),
       enrichedAt: new Date(),
+      wealthScore: result.wealthScore,
+      wealthSignals: result.wealthSignals.join(', ').slice(0, 500),
     },
   })
 

@@ -16,8 +16,95 @@ export interface EnrichmentResult {
   ownerTitle: string | null
   aboutSnippet: string | null
   confidence: 'high' | 'medium' | 'low' | 'none'
+  wealthScore: number | null    // 0-100
+  wealthSignals: string[]       // ['high reviews', 'premium keywords', 'multi-location', 'established 1985']
   notes: string
   sources: string[]
+}
+
+// Premium / wealth keywords that bump the score when found in text
+const PREMIUM_KEYWORDS = [
+  'luxury', 'premium', 'fine', 'gourmet', 'artisan', 'craft', 'boutique',
+  'award-winning', 'award winning', 'michelin', 'featured in', 'voted best',
+  'family-owned for', 'since 19', 'since 20', 'over 20 years', 'over 30 years',
+  'multiple locations', 'two locations', 'three locations', 'locations across',
+  'flagship', 'signature', 'curated', 'handcrafted', 'high-end',
+  'expert', 'specialist', 'top-rated', 'best in', 'voted',
+]
+
+/** Compute a 0-100 wealth proxy score from lead + enrichment data. */
+function computeWealthScore(input: {
+  rating: number | null
+  reviewCount: number | null
+  hasWebsite: boolean
+  hasPhone: boolean
+  aboutSnippet: string | null
+  combinedText: string
+}): { score: number; signals: string[] } {
+  let score = 0
+  const signals: string[] = []
+  const text = (input.combinedText + ' ' + (input.aboutSnippet ?? '')).toLowerCase()
+
+  // Reviews × rating — strongest popularity signal (0-40 pts)
+  if (input.rating && input.reviewCount) {
+    const reviewPts = Math.min(30, Math.log10(input.reviewCount + 1) * 12)  // 10→12, 100→24, 1000→36, capped at 30
+    const ratingPts = Math.max(0, (input.rating - 3.5) * 6.6)               // 3.5→0, 4→3, 4.5→6.6, 5→10
+    score += reviewPts + ratingPts
+    if (input.reviewCount >= 500) signals.push(`${input.reviewCount} reviews`)
+    else if (input.reviewCount >= 100) signals.push(`${input.reviewCount} reviews`)
+    if (input.rating >= 4.7) signals.push(`${input.rating}★ rating`)
+  }
+
+  // Has website (10 pts)
+  if (input.hasWebsite) {
+    score += 10
+    signals.push('has website')
+  }
+
+  // Has listed phone (4 pts)
+  if (input.hasPhone) {
+    score += 4
+  }
+
+  // Premium keyword hits (up to 20 pts)
+  const hits = PREMIUM_KEYWORDS.filter(k => text.includes(k))
+  if (hits.length) {
+    score += Math.min(20, hits.length * 4)
+    // Keep only the most informative signals
+    signals.push(...hits.slice(0, 3).map(h => `"${h}"`))
+  }
+
+  // Year-founded signal (e.g. "since 1985", "established 1962") — adds 8 pts if pre-2010
+  const yearMatch = text.match(/(?:since|established|founded(?:\s+in)?|est\.?)\s+(\d{4})/i)
+  if (yearMatch) {
+    const year = parseInt(yearMatch[1], 10)
+    if (year > 1800 && year < new Date().getFullYear()) {
+      const age = new Date().getFullYear() - year
+      if (age >= 15) {
+        score += 8
+        signals.push(`established ${year} (${age}y)`)
+      } else if (age >= 5) {
+        score += 4
+        signals.push(`since ${year}`)
+      }
+    }
+  }
+
+  // Multi-location signal (8 pts)
+  if (/(\d+|two|three|four|five|several|multiple)\s+locations/i.test(text) || /locations\s+across/i.test(text)) {
+    score += 8
+    signals.push('multi-location')
+  }
+
+  // Catering / events / corporate — wealth-adjacent business model (5 pts)
+  if (/\bcatering\b|\bevents\b|\bcorporate\b|\bweddings\b|\bprivate\s+events\b/i.test(text)) {
+    score += 5
+    signals.push('catering/events')
+  }
+
+  // Clamp
+  score = Math.max(0, Math.min(100, Math.round(score)))
+  return { score, signals }
 }
 
 const EMPTY_RESULT: EnrichmentResult = {
@@ -27,6 +114,8 @@ const EMPTY_RESULT: EnrichmentResult = {
   ownerTitle: null,
   aboutSnippet: null,
   confidence: 'none',
+  wealthScore: null,
+  wealthSignals: [],
   notes: 'No data found',
   sources: [],
 }
@@ -180,6 +269,8 @@ Return ONLY the JSON object, no markdown.`
       ownerTitle: parsed.ownerTitle ?? null,
       aboutSnippet: parsed.aboutSnippet ?? null,
       confidence: (parsed.confidence as EnrichmentResult['confidence']) ?? 'none',
+      wealthScore: null,
+      wealthSignals: [],
       notes: raw.slice(0, 500),
       sources: [],
     }
@@ -202,6 +293,8 @@ function mergeResults(a: EnrichmentResult, b: EnrichmentResult): EnrichmentResul
     ownerTitle: primary.ownerTitle ?? secondary.ownerTitle,
     aboutSnippet: primary.aboutSnippet ?? secondary.aboutSnippet,
     confidence: primary.confidence,
+    wealthScore: primary.wealthScore ?? secondary.wealthScore,
+    wealthSignals: primary.wealthSignals.length ? primary.wealthSignals : secondary.wealthSignals,
     notes: `${primary.notes} | ${secondary.notes}`.slice(0, 500),
     sources: [...primary.sources, ...secondary.sources],
   }
@@ -213,6 +306,10 @@ export async function enrichLead(lead: {
   city: string | null
   placeId: string | null
   websiteUrl: string | null
+  rating: number | null
+  reviewCount: number | null
+  hasWebsite: boolean
+  phone: string | null
 }): Promise<EnrichmentResult> {
   const sources: string[] = []
   let result: EnrichmentResult = EMPTY_RESULT
@@ -246,15 +343,29 @@ export async function enrichLead(lead: {
   }
 
   // Step 4: Fallback — DDG search if confidence is still none/low and we haven't tried it
+  let ddgText = ''
   if (result.confidence === 'none' || result.confidence === 'low') {
     const query = `"${lead.name}" ${lead.city ?? ''} owner founder`
-    const ddgText = await ddgSearch(query)
+    ddgText = await ddgSearch(query)
     if (ddgText) {
       const fallback = await extractWithGpt(lead.name, lead.city, ddgText)
       fallback.sources = ['ddg']
       result = mergeResults(result, fallback)
     }
   }
+
+  // Step 5: Compute wealth proxy from all gathered text + lead signals
+  const allText = [placesText, websiteText, ddgText, result.aboutSnippet ?? ''].join('\n')
+  const wealth = computeWealthScore({
+    rating: lead.rating,
+    reviewCount: lead.reviewCount,
+    hasWebsite: lead.hasWebsite,
+    hasPhone: Boolean(lead.phone),
+    aboutSnippet: result.aboutSnippet,
+    combinedText: allText,
+  })
+  result.wealthScore = wealth.score
+  result.wealthSignals = wealth.signals
 
   return result
 }

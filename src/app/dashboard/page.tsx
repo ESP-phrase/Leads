@@ -565,7 +565,19 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoici
   const isInv = invoicingId === lead.id
   const isSeq = sequencingId === lead.id
   const isEnr = enrichingId === lead.id
-  const leadAny = lead as Lead & { ownerName?: string | null; enrichmentConfidence?: string | null }
+  const leadAny = lead as Lead & {
+    ownerName?: string | null
+    enrichmentConfidence?: string | null
+    wealthScore?: number | null
+    wealthSignals?: string | null
+  }
+  // Color the wealth badge: red < 30, orange < 50, yellow < 70, green ≥ 70
+  const wealthColor = (s: number | null | undefined) =>
+    s == null ? '#3a4a2a'
+    : s >= 70 ? '#c8f135'
+    : s >= 50 ? '#e8c84a'
+    : s >= 30 ? '#d49a4a'
+    : '#7a5a3a'
 
   return (
     <div className="grid items-center border-b border-[#161a11] hover:bg-[#ffffff02] transition-colors"
@@ -591,6 +603,27 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoici
             <span style={{ color: leadAny.enrichmentConfidence === 'high' ? '#c8f135' : leadAny.enrichmentConfidence === 'medium' ? '#9b6fd4' : '#4a5a3a' }}>
               {leadAny.ownerName}
             </span>
+          </div>
+        )}
+        {leadAny.wealthScore != null && (
+          <div className="flex items-center gap-1 mt-0.5 text-xs"
+               title={leadAny.wealthSignals ? `Signals: ${leadAny.wealthSignals}` : 'Wealth proxy score (0-100)'}>
+            <span style={{
+              padding: '1px 6px',
+              borderRadius: 4,
+              fontSize: 10,
+              fontWeight: 700,
+              background: `${wealthColor(leadAny.wealthScore)}20`,
+              color: wealthColor(leadAny.wealthScore),
+              border: `1px solid ${wealthColor(leadAny.wealthScore)}40`,
+            }}>
+              ${leadAny.wealthScore}
+            </span>
+            {leadAny.wealthSignals && (
+              <span style={{ color: '#3a4a2a', fontSize: 10 }} className="truncate max-w-[140px]">
+                {leadAny.wealthSignals.split(',').slice(0, 2).join(',')}
+              </span>
+            )}
           </div>
         )}
       </div>

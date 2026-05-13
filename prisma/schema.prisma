@@ -93,6 +93,10 @@ model Lead {
   enrichmentNotes  String?       // raw model output for debugging
   enrichedAt       DateTime?
 
+  // Wealth proxy — 0-100 score computed from available signals
+  wealthScore      Int?
+  wealthSignals    String?       // human-readable list of signals (e.g. "high reviews, premium keywords, established")
+
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }
