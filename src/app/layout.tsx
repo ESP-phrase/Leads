@@ -2,10 +2,10 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://siteforge.app'
-const SITE_NAME = 'SiteForge'
+const SITE_NAME = 'WebHustle'
 const GSC_VERIFICATION = process.env.GOOGLE_SITE_VERIFICATION
-const DEFAULT_TITLE = 'SiteForge — Earn $119 Per Sale Selling Websites to Local Businesses'
-const DEFAULT_DESC = 'Join SiteForge and earn $119 every time a local business buys a website. We build the site, you send a text. Work from your phone, get paid weekly. Apply for $5 — refunded if not approved.'
+const DEFAULT_TITLE = 'WebHustle — Earn $119 Per Sale Selling Websites to Local Businesses'
+const DEFAULT_DESC = 'Join WebHustle and earn $119 every time a local business buys a website. We build the site, you send a text. Work from your phone, get paid weekly. Apply for $5 — refunded if not approved.'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

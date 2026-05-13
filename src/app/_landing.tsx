@@ -1071,19 +1071,58 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer style={{ borderTop: '1px solid #1a1e14', padding: '40px 1.5rem 32px', textAlign: 'center' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
-          <Logo size={32} textSize="lg" />
+      <footer style={{ borderTop: '1px solid #1a1e14', background: '#080908', padding: '60px 1.5rem 40px' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
+
+          {/* Brand + description */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+            <Logo size={32} textSize="lg" />
+          </div>
+          <p style={{ textAlign: 'center', fontSize: 14, color: '#5a6a4a', maxWidth: 560, margin: '0 auto 32px', lineHeight: 1.7 }}>
+            WebHustle connects independent sales agents with local businesses that need websites.
+            Agents refer businesses; WebHustle builds and delivers the site. Agents earn $119 per closed sale.
+          </p>
+
+          {/* Links row */}
+          <div style={{ display: 'flex', gap: 24, justifyContent: 'center', marginBottom: 32, flexWrap: 'wrap' }}>
+            <a href="#math"   style={{ fontSize: 13, color: '#5a6a4a', textDecoration: 'none' }}>The math</a>
+            <a href="#workers" style={{ fontSize: 13, color: '#5a6a4a', textDecoration: 'none' }}>Workers</a>
+            <a href="#faq"    style={{ fontSize: 13, color: '#5a6a4a', textDecoration: 'none' }}>FAQ</a>
+            <Link href="/terms"   style={{ fontSize: 13, color: '#5a6a4a', textDecoration: 'none' }}>Terms of Service</Link>
+            <Link href="/privacy" style={{ fontSize: 13, color: '#5a6a4a', textDecoration: 'none' }}>Privacy Policy</Link>
+            <Link href="/login"   style={{ fontSize: 13, color: '#5a6a4a', textDecoration: 'none' }}>Sign in</Link>
+          </div>
+
+          {/* SMS disclosure */}
+          <div style={{
+            borderTop: '1px solid #1a1e14', paddingTop: 28, marginBottom: 24,
+          }}>
+            <p style={{ fontSize: 12, color: '#3a4a2a', lineHeight: 1.8, maxWidth: 760, margin: '0 auto', textAlign: 'center' }}>
+              <strong style={{ color: '#4a5a3a' }}>SMS Disclosure:</strong> By providing your phone number and opting in, you consent to receive
+              text messages from WebHustle regarding your application, account status, and service updates.
+              Message frequency varies. Message &amp; data rates may apply. Reply <strong style={{ color: '#4a5a3a' }}>STOP</strong> to
+              unsubscribe at any time. Reply <strong style={{ color: '#4a5a3a' }}>HELP</strong> for help.
+              Your mobile information will not be sold or shared with third parties for promotional
+              or marketing purposes. See our{' '}
+              <Link href="/privacy" style={{ color: '#5a6a4a', textDecoration: 'underline' }}>Privacy Policy</Link>{' '}
+              and{' '}
+              <Link href="/terms" style={{ color: '#5a6a4a', textDecoration: 'underline' }}>Terms of Service</Link>{' '}
+              for full details.
+            </p>
+          </div>
+
+          {/* Contact + copyright */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 16, alignItems: 'center' }}>
+            <p style={{ fontSize: 11, color: '#2a3a1a', margin: 0 }}>© {new Date().getFullYear()} WebHustle · All rights reserved</p>
+            <span style={{ fontSize: 11, color: '#1e2218' }}>·</span>
+            <a href="mailto:support@webhustle.org" style={{ fontSize: 11, color: '#2a3a1a', textDecoration: 'none' }}>
+              support@webhustle.org
+            </a>
+            <span style={{ fontSize: 11, color: '#1e2218' }}>·</span>
+            <p style={{ fontSize: 11, color: '#2a3a1a', margin: 0 }}>www.webhustle.org</p>
+          </div>
+
         </div>
-        <div style={{ display: 'flex', gap: 24, justifyContent: 'center', marginBottom: 18, flexWrap: 'wrap' }}>
-          <a href="#math" style={{ fontSize: 13, color: '#5a6a4a', textDecoration: 'none' }}>The math</a>
-          <a href="#workers" style={{ fontSize: 13, color: '#5a6a4a', textDecoration: 'none' }}>Workers</a>
-          <a href="#faq" style={{ fontSize: 13, color: '#5a6a4a', textDecoration: 'none' }}>FAQ</a>
-          <Link href="/sms-consent" style={{ fontSize: 13, color: '#5a6a4a', textDecoration: 'none' }}>SMS Terms</Link>
-          <Link href="/privacy" style={{ fontSize: 13, color: '#5a6a4a', textDecoration: 'none' }}>Privacy</Link>
-          <Link href="/login" style={{ fontSize: 13, color: '#5a6a4a', textDecoration: 'none' }}>Sign in</Link>
-        </div>
-        <p style={{ fontSize: 11, color: '#2a3a1a' }}>© {new Date().getFullYear()} SiteForge · All rights reserved</p>
       </footer>
     </div>
   )

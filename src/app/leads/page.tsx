@@ -456,8 +456,8 @@ export default function LeadsPage() {
                 <label className="block text-xs font-semibold mb-1.5" style={{ color: '#4a5a3a' }}>
                   <Star size={11} className="inline mr-1" />MIN ★
                 </label>
-                <input type="number" value={minRating} min={1} max={5} step={0.5}
-                  onChange={e => setMinRating(parseFloat(e.target.value))}
+                <input type="number" value={isNaN(minRating) ? '' : minRating} min={1} max={5} step={0.5}
+                  onChange={e => setMinRating(parseFloat(e.target.value) || 1)}
                   className="w-full rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[#c8f13540]"
                   style={{ background: '#0d0e0b', border: '1px solid #1e2218' }} />
               </div>
