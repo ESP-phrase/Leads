@@ -32,5 +32,6 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  // Skip middleware entirely for Telnyx webhooks, Stripe webhooks, static assets
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|api/telnyx|api/stripe).*)'],
 }
