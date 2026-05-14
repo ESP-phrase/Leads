@@ -636,10 +636,11 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoici
     : '#7a5a3a'
 
   return (
-    <div className="grid items-center border-b border-[#161a11] hover:bg-[#ffffff02] transition-colors"
+    <div className="grid items-center border-b border-[#161a11] hover:bg-[#ffffff02] transition-colors cursor-pointer"
+         onClick={() => onToggleSelect(lead.id)}
          style={{ gridTemplateColumns: '36px 2fr 1.2fr 0.8fr 0.9fr 1fr 0.7fr 230px', background: selected ? '#c8f1350c' : isEven ? 'transparent' : '#0f1009' }}>
 
-      <div className="px-3 py-3.5 flex items-center">
+      <div className="px-3 py-3.5 flex items-center" onClick={e => e.stopPropagation()}>
         <input type="checkbox" checked={selected} onChange={() => onToggleSelect(lead.id)}
           className="cursor-pointer accent-[#c8f135]"
           style={{ width: 14, height: 14 }} />
@@ -648,33 +649,42 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoici
       <div className="px-3 py-3.5">
         <p className="text-sm font-semibold text-white leading-tight">{lead.name}</p>
         {lead.phone && (
-          <div className="flex items-center gap-1 mt-0.5 text-xs" style={{ color: '#3a4a2a' }}>
+          <div className="flex items-center gap-1 mt-0.5 text-xs" style={{ color: '#3a4a2a' }} onClick={e => e.stopPropagation()}>
             <Phone size={9} />
             <a href={`tel:${lead.phone}`} className="hover:text-[#6b7a5a] transition-colors">{formatPhone(lead.phone)}</a>
           </div>
         )}
         {leadAny.ownerName && (
-          <div className="flex items-center gap-1 mt-0.5 text-xs" title={`Confidence: ${leadAny.enrichmentConfidence ?? 'unknown'}`}>
+          <button type="button"
+            onClick={e => { e.stopPropagation(); onEnrich(lead) }}
+            disabled={isEnr}
+            className="flex items-center gap-1 mt-0.5 text-xs cursor-pointer bg-transparent border-0 p-0 hover:opacity-80 transition-opacity disabled:opacity-50"
+            title={`Owner (${leadAny.enrichmentConfidence ?? 'unknown'}) — click to re-enrich`}>
             <Sparkles size={9} style={{ color: '#c8f135' }} />
             <span style={{ color: leadAny.enrichmentConfidence === 'high' ? '#c8f135' : leadAny.enrichmentConfidence === 'medium' ? '#9b6fd4' : '#4a5a3a' }}>
               {leadAny.ownerName}
             </span>
-          </div>
+          </button>
         )}
         {leadAny.wealthScore != null && (
-          <div className="flex items-center gap-1 mt-0.5 text-xs"
-               title={leadAny.wealthSignals ? `Signals: ${leadAny.wealthSignals}` : 'Wealth proxy score (0-100)'}>
-            <span style={{
-              padding: '1px 6px',
-              borderRadius: 4,
-              fontSize: 10,
-              fontWeight: 700,
-              background: `${wealthColor(leadAny.wealthScore)}20`,
-              color: wealthColor(leadAny.wealthScore),
-              border: `1px solid ${wealthColor(leadAny.wealthScore)}40`,
-            }}>
+          <div className="flex items-center gap-1 mt-0.5 text-xs">
+            <button type="button"
+              onClick={e => { e.stopPropagation(); onEnrich(lead) }}
+              disabled={isEnr}
+              title={leadAny.wealthSignals ? `Signals: ${leadAny.wealthSignals} — click to re-enrich` : 'Wealth proxy score (0-100) — click to re-enrich'}
+              style={{
+                padding: '1px 6px',
+                borderRadius: 4,
+                fontSize: 10,
+                fontWeight: 700,
+                background: `${wealthColor(leadAny.wealthScore)}20`,
+                color: wealthColor(leadAny.wealthScore),
+                border: `1px solid ${wealthColor(leadAny.wealthScore)}40`,
+                cursor: 'pointer',
+              }}
+              className="hover:opacity-80 transition-opacity disabled:opacity-50">
               ${leadAny.wealthScore}
-            </span>
+            </button>
             {leadAny.wealthSignals && (
               <span style={{ color: '#3a4a2a', fontSize: 10 }} className="truncate max-w-[140px]">
                 {leadAny.wealthSignals.split(',').slice(0, 2).join(',')}
@@ -699,7 +709,7 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoici
         ) : <span className="text-sm" style={{ color: '#2a3a1a' }}>—</span>}
       </div>
 
-      <div className="px-3 py-3.5">
+      <div className="px-3 py-3.5" onClick={e => e.stopPropagation()}>
         <select value={lead.status} onChange={e => onStatusChange(lead.id, e.target.value as LeadStatus)}
           className={clsx('text-xs font-semibold px-2.5 py-1 rounded-full focus:outline-none cursor-pointer appearance-none', STATUS_STYLE[lead.status])}
           style={{ background: 'inherit', border: 'none' }}>
@@ -708,7 +718,7 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoici
       </div>
 
       {/* Assigned worker */}
-      <div className="px-3 py-3.5">
+      <div className="px-3 py-3.5" onClick={e => e.stopPropagation()}>
         <select
           value={(lead as Lead & { workerId?: string | null }).workerId ?? ''}
           onChange={e => onAssign(lead.id, e.target.value || null)}
@@ -730,7 +740,7 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoici
         )}
       </div>
 
-      <div className="px-3 py-3.5 flex items-center gap-1">
+      <div className="px-3 py-3.5 flex items-center gap-1" onClick={e => e.stopPropagation()}>
         {!lead.site ? (
           <button onClick={() => onGenerate(lead)} disabled={isGen}
             title="Build website with AI"

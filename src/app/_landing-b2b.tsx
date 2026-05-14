@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import {
   Globe, MessageSquare, Phone, Check, CheckCircle, ArrowRight,
-  Smartphone, Zap, Shield, Star, Clock, MapPin,
+  Smartphone, Zap, Shield, Star, Clock, MapPin, ChevronDown,
 } from 'lucide-react'
 
 // Clean B2B landing — WebHustle as a website-services company for local businesses.
@@ -240,8 +240,11 @@ export default function LandingB2B() {
               a: 'Email support@webhustle.org or call us back at the number we contacted you from. A real human will respond within one business day.',
             },
           ].map(({ q, a }) => (
-            <details key={q} style={{ padding: '20px 24px', borderRadius: 12, background: '#111310', border: '1px solid #1e2218', cursor: 'pointer' }}>
-              <summary style={{ fontSize: 15, fontWeight: 700, color: '#fff', listStyle: 'none' }}>{q}</summary>
+            <details key={q} style={{ padding: '20px 24px', borderRadius: 12, background: '#111310', border: '1px solid #1e2218' }}>
+              <summary style={{ fontSize: 15, fontWeight: 700, color: '#fff', listStyle: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                <span>{q}</span>
+                <ChevronDown size={16} style={{ color: '#c8f135', flexShrink: 0 }} />
+              </summary>
               <p style={{ fontSize: 14, color: '#8a9a7a', lineHeight: 1.7, marginTop: 14 }}>{a}</p>
             </details>
           ))}
