@@ -40,6 +40,8 @@ export default function DashboardPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [bulkBuilding, setBulkBuilding] = useState(false)
   const [bulkSmsing, setBulkSmsing] = useState(false)
+  const [bulkEnriching, setBulkEnriching] = useState(false)
+  const [bulkEnrichProgress, setBulkEnrichProgress] = useState<{ done: number; total: number } | null>(null)
   const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number } | null>(null)
   const [bulkSmsTemplate, setBulkSmsTemplate] = useState('preview-soft')
   const [statusFilter, setStatusFilter] = useState<LeadStatus | 'ALL'>('ALL')
@@ -256,7 +258,8 @@ export default function DashboardPage() {
         const { result } = await res.json()
         const conf = result?.confidence ?? 'none'
         const owner = result?.ownerName ?? 'no owner found'
-        showToast(`Enriched ${lead.name}: ${owner} (${conf})`)
+        const wealth = result?.wealthScore != null ? ` · score ${result.wealthScore}` : ''
+        showToast(`Enriched ${lead.name}: ${owner} (${conf})${wealth}`)
         await fetchLeads()
       } else {
         const { error } = await res.json().catch(() => ({ error: 'Failed' }))
@@ -268,7 +271,51 @@ export default function DashboardPage() {
     setEnrichingId(null)
   }
 
-  const filtered = statusFilter === 'ALL' ? leads : leads.filter(l => l.status === statusFilter)
+  async function bulkEnrich() {
+    const ids = [...selectedIds]
+    if (ids.length === 0) { showToast('No leads selected', false); return }
+
+    setBulkEnriching(true)
+    setBulkEnrichProgress({ done: 0, total: ids.length })
+
+    let succeeded = 0
+    let failed = 0
+    const CONCURRENCY = 3   // 3 parallel requests — gentle on OpenAI rate limits
+    let cursor = 0
+
+    async function worker() {
+      while (cursor < ids.length) {
+        const i = cursor++
+        const id = ids[i]
+        try {
+          const res = await fetch(`/api/leads/${id}/enrich`, { method: 'POST' })
+          if (res.ok) succeeded++; else failed++
+        } catch {
+          failed++
+        }
+        setBulkEnrichProgress({ done: succeeded + failed, total: ids.length })
+      }
+    }
+
+    await Promise.all(Array.from({ length: CONCURRENCY }, worker))
+    await fetchLeads()
+
+    showToast(`Enriched ${succeeded} leads · ${failed} failed`, failed === 0)
+    setBulkEnriching(false)
+    setBulkEnrichProgress(null)
+    clearSelection()
+  }
+
+  const baseFiltered = statusFilter === 'ALL' ? leads : leads.filter(l => l.status === statusFilter)
+  // Sort by wealthScore desc when any lead has it, otherwise keep original order
+  const anyWealth = baseFiltered.some(l => (l as Lead & { wealthScore?: number | null }).wealthScore != null)
+  const filtered = anyWealth
+    ? [...baseFiltered].sort((a, b) => {
+        const aS = (a as Lead & { wealthScore?: number | null }).wealthScore ?? -1
+        const bS = (b as Lead & { wealthScore?: number | null }).wealthScore ?? -1
+        return bS - aS
+      })
+    : baseFiltered
 
   const closedCount   = leads.filter(l => l.status === 'CLOSED').length
   const interestedCount = leads.filter(l => l.status === 'INTERESTED').length
@@ -448,6 +495,15 @@ export default function DashboardPage() {
                       {bulkSmsing
                         ? 'Sending…'
                         : `Send SMS to All (${[...selectedIds].filter(id => { const l = leads.find(l => l.id === id); return l?.phone && l?.site }).length})`}
+                    </button>
+                    <button onClick={bulkEnrich} disabled={bulkEnriching}
+                      title="Find owner + wealth score for all selected leads (free, ~5s/lead)"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all disabled:opacity-40"
+                      style={{ borderColor: '#9b6fd440', color: '#9b6fd4' }}>
+                      <Sparkles size={11} />
+                      {bulkEnriching && bulkEnrichProgress
+                        ? `Enriching ${bulkEnrichProgress.done}/${bulkEnrichProgress.total}…`
+                        : `Enrich All (${selectedIds.size})`}
                     </button>
                   </div>
                 </div>
