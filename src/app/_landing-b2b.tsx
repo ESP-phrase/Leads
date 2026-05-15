@@ -5,6 +5,7 @@ import {
   Globe, MessageSquare, Phone, Check, CheckCircle, ArrowRight,
   Smartphone, Zap, Shield, Star, Clock, MapPin, ChevronDown,
 } from 'lucide-react'
+import PreviewRequestForm from '@/components/PreviewRequestForm'
 
 // Clean B2B landing — WebHustle as a website-services company for local businesses.
 // No MLM, no affiliate, no "$119 per sale", no recruitment language.
@@ -51,7 +52,7 @@ export default function LandingB2B() {
           you decide.
         </p>
         <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 24 }}>
-          <a href="mailto:support@webhustle.org?subject=I'd%20like%20a%20website%20preview"
+          <a href="#get-started"
              style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '16px 32px', borderRadius: 12, fontWeight: 800, fontSize: 16, textDecoration: 'none', background: '#c8f135', color: '#0a0b09' }}>
             Request a free preview <ArrowRight size={18} />
           </a>
@@ -193,8 +194,8 @@ export default function LandingB2B() {
                 </li>
               ))}
             </ul>
-            <a href="mailto:support@webhustle.org?subject=I'd%20like%20a%20website%20preview"
-               style={{ display: 'block', padding: '14px 24px', borderRadius: 10, background: '#c8f135', color: '#0a0b09', fontWeight: 800, fontSize: 15, textDecoration: 'none' }}>
+            <a href="#get-started"
+               style={{ display: 'block', textAlign: 'center', padding: '14px 24px', borderRadius: 10, background: '#c8f135', color: '#0a0b09', fontWeight: 800, fontSize: 15, textDecoration: 'none' }}>
               Request a free preview
             </a>
           </div>
@@ -259,10 +260,9 @@ export default function LandingB2B() {
         <p style={{ fontSize: 17, color: '#8a9a7a', marginBottom: 32, maxWidth: 480, margin: '0 auto 32px' }}>
           We&apos;ll build a free preview within 24 hours. No payment until you see it and love it.
         </p>
-        <a href="mailto:support@webhustle.org?subject=I'd%20like%20a%20website%20preview"
-           style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '18px 40px', borderRadius: 12, fontWeight: 900, fontSize: 17, textDecoration: 'none', background: '#c8f135', color: '#0a0b09' }}>
-          Request a free preview <ArrowRight size={18} />
-        </a>
+        <div id="get-started">
+          <PreviewRequestForm />
+        </div>
       </section>
 
       {/* Footer */}
