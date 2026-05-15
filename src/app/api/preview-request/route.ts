@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { trackRedditConversion } from '@/lib/reddit-pixel'
 
 // Inbound lead from the B2B homepage form.
 // Saves to DB and optionally emails the operator via Resend (if RESEND_API_KEY set).
@@ -98,6 +99,18 @@ export async function POST(req: Request) {
     city: created.city,
     category: created.category,
     notes: created.notes,
+  }).catch(() => {})
+
+  // Fire-and-forget Reddit CAPI Lead event (server-side conversion tracking)
+  trackRedditConversion({
+    type: 'Lead',
+    conversionId: created.id,
+    email: created.email,
+    phone: created.phone,
+    ipAddress,
+    userAgent,
+    clickId: (body.rdt_cid as string | undefined) ?? null,
+    actionSource: 'website',
   }).catch(() => {})
 
   return NextResponse.json({ ok: true, id: created.id })

@@ -45,6 +45,7 @@ export default function PreviewRequestForm({ compact = false }: { compact?: bool
           utmCampaign: params?.get('utm_campaign'),
           utmSource:   params?.get('utm_source'),
           utmMedium:   params?.get('utm_medium'),
+          rdt_cid:     params?.get('rdt_cid'),     // Reddit click ID for CAPI attribution
           source:      params?.get('utm_source') ? 'ad' : 'organic',
         }),
       })
@@ -53,6 +54,17 @@ export default function PreviewRequestForm({ compact = false }: { compact?: bool
         setError(data.error ?? 'Something went wrong. Please try again.')
       } else {
         setDone(true)
+        // Fire client-side conversion events (deduped server-side via conversion_id)
+        try {
+          const w = window as unknown as {
+            rdt?: (cmd: string, action: string, params?: object) => void
+            fbq?: (cmd: string, action: string, params?: object) => void
+            gtag?: (cmd: string, action: string, params?: object) => void
+          }
+          w.rdt?.('track', 'Lead', { conversionId: data.id })
+          w.fbq?.('track', 'Lead', { eventID: data.id })
+          w.gtag?.('event', 'generate_lead', { value: 119, currency: 'USD' })
+        } catch { /* pixel optional */ }
       }
     } catch {
       setError('Network error. Please try again.')

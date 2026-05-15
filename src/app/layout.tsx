@@ -1,5 +1,10 @@
 import type { Metadata, Viewport } from 'next'
+import Script from 'next/script'
 import './globals.css'
+
+const REDDIT_PIXEL_ID = process.env.NEXT_PUBLIC_REDDIT_PIXEL_ID
+const META_PIXEL_ID   = process.env.NEXT_PUBLIC_META_PIXEL_ID
+const GA_ID           = process.env.NEXT_PUBLIC_GA_ID
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.webhustle.org'
 const SITE_NAME = 'WebHustle'
@@ -79,6 +84,36 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      <head>
+        {/* Reddit Pixel — fires PageVisit; server-side CAPI fires Lead/Purchase */}
+        {REDDIT_PIXEL_ID && (
+          <Script id="reddit-pixel" strategy="afterInteractive">{`
+            !function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src="https://www.redditstatic.com/ads/pixel.js",t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);
+            rdt('init','${REDDIT_PIXEL_ID}');
+            rdt('track','PageVisit');
+          `}</Script>
+        )}
+        {/* Meta Pixel */}
+        {META_PIXEL_ID && (
+          <Script id="meta-pixel" strategy="afterInteractive">{`
+            !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+            fbq('init','${META_PIXEL_ID}');
+            fbq('track','PageView');
+          `}</Script>
+        )}
+        {/* Google Analytics (GA4) */}
+        {GA_ID && (
+          <>
+            <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
+            <Script id="ga-init" strategy="afterInteractive">{`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${GA_ID}');
+            `}</Script>
+          </>
+        )}
+      </head>
       <body className="bg-gray-950 text-gray-100 antialiased">{children}</body>
     </html>
   )
