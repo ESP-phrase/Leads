@@ -110,6 +110,9 @@ export async function POST(req: Request) {
     ipAddress,
     userAgent,
     clickId: (body.rdt_cid as string | undefined) ?? null,
+    externalId: created.id,
+    screenWidth:  typeof body.screenWidth  === 'number' ? body.screenWidth  : null,
+    screenHeight: typeof body.screenHeight === 'number' ? body.screenHeight : null,
     actionSource: 'website',
   }).catch(() => {})
 

@@ -37,16 +37,21 @@ export default function PreviewRequestForm({ compact = false }: { compact?: bool
     try {
       // Capture UTM from URL if present
       const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
+      const screen = typeof window !== 'undefined' ? { width: window.screen.width, height: window.screen.height } : null
       const res = await fetch('/api/preview-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
-          utmCampaign: params?.get('utm_campaign'),
-          utmSource:   params?.get('utm_source'),
-          utmMedium:   params?.get('utm_medium'),
-          rdt_cid:     params?.get('rdt_cid'),     // Reddit click ID for CAPI attribution
-          source:      params?.get('utm_source') ? 'ad' : 'organic',
+          utmCampaign:  params?.get('utm_campaign'),
+          utmSource:    params?.get('utm_source'),
+          utmMedium:    params?.get('utm_medium'),
+          rdt_cid:      params?.get('rdt_cid'),     // Reddit click ID for CAPI attribution
+          fbclid:       params?.get('fbclid'),       // Meta click ID
+          gclid:        params?.get('gclid'),        // Google click ID
+          screenWidth:  screen?.width,
+          screenHeight: screen?.height,
+          source:       params?.get('utm_source') ? 'ad' : 'organic',
         }),
       })
       const data = await res.json()

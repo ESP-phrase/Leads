@@ -22,11 +22,15 @@ export interface RedditCapiEvent {
   customEventName?: string
   value?: { currency: string; amount: number }      // for Purchase
   conversionId?: string                              // dedupe key (matches client pixel event_id)
+  // Match keys (improve attribution accuracy)
   email?: string | null
   phone?: string | null
   ipAddress?: string | null
   userAgent?: string | null
-  clickId?: string | null                            // ?rdt_cid from URL
+  clickId?: string | null                            // ?rdt_cid from URL — TOP-level on the event
+  externalId?: string | null                         // your stable user/order ID (we use PreviewRequest.id)
+  screenWidth?: number | null
+  screenHeight?: number | null
   actionSource?: 'website' | 'app' | 'physical_store' | 'phone_call' | 'chat' | 'email' | 'system_generated' | 'business_messaging' | 'other'
 }
 
@@ -43,17 +47,22 @@ export async function trackRedditConversion(event: RedditCapiEvent): Promise<{ o
     return { ok: false, reason: 'reddit_capi_not_configured' }
   }
 
-  const user: Record<string, string> = {}
+  // Build hashed/normalized user match keys (Reddit nests these under "user")
+  const user: Record<string, unknown> = {}
   if (event.email) user.email = await sha256(event.email)
   if (event.phone) {
-    // Normalize phone to digits only
+    // Normalize phone: strip non-digits, prefix +
     const digits = event.phone.replace(/\D/g, '')
     if (digits.length >= 10) user.phone_number = await sha256(`+${digits}`)
   }
   if (event.ipAddress)  user.ip_address  = event.ipAddress
   if (event.userAgent)  user.user_agent  = event.userAgent
-  if (event.clickId)    user.click_id    = event.clickId
+  if (event.externalId) user.external_id = await sha256(event.externalId)
+  if (event.screenWidth && event.screenHeight) {
+    user.screen_dimensions = { width: event.screenWidth, height: event.screenHeight }
+  }
 
+  // Build event body — note: click_id is TOP-level, not nested under user
   const eventBody: Record<string, unknown> = {
     event_at_ms: Date.now(),
     action_source: event.actionSource ?? 'website',
@@ -63,6 +72,7 @@ export async function trackRedditConversion(event: RedditCapiEvent): Promise<{ o
     },
     user,
   }
+  if (event.clickId) eventBody.click_id = event.clickId
   if (event.conversionId) eventBody.event_metadata = { conversion_id: event.conversionId }
   if (event.value) {
     eventBody.event_metadata = {
