@@ -50,6 +50,7 @@ export default function DashboardPage() {
   const [dialerLead, setDialerLead] = useState<Lead | null>(null)
   const [sequencingId, setSequencingId] = useState<string | null>(null)
   const [enrichingId, setEnrichingId] = useState<string | null>(null)
+  const [deepEnrichingId, setDeepEnrichingId] = useState<string | null>(null)
 
   function showToast(msg: string, ok = true) {
     setToast({ msg, ok })
@@ -304,6 +305,26 @@ export default function DashboardPage() {
     setBulkEnriching(false)
     setBulkEnrichProgress(null)
     clearSelection()
+  }
+
+  async function handleDeepEnrich(lead: Lead) {
+    setDeepEnrichingId(lead.id)
+    try {
+      const res = await fetch(`/api/leads/${lead.id}/deep-enrich`, { method: 'POST' })
+      if (res.ok) {
+        const { result } = await res.json()
+        const income = result?.ownerIncomeRange ?? 'unknown'
+        const legal = result?.legalName ?? 'no SoS match'
+        showToast(`Deep: ${legal} · income ${income}`)
+        await fetchLeads()
+      } else {
+        const { error } = await res.json().catch(() => ({ error: 'Failed' }))
+        showToast(error ?? 'Deep enrichment failed', false)
+      }
+    } catch {
+      showToast('Deep enrichment failed', false)
+    }
+    setDeepEnrichingId(null)
   }
 
   const baseFiltered = statusFilter === 'ALL' ? leads : leads.filter(l => l.status === statusFilter)
@@ -565,13 +586,14 @@ export default function DashboardPage() {
               {/* Rows */}
               {filtered.map((lead, i) => (
                 <Row key={lead.id} lead={lead} statuses={STATUSES} workers={workers} isEven={i % 2 === 0}
-                     generatingId={generatingId} sendingId={sendingId} invoicingId={invoicingId} sequencingId={sequencingId} enrichingId={enrichingId}
+                     generatingId={generatingId} sendingId={sendingId} invoicingId={invoicingId} sequencingId={sequencingId} enrichingId={enrichingId} deepEnrichingId={deepEnrichingId}
                      selected={selectedIds.has(lead.id)} onToggleSelect={toggleSelect}
                      onStatusChange={updateStatus} onAssign={assignWorker} onGenerate={generateSite}
                      onSms={sendSms} onInvoice={sendInvoice}
                      onCall={(l) => setDialerLead(l)}
                      onSequence={handleSequence}
-                     onEnrich={handleEnrich} />
+                     onEnrich={handleEnrich}
+                     onDeepEnrich={handleDeepEnrich} />
               ))}
 
               {/* Add leads prompt */}
@@ -607,25 +629,30 @@ export default function DashboardPage() {
   )
 }
 
-function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoicingId, sequencingId, enrichingId, selected, onToggleSelect, onStatusChange, onAssign, onGenerate, onSms, onInvoice, onCall, onSequence, onEnrich }: {
+function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoicingId, sequencingId, enrichingId, deepEnrichingId, selected, onToggleSelect, onStatusChange, onAssign, onGenerate, onSms, onInvoice, onCall, onSequence, onEnrich, onDeepEnrich }: {
   lead: Lead; statuses: LeadStatus[]; workers: { id: string; name: string }[]; isEven: boolean
-  generatingId: string | null; sendingId: string | null; invoicingId: string | null; sequencingId: string | null; enrichingId: string | null
+  generatingId: string | null; sendingId: string | null; invoicingId: string | null; sequencingId: string | null; enrichingId: string | null; deepEnrichingId: string | null
   selected: boolean; onToggleSelect: (id: string) => void
   onStatusChange: (id: string, s: LeadStatus) => void
   onAssign: (id: string, workerId: string | null) => void
   onGenerate: (l: Lead) => void; onSms: (l: Lead) => void; onInvoice: (l: Lead) => void
-  onCall: (l: Lead) => void; onSequence: (l: Lead) => void; onEnrich: (l: Lead) => void
+  onCall: (l: Lead) => void; onSequence: (l: Lead) => void; onEnrich: (l: Lead) => void; onDeepEnrich: (l: Lead) => void
 }) {
   const isGen = generatingId === lead.id
   const isSms = sendingId === lead.id
   const isInv = invoicingId === lead.id
   const isSeq = sequencingId === lead.id
   const isEnr = enrichingId === lead.id
+  const isDeep = deepEnrichingId === lead.id
   const leadAny = lead as Lead & {
     ownerName?: string | null
     enrichmentConfidence?: string | null
     wealthScore?: number | null
     wealthSignals?: string | null
+    ownerLegalName?: string | null
+    ownerIncomeRange?: string | null
+    ownerLinkedinUrl?: string | null
+    ownerNewsSignals?: string | null
   }
   // Color the wealth badge: red < 30, orange < 50, yellow < 70, green ≥ 70
   const wealthColor = (s: number | null | undefined) =>
@@ -788,6 +815,14 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoici
           className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px] font-medium border border-[#1e2218] hover:border-[#2e3828] disabled:opacity-25 transition-all flex-shrink-0"
           style={{ color: leadAny.ownerName ? '#c8f135' : '#4a5a3a' }}>
           <Sparkles size={10} />{isEnr ? '…' : leadAny.ownerName ? '✓' : 'Find'}
+        </button>
+        <button onClick={() => onDeepEnrich(lead)} disabled={isDeep}
+          title={leadAny.ownerIncomeRange
+            ? `Income tier: ${leadAny.ownerIncomeRange} · ${leadAny.ownerLegalName ?? 'no SoS'}`
+            : 'Deep lookup: SoS legal owner + news/wealth signals (NY/TX only)'}
+          className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px] font-medium border border-[#1e2218] hover:border-[#2e3828] disabled:opacity-25 transition-all flex-shrink-0"
+          style={{ color: leadAny.ownerIncomeRange ? '#d4dfc4' : '#4a5a3a' }}>
+          <Layers size={10} />{isDeep ? '…' : leadAny.ownerIncomeRange ? leadAny.ownerIncomeRange : 'Deep'}
         </button>
       </div>
     </div>

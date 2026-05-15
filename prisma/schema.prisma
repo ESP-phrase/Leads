@@ -97,6 +97,16 @@ model Lead {
   wealthScore      Int?
   wealthSignals    String?       // human-readable list of signals (e.g. "high reviews, premium keywords, established")
 
+  // Owner deep-enrichment (free: state SoS + DDG + GPT — manual trigger only)
+  ownerLegalName       String?     // owner of record from state business filings
+  ownerLegalAddress    String?     // address on filings
+  ownerIncomeRange     String?     // GPT-estimated tier: '<$50k' | '$50-100k' | '$100-250k' | '$250-500k' | '$500k+'
+  ownerLinkedinUrl     String?
+  ownerOtherBusinesses String?     // other entities they're officer of
+  ownerNewsSignals     String?     // GPT-summarized wealth signals from news mentions
+  ownerDeepEnrichedAt  DateTime?
+  ownerDeepEnrichSource String?    // 'opencorporates,ny-dos,tx-soc,ddg'
+
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }
