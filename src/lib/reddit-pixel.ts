@@ -12,6 +12,10 @@
 
 const PIXEL_ID = process.env.NEXT_PUBLIC_REDDIT_PIXEL_ID
 const CAPI_TOKEN = process.env.REDDIT_CAPI_TOKEN
+// When set (e.g. t2_2eeom1wu2b), all events are tagged as test events.
+// Reddit shows them in the test-events panel and does NOT persist them.
+// Delete this env var in production.
+const CAPI_TEST_ID = process.env.REDDIT_CAPI_TEST_ID
 
 export type RedditEvent =
   | 'PageVisit' | 'ViewContent' | 'Search' | 'AddToCart' | 'AddToWishlist'
@@ -73,6 +77,7 @@ export async function trackRedditConversion(event: RedditCapiEvent): Promise<{ o
     user,
   }
   if (event.clickId) eventBody.click_id = event.clickId
+  if (CAPI_TEST_ID) eventBody.test_id = CAPI_TEST_ID
   if (event.conversionId) eventBody.event_metadata = { conversion_id: event.conversionId }
   if (event.value) {
     eventBody.event_metadata = {
