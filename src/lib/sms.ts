@@ -6,6 +6,30 @@
 
 const TELNYX_API = 'https://api.telnyx.com/v2'
 
+/**
+ * Whether Telnyx A2P (application-to-person) SMS is enabled.
+ * Defaults to FALSE while we're in 10DLC carrier review.
+ * Flip the Vercel env var TELNYX_A2P_ENABLED=true after approval to re-enable.
+ *
+ * When disabled:
+ *   - All Telnyx SMS send functions throw a friendly error
+ *   - Drip cron skips sends and does NOT advance the sequence
+ *   - UI buttons show the disabled state
+ * P2P "open Messages app" sends are unaffected.
+ */
+export function isA2pEnabled(): boolean {
+  const v = (process.env.TELNYX_A2P_ENABLED ?? 'false').toLowerCase()
+  return v === 'true' || v === '1' || v === 'yes'
+}
+
+export class A2pDisabledError extends Error {
+  code = 'a2p-disabled'
+  constructor() {
+    super('Telnyx SMS is paused while 10DLC is in carrier review. Use P2P "Text" (opens Messages app) instead.')
+    this.name = 'A2pDisabledError'
+  }
+}
+
 function telnyxHeaders() {
   return {
     'Authorization': `Bearer ${process.env.TELNYX_API_KEY}`,
@@ -14,6 +38,7 @@ function telnyxHeaders() {
 }
 
 export async function sendSms(to: string, body: string): Promise<{ sid: string; status: string }> {
+  if (!isA2pEnabled()) throw new A2pDisabledError()
   const from = process.env.TELNYX_PHONE_NUMBER
   if (!from) throw new Error('TELNYX_PHONE_NUMBER not set')
   if (!process.env.TELNYX_API_KEY) throw new Error('TELNYX_API_KEY not set')

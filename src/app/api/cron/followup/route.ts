@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { sendSms } from '@/lib/sms'
+import { sendSms, isA2pEnabled } from '@/lib/sms'
 import { renderTemplate, SMS_TEMPLATES } from '@/lib/sms-templates'
 
 // Sequence step definitions — must match /api/leads/[id]/sequence/route.ts
@@ -17,7 +17,16 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://siteforge.app'
+  // Pause sends while 10DLC is in carrier review.
+  // We do NOT advance sequences while paused — when A2P is re-enabled, drips pick up where they left off.
+  if (!isA2pEnabled()) {
+    return NextResponse.json({
+      skipped: true,
+      reason: 'A2P SMS disabled (10DLC pending). Drip sends paused.',
+    })
+  }
+
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.webhustle.org'
   const now = new Date()
   const sent: { leadId: string; step: number; status: string }[] = []
   const failed: { leadId: string; error: string }[] = []

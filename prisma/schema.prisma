@@ -153,6 +153,37 @@ model SmsLog {
   sentAt     DateTime @default(now())
 }
 
+// Inbound preview requests from the B2B homepage form (or ads).
+// Distinct from scraped Lead records — these are people who actively asked us
+// to build them a website.
+model PreviewRequest {
+  id           String   @id @default(cuid())
+  businessName String
+  ownerName    String?
+  email        String?
+  phone        String?
+  city         String?
+  category     String?  // e.g. 'restaurant', 'plumber'
+  websiteUrl   String?  // their current site, if any
+  notes        String?  // free-text "anything else"
+  smsOptIn     Boolean  @default(false)
+  source       String?  // 'organic' | 'meta-ad' | 'google-ad' | 'referral' etc
+  utmCampaign  String?
+  utmSource    String?
+  utmMedium    String?
+  // Workflow
+  status       String   @default("new")
+  // new → in_review → preview_built → sold → declined → ghosted
+  reviewNotes  String?
+  reviewedAt   DateTime?
+  // If we eventually build a site, link to the Lead row we create
+  leadId       String?
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
 model PendingCall {
   id         String   @id @default(cuid())
   leadId     String

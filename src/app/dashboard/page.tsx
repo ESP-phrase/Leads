@@ -6,7 +6,7 @@ import {
   Globe, MessageSquare, ExternalLink, Star, Phone,
   RefreshCw, Plus, ChevronDown, TrendingUp, Users,
   DollarSign, Zap, PhoneCall, ArrowRight, BarChart3,
-  Search, CheckCircle2, Receipt, Check, X as XIcon, Layers, Repeat2, Sparkles,
+  Search, CheckCircle2, Receipt, Check, X as XIcon, Layers, Repeat2, Sparkles, Smartphone,
 } from 'lucide-react'
 import { SMS_TEMPLATES } from '@/lib/sms-templates'
 import type { Lead, LeadStatus } from '@/types'
@@ -51,6 +51,12 @@ export default function DashboardPage() {
   const [sequencingId, setSequencingId] = useState<string | null>(null)
   const [enrichingId, setEnrichingId] = useState<string | null>(null)
   const [deepEnrichingId, setDeepEnrichingId] = useState<string | null>(null)
+  const [p2pSendingId, setP2pSendingId] = useState<string | null>(null)
+  const [a2pStatus, setA2pStatus] = useState<{ a2pEnabled: boolean; reason: string | null } | null>(null)
+
+  useEffect(() => {
+    fetch('/api/sms/status').then(r => r.json()).then(setA2pStatus).catch(() => {})
+  }, [])
 
   function showToast(msg: string, ok = true) {
     setToast({ msg, ok })
@@ -327,6 +333,33 @@ export default function DashboardPage() {
     setDeepEnrichingId(null)
   }
 
+  /** P2P text: opens the agent's native Messages app with the lead's phone + preview link pre-filled.
+   *  Person-to-person send, so 10DLC doesn't apply — works while we're in carrier review. */
+  async function handleP2pText(lead: Lead) {
+    if (!lead.phone) { showToast('No phone', false); return }
+    setP2pSendingId(lead.id)
+    try {
+      const res = await fetch('/api/sms/p2p', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leadId: lead.id }),
+      })
+      if (!res.ok) {
+        const { error } = await res.json().catch(() => ({ error: 'Failed' }))
+        showToast(error ?? 'Failed to prepare text', false)
+      } else {
+        const data = await res.json()
+        // Trigger the native Messages app
+        window.location.href = data.smsUrl
+        showToast(`Opened Messages for ${lead.name} — tap Send on your phone`)
+        await fetchLeads()
+      }
+    } catch {
+      showToast('Failed to open Messages', false)
+    }
+    setP2pSendingId(null)
+  }
+
   const baseFiltered = statusFilter === 'ALL' ? leads : leads.filter(l => l.status === statusFilter)
   // Sort by wealthScore desc when any lead has it, otherwise keep original order
   const anyWealth = baseFiltered.some(l => (l as Lead & { wealthScore?: number | null }).wealthScore != null)
@@ -367,6 +400,18 @@ export default function DashboardPage() {
       <Sidebar />
 
       <main className="flex-1 flex flex-col min-w-0 overflow-auto">
+        {/* A2P-paused banner */}
+        {a2pStatus && !a2pStatus.a2pEnabled && (
+          <div className="px-6 py-2.5 border-b text-xs flex items-center gap-2"
+               style={{ background: '#3a2a08', borderColor: '#5a4a18', color: '#f5c441' }}>
+            <span style={{ fontSize: 14 }}>⏸</span>
+            <strong>Auto-SMS paused</strong>
+            <span style={{ color: '#c8a050' }}>· {a2pStatus.reason}</span>
+            <span className="ml-auto" style={{ color: '#8a7030' }}>
+              Set <code style={{ background: '#2a1f05', padding: '1px 6px', borderRadius: 4 }}>TELNYX_A2P_ENABLED=true</code> in Vercel env to re-enable.
+            </span>
+          </div>
+        )}
         {/* Topbar */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#1e2218] sticky top-0 z-10" style={{ background: '#0d0e0b' }}>
           <div>
@@ -568,7 +613,7 @@ export default function DashboardPage() {
 
               {/* Column headers */}
               <div className="grid border-b border-[#1a1e14]"
-                   style={{ gridTemplateColumns: '36px 2fr 1.2fr 0.8fr 0.9fr 1fr 0.7fr 230px' }}>
+                   style={{ gridTemplateColumns: '36px 2fr 1.2fr 0.8fr 0.9fr 1fr 0.7fr 440px' }}>
                 <div className="px-3 py-2.5 flex items-center">
                   <input type="checkbox"
                     checked={filtered.length > 0 && filtered.every(l => selectedIds.has(l.id))}
@@ -586,14 +631,15 @@ export default function DashboardPage() {
               {/* Rows */}
               {filtered.map((lead, i) => (
                 <Row key={lead.id} lead={lead} statuses={STATUSES} workers={workers} isEven={i % 2 === 0}
-                     generatingId={generatingId} sendingId={sendingId} invoicingId={invoicingId} sequencingId={sequencingId} enrichingId={enrichingId} deepEnrichingId={deepEnrichingId}
+                     generatingId={generatingId} sendingId={sendingId} invoicingId={invoicingId} sequencingId={sequencingId} enrichingId={enrichingId} deepEnrichingId={deepEnrichingId} p2pSendingId={p2pSendingId}
                      selected={selectedIds.has(lead.id)} onToggleSelect={toggleSelect}
                      onStatusChange={updateStatus} onAssign={assignWorker} onGenerate={generateSite}
                      onSms={sendSms} onInvoice={sendInvoice}
                      onCall={(l) => setDialerLead(l)}
                      onSequence={handleSequence}
                      onEnrich={handleEnrich}
-                     onDeepEnrich={handleDeepEnrich} />
+                     onDeepEnrich={handleDeepEnrich}
+                     onP2pText={handleP2pText} />
               ))}
 
               {/* Add leads prompt */}
@@ -629,14 +675,15 @@ export default function DashboardPage() {
   )
 }
 
-function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoicingId, sequencingId, enrichingId, deepEnrichingId, selected, onToggleSelect, onStatusChange, onAssign, onGenerate, onSms, onInvoice, onCall, onSequence, onEnrich, onDeepEnrich }: {
+function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoicingId, sequencingId, enrichingId, deepEnrichingId, p2pSendingId, selected, onToggleSelect, onStatusChange, onAssign, onGenerate, onSms, onInvoice, onCall, onSequence, onEnrich, onDeepEnrich, onP2pText }: {
   lead: Lead; statuses: LeadStatus[]; workers: { id: string; name: string }[]; isEven: boolean
-  generatingId: string | null; sendingId: string | null; invoicingId: string | null; sequencingId: string | null; enrichingId: string | null; deepEnrichingId: string | null
+  generatingId: string | null; sendingId: string | null; invoicingId: string | null; sequencingId: string | null; enrichingId: string | null; deepEnrichingId: string | null; p2pSendingId: string | null
   selected: boolean; onToggleSelect: (id: string) => void
   onStatusChange: (id: string, s: LeadStatus) => void
   onAssign: (id: string, workerId: string | null) => void
   onGenerate: (l: Lead) => void; onSms: (l: Lead) => void; onInvoice: (l: Lead) => void
   onCall: (l: Lead) => void; onSequence: (l: Lead) => void; onEnrich: (l: Lead) => void; onDeepEnrich: (l: Lead) => void
+  onP2pText: (l: Lead) => void
 }) {
   const isGen = generatingId === lead.id
   const isSms = sendingId === lead.id
@@ -644,6 +691,7 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoici
   const isSeq = sequencingId === lead.id
   const isEnr = enrichingId === lead.id
   const isDeep = deepEnrichingId === lead.id
+  const isP2p = p2pSendingId === lead.id
   const leadAny = lead as Lead & {
     ownerName?: string | null
     enrichmentConfidence?: string | null
@@ -665,7 +713,7 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoici
   return (
     <div className="grid items-center border-b border-[#161a11] hover:bg-[#ffffff02] transition-colors cursor-pointer"
          onClick={() => onToggleSelect(lead.id)}
-         style={{ gridTemplateColumns: '36px 2fr 1.2fr 0.8fr 0.9fr 1fr 0.7fr 230px', background: selected ? '#c8f1350c' : isEven ? 'transparent' : '#0f1009' }}>
+         style={{ gridTemplateColumns: '36px 2fr 1.2fr 0.8fr 0.9fr 1fr 0.7fr 440px', background: selected ? '#c8f1350c' : isEven ? 'transparent' : '#0f1009' }}>
 
       <div className="px-3 py-3.5 flex items-center" onClick={e => e.stopPropagation()}>
         <input type="checkbox" checked={selected} onChange={() => onToggleSelect(lead.id)}
@@ -784,10 +832,16 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoici
           </a>
         )}
         <button onClick={() => onSms(lead)} disabled={isSms || !lead.site || !lead.phone}
-          title={!lead.site ? 'Build site first' : !lead.phone ? 'No phone' : 'Send SMS with preview link'}
+          title={!lead.site ? 'Build site first' : !lead.phone ? 'No phone' : 'Send SMS via Telnyx (requires 10DLC)'}
           className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px] font-medium border border-[#1e2218] hover:border-[#2e3828] disabled:opacity-25 transition-all flex-shrink-0"
           style={{ color: '#4a5a3a' }}>
           <MessageSquare size={10} />{isSms ? '…' : 'SMS'}
+        </button>
+        <button onClick={() => onP2pText(lead)} disabled={isP2p || !lead.phone}
+          title={!lead.phone ? 'No phone' : 'Open your phone\'s Messages app to send from your number (P2P — works without 10DLC)'}
+          className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px] font-medium border border-[#1e2218] hover:border-[#2e3828] disabled:opacity-25 transition-all flex-shrink-0"
+          style={{ color: '#7dd3fc' }}>
+          <Smartphone size={10} />{isP2p ? '…' : 'Text'}
         </button>
         <button onClick={() => onInvoice(lead)} disabled={isInv || !lead.site}
           title={!lead.site ? 'Build site first' : lead.invoicePaid ? 'Already paid' : 'Send $299 invoice'}
@@ -811,10 +865,10 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoici
           <Repeat2 size={10} />{isSeq ? '…' : 'Drip'}
         </button>
         <button onClick={() => onEnrich(lead)} disabled={isEnr}
-          title={leadAny.ownerName ? `Owner: ${leadAny.ownerName} (${leadAny.enrichmentConfidence})` : 'Find owner name + contact info'}
+          title={leadAny.ownerName ? `Owner: ${leadAny.ownerName} (${leadAny.enrichmentConfidence}) — click to re-enrich` : 'Find owner name + contact info'}
           className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px] font-medium border border-[#1e2218] hover:border-[#2e3828] disabled:opacity-25 transition-all flex-shrink-0"
           style={{ color: leadAny.ownerName ? '#c8f135' : '#4a5a3a' }}>
-          <Sparkles size={10} />{isEnr ? '…' : leadAny.ownerName ? '✓' : 'Find'}
+          <Sparkles size={10} />{isEnr ? '…' : leadAny.ownerName ? 'Found' : 'Find'}
         </button>
         <button onClick={() => onDeepEnrich(lead)} disabled={isDeep}
           title={leadAny.ownerIncomeRange

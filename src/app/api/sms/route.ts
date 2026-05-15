@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { sendSms, buildPreviewMessage } from '@/lib/sms'
+import { sendSms, buildPreviewMessage, isA2pEnabled } from '@/lib/sms'
 import { SMS_TEMPLATES, renderTemplate } from '@/lib/sms-templates'
 
 export async function POST(req: Request) {
+  if (!isA2pEnabled()) {
+    return NextResponse.json({
+      error: 'Telnyx SMS is paused while 10DLC is in carrier review. Use the "Text" button (P2P from your phone) instead.',
+      code: 'a2p-disabled',
+    }, { status: 503 })
+  }
   const body = await req.json()
   const { leadId, message, templateId, isFollowUp } = body
 

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { sendSms, buildPreviewMessage } from '@/lib/sms'
+import { sendSms, buildPreviewMessage, isA2pEnabled } from '@/lib/sms'
 import { SMS_TEMPLATES, renderTemplate } from '@/lib/sms-templates'
 
 // Sequence steps: [templateId, hoursUntilNextStep]
@@ -13,6 +13,12 @@ const STEPS = [
 ]
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  if (!isA2pEnabled()) {
+    return NextResponse.json({
+      error: 'Telnyx SMS is paused while 10DLC is in carrier review. Drip sequences will resume after approval.',
+      code: 'a2p-disabled',
+    }, { status: 503 })
+  }
   const { id } = await params
 
   const lead = await db.lead.findUnique({ where: { id }, include: { site: true, sequence: true } })
