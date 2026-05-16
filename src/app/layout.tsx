@@ -10,11 +10,10 @@ const CLARITY_ID      = process.env.NEXT_PUBLIC_CLARITY_ID
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.webhustle.org'
 const SITE_NAME = 'WebHustle'
 const GSC_VERIFICATION = process.env.GOOGLE_SITE_VERIFICATION
-// Default metadata follows whichever landing mode is active.
-// To switch to B2B-clean metadata (e.g. another 10DLC review), set
-// NEXT_PUBLIC_LANDING_MODE=b2b and override these from page.tsx.
-const DEFAULT_TITLE = 'WebHustle — Earn $119 Per Sale Selling Websites to Local Businesses'
-const DEFAULT_DESC = 'Join WebHustle and earn $119 every time a local business buys a website. We build the site, you send a text. Work from your phone, get paid weekly.'
+// B2B-clean defaults during 10DLC carrier review.
+// After approval, switch via NEXT_PUBLIC_LANDING_MODE=agents in Vercel env vars.
+const DEFAULT_TITLE = 'WebHustle — Custom Websites for Local Businesses'
+const DEFAULT_DESC = 'WebHustle builds modern, mobile-friendly websites for local businesses. See a free preview of your custom site before you pay anything. One-time $299.'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

@@ -7,8 +7,10 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        allow: ['/', '/join', '/privacy', '/terms', '/sms-consent', '/agents'],
+        allow: ['/', '/privacy', '/terms', '/sms-consent'],
         disallow: [
+          '/agents',       // agent-recruitment content (gated during 10DLC review)
+          '/join',         // agent application form
           '/dashboard',
           '/leads',
           '/earnings',
