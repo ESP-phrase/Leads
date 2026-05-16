@@ -61,7 +61,7 @@ export async function POST(req: Request) {
           currency: 'usd',
           unit_amount: WORKER_FEE,
           product_data: {
-            name: 'SiteForge — Application Deposit',
+            name: 'WebHustle — Application Deposit',
             description: 'Refundable $5 deposit. We review your application within 24 hours. Approved → $5 covers your activation. Rejected → fully refunded automatically.',
           },
         },

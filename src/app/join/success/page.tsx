@@ -15,7 +15,7 @@ export default function JoinSuccessPage() {
 
         <h1 className="text-3xl font-black text-white mb-3">You're in!</h1>
         <p className="text-lg mb-2" style={{ color: '#6b7a5a' }}>
-          Welcome to the SiteForge team.
+          Welcome to the WebHustle team.
         </p>
         <p className="text-sm mb-8" style={{ color: '#4a5a3a' }}>
           Your account is active. You'll receive a text with login instructions shortly.

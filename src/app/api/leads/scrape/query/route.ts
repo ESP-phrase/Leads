@@ -8,7 +8,7 @@ async function isShopify(url: string): Promise<boolean> {
     const timer = setTimeout(() => controller.abort(), 6000)
     const res = await fetch(url, {
       signal: controller.signal,
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; SiteForge/1.0)' },
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; WebHustle/1.0)' },
       redirect: 'follow',
     })
     clearTimeout(timer)

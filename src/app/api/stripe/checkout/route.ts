@@ -15,8 +15,8 @@ export async function POST(req: Request) {
         currency: 'usd',
         unit_amount: WORKER_FEE,
         product_data: {
-          name: 'SiteForge — Worker Signup',
-          description: 'One-time activation fee to join the SiteForge team. You earn 40% on every site sold.',
+          name: 'WebHustle — Worker Signup',
+          description: 'One-time activation fee to join the WebHustle team. You earn 40% on every site sold.',
         },
       },
       quantity: 1,

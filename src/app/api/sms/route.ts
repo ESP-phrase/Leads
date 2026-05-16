@@ -19,7 +19,7 @@ export async function POST(req: Request) {
   if (leadId === 'test') {
     const testPhone = process.env.OPERATOR_PHONE_NUMBER
     if (!testPhone) return NextResponse.json({ error: 'OPERATOR_PHONE_NUMBER not set' }, { status: 500 })
-    const text = message ?? 'Test SMS from SiteForge dialer.'
+    const text = message ?? 'Test SMS from WebHustle dialer.'
     try {
       const result = await sendSms(testPhone, text)
       return NextResponse.json({ log: { status: result.status }, sentText: text })
@@ -33,8 +33,8 @@ export async function POST(req: Request) {
   if (!lead.phone) return NextResponse.json({ error: 'Lead has no phone' }, { status: 400 })
 
   // Use a branded /s/{slug} link that redirects to the underlying Vercel URL.
-  // This hides the *.vercel.app domain so recipients see a SiteForge URL.
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.PREVIEW_BASE_URL ?? 'https://siteforge.app'
+  // This hides the *.vercel.app domain so recipients see a WebHustle URL.
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.PREVIEW_BASE_URL ?? 'https://www.webhustle.org'
   const previewUrl = lead.slug
     ? `${baseUrl}/s/${lead.slug}`
     : (lead.site?.vercelUrl ?? lead.previewUrl ?? `${baseUrl}/preview/${lead.slug}`)

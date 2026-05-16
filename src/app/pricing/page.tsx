@@ -4,7 +4,7 @@ import { Zap, Flame, Shield, Headphones, RefreshCw, Lock, ArrowRight } from 'luc
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Pricing — SiteForge',
+  title: 'Pricing — WebHustle',
   description: 'Start free. Upgrade to Operator for unlimited leads, automated follow-ups, and priority tools.',
   robots: { index: false, follow: false },
 }

@@ -17,10 +17,10 @@ import Script from 'next/script'
 // regardless of this flag.
 // ============================================================================
 
-// Default = 'b2b' (clean landing) for 10DLC carrier review.
-// After approval, set NEXT_PUBLIC_LANDING_MODE=agents to flip back to the
-// agent-recruitment landing without redeploying code.
-const LANDING_MODE = (process.env.NEXT_PUBLIC_LANDING_MODE ?? 'b2b').toLowerCase()
+// Default = 'agents' (original recruitment landing — pre-10DLC state).
+// To switch to the B2B-clean landing for a future 10DLC review, set
+// NEXT_PUBLIC_LANDING_MODE=b2b in Vercel env vars (no code change needed).
+const LANDING_MODE = (process.env.NEXT_PUBLIC_LANDING_MODE ?? 'agents').toLowerCase()
 const IS_AGENTS_MODE = LANDING_MODE === 'agents'
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.webhustle.org'

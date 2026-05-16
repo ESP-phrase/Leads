@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       continue
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.PREVIEW_BASE_URL ?? 'https://siteforge.app'
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.PREVIEW_BASE_URL ?? 'https://www.webhustle.org'
     const previewUrl = lead.slug
       ? `${baseUrl}/s/${lead.slug}`
       : (lead.site?.vercelUrl ?? lead.previewUrl ?? `${baseUrl}/preview/${lead.slug}`)

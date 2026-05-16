@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = 'SiteForge — Earn $119 per sale from your phone'
+export const alt = 'WebHustle — Earn $119 per sale from your phone'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -54,8 +54,8 @@ export default function OgImage() {
             </svg>
           </div>
           <span style={{ fontSize: 36, fontWeight: 900, letterSpacing: '-1px' }}>
-            <span style={{ color: '#c8f135' }}>Site</span>
-            <span style={{ color: '#ffffff' }}>Forge</span>
+            <span style={{ color: '#c8f135' }}>Web</span>
+            <span style={{ color: '#ffffff' }}>Hustle</span>
           </span>
         </div>
 
@@ -94,7 +94,7 @@ export default function OgImage() {
           fontSize: 22, fontWeight: 700, color: '#c8f135',
           display: 'flex',
         }}>
-          siteforge.app
+          www.webhustle.org
         </div>
       </div>
     ),

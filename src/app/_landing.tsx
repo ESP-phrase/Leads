@@ -56,7 +56,7 @@ const FAQS = [
   },
   {
     q: 'How does the referral program work exactly?',
-    a: 'After approval you get a unique link like siteforge.app/join?ref=SF-ABC123. Anyone who applies through that link gets tied to you. Once they\'re approved and start closing deals, 15% of every $119 they earn goes to you — automatically, every Friday payout. There\'s no cap and no expiration.',
+    a: 'After approval you get a unique link like www.webhustle.org/join?ref=SF-ABC123. Anyone who applies through that link gets tied to you. Once they\'re approved and start closing deals, 15% of every $119 they earn goes to you — automatically, every Friday payout. There\'s no cap and no expiration.',
   },
 ]
 
@@ -374,7 +374,7 @@ export default function LandingPage() {
                     {['#3a1a1a','#3a3a1a','#1a3a1a'].map(c => <div key={c} style={{ width: 10, height: 10, borderRadius: '50%', background: c }} />)}
                   </div>
                   <div style={{ flex: 1, background: '#1a1e14', borderRadius: 6, padding: '4px 12px', fontSize: 11, color: '#3a4a2a', marginLeft: 8 }}>
-                    mike-plumbing.siteforge.app
+                    mike-plumbing.webhustle.org
                   </div>
                 </div>
                 {/* Mock website content */}
@@ -457,7 +457,7 @@ export default function LandingPage() {
                 {
                   day: 'Day 0 — You hit send',
                   you: true,
-                  msg: "Hey Mike! I put together a free website preview for Mike's Plumbing. Take a look: mike-plumbing.siteforge.app — Want me to make it yours for $299?",
+                  msg: "Hey Mike! I put together a free website preview for Mike's Plumbing. Take a look: mike-plumbing.webhustle.org — Want me to make it yours for $299?",
                   badge: 'First touch',
                   badgeColor: '#c8f135',
                 },
@@ -764,7 +764,7 @@ export default function LandingPage() {
             {[
               { icon: Briefcase, job: 'Retail/fast food shift',  hours: '8 hours',  pay: '$120',  takehome: 'after taxes ~$95',  bad: true },
               { icon: Car,       job: 'Uber/DoorDash 8 hours',     hours: '8 hours',  pay: '$140',  takehome: 'after gas ~$80',    bad: true },
-              { icon: Sparkles,  job: 'One SiteForge sale',     hours: '~30 mins', pay: '$119',  takehome: 'after fees: $119',  bad: false },
+              { icon: Sparkles,  job: 'One WebHustle sale',     hours: '~30 mins', pay: '$119',  takehome: 'after fees: $119',  bad: false },
             ].map(({ icon: Icon, job, hours, pay, takehome, bad }) => (
               <div key={job} style={{
                 padding: '30px 26px', borderRadius: 20, position: 'relative',

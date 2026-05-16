@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 
-// Friendly redirect: siteforge.app/s/mike-plumbing → mike-plumbing-x.vercel.app
+// Friendly redirect: www.webhustle.org/s/mike-plumbing → mike-plumbing-x.vercel.app
 // This hides the underlying vercel.app domain from the SMS recipient.
 export async function GET(_: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params

@@ -322,7 +322,7 @@ export default function JoinPage() {
                       }}
                     />
                     <span style={{ fontSize: 12, color: '#a0b080', lineHeight: 1.5 }}>
-                      I agree to receive SMS messages from SiteForge at the phone number above, including
+                      I agree to receive SMS messages from WebHustle at the phone number above, including
                       application updates, lead notifications, and pitch templates. <span style={{ color: '#fff', fontWeight: 600 }}>Msg & data rates may apply.</span> Message frequency varies. Reply <span style={{ color: '#c8f135', fontWeight: 700 }}>STOP</span> to unsubscribe or <span style={{ color: '#c8f135', fontWeight: 700 }}>HELP</span> for help. See our <Link href="/sms-consent" style={{ color: '#c8f135', textDecoration: 'underline' }} target="_blank">SMS Terms</Link> &amp; <Link href="/privacy" style={{ color: '#c8f135', textDecoration: 'underline' }} target="_blank">Privacy Policy</Link>.
                     </span>
                   </label>
@@ -354,7 +354,7 @@ export default function JoinPage() {
 
       <footer style={{ borderTop: '1px solid #1e2218', padding: '24px 1.5rem', textAlign: 'center' }}>
         <span style={{ fontWeight: 900, fontSize: 16, color: '#c8f135' }}>Website<span style={{ color: '#fff' }}>Hustle</span></span>
-        <p style={{ color: '#2a3a1a', fontSize: 12, marginTop: 8 }}>© {new Date().getFullYear()} SiteForge. All rights reserved.</p>
+        <p style={{ color: '#2a3a1a', fontSize: 12, marginTop: 8 }}>© {new Date().getFullYear()} WebHustle. All rights reserved.</p>
       </footer>
     </div>
   )
