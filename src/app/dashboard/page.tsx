@@ -52,7 +52,13 @@ export default function DashboardPage() {
   const [enrichingId, setEnrichingId] = useState<string | null>(null)
   const [deepEnrichingId, setDeepEnrichingId] = useState<string | null>(null)
   const [p2pSendingId, setP2pSendingId] = useState<string | null>(null)
-  const [a2pStatus, setA2pStatus] = useState<{ a2pEnabled: boolean; reason: string | null } | null>(null)
+  const [a2pStatus, setA2pStatus] = useState<{
+    a2pEnabled: boolean
+    reason: string | null
+    numberType?: 'toll-free' | 'short-code' | 'long-code' | 'unknown'
+    rps?: number
+    fromNumber?: string | null
+  } | null>(null)
 
   useEffect(() => {
     fetch('/api/sms/status').then(r => r.json()).then(setA2pStatus).catch(() => {})
@@ -400,16 +406,44 @@ export default function DashboardPage() {
       <Sidebar />
 
       <main className="flex-1 flex flex-col min-w-0 overflow-auto">
-        {/* A2P-paused banner */}
+        {/* SMS status banner — shows number type + paused state */}
         {a2pStatus && !a2pStatus.a2pEnabled && (
-          <div className="px-6 py-2.5 border-b text-xs flex items-center gap-2"
+          <div className="px-6 py-2.5 border-b text-xs flex items-center gap-2 flex-wrap"
                style={{ background: '#3a2a08', borderColor: '#5a4a18', color: '#f5c441' }}>
             <span style={{ fontSize: 14 }}>⏸</span>
             <strong>Auto-SMS paused</strong>
+            {a2pStatus.numberType && a2pStatus.numberType !== 'unknown' && (
+              <span style={{
+                padding: '1px 7px', borderRadius: 4, fontSize: 10, fontWeight: 700,
+                background: '#5a4a18', color: '#f5c441',
+              }}>
+                {a2pStatus.numberType === 'toll-free' ? 'TOLL-FREE'
+                  : a2pStatus.numberType === 'long-code' ? '10DLC LONG-CODE'
+                  : a2pStatus.numberType.toUpperCase()}
+                {a2pStatus.fromNumber ? ` · ${a2pStatus.fromNumber}` : ''}
+              </span>
+            )}
             <span style={{ color: '#c8a050' }}>· {a2pStatus.reason}</span>
             <span className="ml-auto" style={{ color: '#8a7030' }}>
-              Set <code style={{ background: '#2a1f05', padding: '1px 6px', borderRadius: 4 }}>TELNYX_A2P_ENABLED=true</code> in Vercel env to re-enable.
+              Set <code style={{ background: '#2a1f05', padding: '1px 6px', borderRadius: 4 }}>TELNYX_A2P_ENABLED=true</code> when verified.
             </span>
+          </div>
+        )}
+        {a2pStatus && a2pStatus.a2pEnabled && a2pStatus.numberType && a2pStatus.numberType !== 'unknown' && (
+          <div className="px-6 py-2 border-b text-xs flex items-center gap-2"
+               style={{ background: '#0d2218', borderColor: '#1a3520', color: '#a8d870' }}>
+            <span style={{ fontSize: 12 }}>✓</span>
+            <strong>SMS live</strong>
+            <span style={{
+              padding: '1px 7px', borderRadius: 4, fontSize: 10, fontWeight: 700,
+              background: '#1a3520', color: '#c8f135',
+            }}>
+              {a2pStatus.numberType === 'toll-free' ? 'TOLL-FREE'
+                : a2pStatus.numberType === 'long-code' ? '10DLC LONG-CODE'
+                : a2pStatus.numberType.toUpperCase()}
+              {a2pStatus.fromNumber ? ` · ${a2pStatus.fromNumber}` : ''}
+            </span>
+            <span style={{ color: '#6a8a4a' }}>· up to {a2pStatus.rps ?? 1} msg/sec</span>
           </div>
         )}
         {/* Topbar */}
