@@ -30,6 +30,32 @@ export class A2pDisabledError extends Error {
   }
 }
 
+/**
+ * Detect what kind of number TELNYX_PHONE_NUMBER is.
+ *   - 'toll-free'  → US toll-free prefixes (800, 833, 844, 855, 866, 877, 888)
+ *   - 'short-code' → 5–6 digit codes
+ *   - 'long-code'  → standard 10-digit number (default for 10DLC)
+ */
+export function getNumberType(): 'toll-free' | 'short-code' | 'long-code' | 'unknown' {
+  const n = (process.env.TELNYX_PHONE_NUMBER ?? '').replace(/\D/g, '')
+  if (!n) return 'unknown'
+  if (n.length <= 6) return 'short-code'
+  // E.164 US: starts with 1, then 10 digits. Toll-free prefixes:
+  const npa = n.length === 11 && n.startsWith('1') ? n.slice(1, 4) : n.slice(0, 3)
+  if (['800', '833', '844', '855', '866', '877', '888'].includes(npa)) return 'toll-free'
+  return 'long-code'
+}
+
+/** Max messages per second to attempt, per Telnyx documentation. */
+export function ratePerSecond(): number {
+  switch (getNumberType()) {
+    case 'toll-free':  return 3    // Verified TFN: ~3 msg/s, ~2k/day
+    case 'short-code': return 100  // Short code: high throughput
+    case 'long-code':  return 10   // Registered 10DLC long code (T-Mobile rate)
+    default:           return 1
+  }
+}
+
 function telnyxHeaders() {
   return {
     'Authorization': `Bearer ${process.env.TELNYX_API_KEY}`,

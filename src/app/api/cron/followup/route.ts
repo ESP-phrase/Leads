@@ -1,14 +1,19 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { sendSms, isA2pEnabled } from '@/lib/sms'
+import { sendSms, isA2pEnabled, ratePerSecond, getNumberType } from '@/lib/sms'
 import { renderTemplate, SMS_TEMPLATES } from '@/lib/sms-templates'
 
-// Sequence step definitions — must match /api/leads/[id]/sequence/route.ts
+/** Sleep to keep us under TFN/long-code rate limits. */
+function sleepFor(rps: number) {
+  return new Promise(r => setTimeout(r, Math.ceil(1000 / Math.max(1, rps))))
+}
+
+// Sequence step definitions — IDs MUST match entries in src/lib/sms-templates.ts
 const STEPS = [
-  { templateId: 'first-touch-preview', nextHours: 24  },
-  { templateId: 'follow-up-24h',       nextHours: 48  },
-  { templateId: 'follow-up-value',     nextHours: 96  },
-  { templateId: 'closing-last-chance', nextHours: null },
+  { templateId: 'preview-soft',    nextHours: 24  },  // Day 0 → first touch with preview link
+  { templateId: 'follow-up-24h',   nextHours: 72  },  // Day 1 → light nudge
+  { templateId: 'follow-up-week',  nextHours: 96  },  // Day 4 → check-in
+  { templateId: 'follow-up-final', nextHours: null }, // Day 7 → last chance (no further sends)
 ]
 
 export async function GET(req: Request) {
@@ -30,6 +35,8 @@ export async function GET(req: Request) {
   const now = new Date()
   const sent: { leadId: string; step: number; status: string }[] = []
   const failed: { leadId: string; error: string }[] = []
+  const rps = ratePerSecond()
+  const numberType = getNumberType()
 
   // ── 1. Advance active drip sequences ──────────────────────────────
   const dueSequences = await db.smsSequence.findMany({
@@ -88,6 +95,7 @@ export async function GET(req: Request) {
     } catch (err) {
       failed.push({ leadId: lead.id, error: String(err) })
     }
+    await sleepFor(rps)
   }
 
   // ── 2. Legacy: one-off follow-up for TEXTED leads with no sequence ─
@@ -132,6 +140,8 @@ export async function GET(req: Request) {
   }
 
   return NextResponse.json({
+    numberType,
+    rps,
     sequences: dueSequences.length,
     legacy: legacyLeads.length,
     sent: sent.length,

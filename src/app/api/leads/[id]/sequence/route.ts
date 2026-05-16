@@ -5,11 +5,12 @@ import { SMS_TEMPLATES, renderTemplate } from '@/lib/sms-templates'
 
 // Sequence steps: [templateId, hoursUntilNextStep]
 // Step 0 fires immediately, then we schedule step 1 for +24h, etc.
+// IDs MUST match entries in src/lib/sms-templates.ts
 const STEPS = [
-  { templateId: 'first-touch-preview', nextHours: 24  },  // Day 0 → next at Day 1
-  { templateId: 'follow-up-24h',       nextHours: 48  },  // Day 1 → next at Day 3
-  { templateId: 'follow-up-value',     nextHours: 96  },  // Day 3 → next at Day 7
-  { templateId: 'closing-last-chance', nextHours: null },  // Day 7 → done
+  { templateId: 'preview-soft',    nextHours: 24  },  // Day 0 → first touch with preview link
+  { templateId: 'follow-up-24h',   nextHours: 72  },  // Day 1 → light nudge
+  { templateId: 'follow-up-week',  nextHours: 96  },  // Day 4 → check-in
+  { templateId: 'follow-up-final', nextHours: null }, // Day 7 → last chance
 ]
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -30,7 +31,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     await db.smsSequence.delete({ where: { leadId: id } })
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://siteforge.app'
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.webhustle.org'
   const previewUrl = lead.slug ? `${baseUrl}/s/${lead.slug}` : (lead.site?.vercelUrl ?? `${baseUrl}/preview/${lead.id}`)
 
   const step = STEPS[0]
