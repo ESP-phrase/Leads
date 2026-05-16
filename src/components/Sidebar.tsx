@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Search, PhoneCall, Users, LogOut, DollarSign, UserPlus } from 'lucide-react'
+import { LayoutDashboard, Search, PhoneCall, Users, LogOut, DollarSign, UserPlus, Settings } from 'lucide-react'
 import clsx from 'clsx'
 import Logo from '@/components/Logo'
 import { useEffect, useState } from 'react'
@@ -14,6 +14,7 @@ const links = [
   { href: '/applications',  label: 'Applications', icon: UserPlus,    badge: 'pending' },
   { href: '/workers',       label: 'Workers',      icon: Users },
   { href: '/earnings',      label: 'Earnings',     icon: DollarSign },
+  { href: '/integrations',  label: 'Integrations', icon: Settings },
 ]
 
 export default function Sidebar() {
