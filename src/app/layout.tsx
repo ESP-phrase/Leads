@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import Script from 'next/script'
 import './globals.css'
+import { OrganizationSchema, WebSiteSchema } from '@/components/StructuredData'
 
 const REDDIT_PIXEL_ID = process.env.NEXT_PUBLIC_REDDIT_PIXEL_ID
 const META_PIXEL_ID   = process.env.NEXT_PUBLIC_META_PIXEL_ID
@@ -116,6 +117,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             `}</Script>
           </>
         )}
+        {/* Site-wide schemas (Organization, WebSite) so subpages without their
+            own JSON-LD still surface in the knowledge panel. Page-specific
+            schemas (Service offers, FAQPage, Breadcrumbs) live in each page.tsx. */}
+        <OrganizationSchema />
+        <WebSiteSchema />
         {/* Microsoft Clarity — free session recordings + heatmaps */}
         {CLARITY_ID && (
           <Script id="clarity" strategy="afterInteractive">{`

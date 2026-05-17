@@ -94,13 +94,42 @@ const b2bJsonLd = {
       description:
         'Custom-built, mobile-friendly website for a local business. Includes business info, services, photos, reviews, click-to-call, and local SEO. One-time payment, no subscriptions.',
       areaServed: { '@type': 'Country', name: 'US' },
-      offers: {
-        '@type': 'Offer',
-        price: '299',
-        priceCurrency: 'USD',
-        priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        availability: 'https://schema.org/InStock',
-      },
+      // Four tiers — Starter $149 → Premium $799. Lets Google show price ranges
+      // in the SERP and surface the right tier for different shopper intents.
+      offers: [
+        {
+          '@type': 'Offer',
+          name: 'Starter Website',
+          price: '149',
+          priceCurrency: 'USD',
+          availability: 'https://schema.org/InStock',
+          description: 'Mobile-optimized single-page website with hosting and a custom domain.',
+        },
+        {
+          '@type': 'Offer',
+          name: 'Professional Website',
+          price: '299',
+          priceCurrency: 'USD',
+          availability: 'https://schema.org/InStock',
+          description: 'Multi-section professional website with hosting, mobile design, and SEO setup.',
+        },
+        {
+          '@type': 'Offer',
+          name: 'Pro Business Website + Google Setup',
+          price: '499',
+          priceCurrency: 'USD',
+          availability: 'https://schema.org/InStock',
+          description: 'Professional website plus Google Business Profile setup and local-SEO optimization.',
+        },
+        {
+          '@type': 'Offer',
+          name: 'Premium Custom Website + 90-Day Support',
+          price: '799',
+          priceCurrency: 'USD',
+          availability: 'https://schema.org/InStock',
+          description: 'Custom-designed website, Google Business Profile setup, local-SEO, and 90 days of priority edits.',
+        },
+      ],
     },
     {
       '@type': 'FAQPage',

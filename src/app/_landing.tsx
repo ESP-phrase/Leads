@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import Logo from '@/components/Logo'
 
-const FAQS = [
+export const FAQS = [
   {
     q: 'Is this actually legit?',
     a: 'Yes. We charge local businesses $299 for a custom website. You get 40% ($119) when they buy. It\'s a real product solving a real problem — most local businesses (plumbers, salons, mechanics) still don\'t have a website in 2025.',
