@@ -29,7 +29,7 @@ export default function Logo({ size = 28, showText = true, textSize = 'md', clas
       </span>
       {showText && (
         <span style={{ fontWeight: 900, fontSize, letterSpacing: '-0.5px', whiteSpace: 'nowrap' }}>
-          <span style={{ color: '#c8f135' }}>Site</span><span style={{ color: '#fff' }}>Forge</span>
+          <span style={{ color: '#c8f135' }}>Web</span><span style={{ color: '#fff' }}>Hustle</span>
         </span>
       )}
     </span>

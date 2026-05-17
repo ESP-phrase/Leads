@@ -33,3 +33,27 @@ details > summary { list-style: none; }
 details > summary::-webkit-details-marker { display: none; }
 details[open] > summary svg { transform: rotate(180deg); transition: transform 0.2s ease; }
 details > summary svg { transition: transform 0.2s ease; }
+
+/* Global button hover affordance — subtle lift + brightness so every <button>
+   and anchor-as-button feels clickable even without per-call hover classes. */
+button:not(:disabled),
+a[role="button"],
+a.btn {
+  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+button:not(:disabled):hover,
+a[role="button"]:hover,
+a.btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+button:not(:disabled):active,
+a[role="button"]:active,
+a.btn:active {
+  transform: translateY(0);
+  filter: brightness(0.95);
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
