@@ -1,7 +1,17 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const PUBLIC = ['/login', '/join', '/sms-consent', '/privacy', '/terms', '/s/', '/api/auth', '/api/stripe', '/api/apply', '/api/telnyx', '/preview', '/_next', '/favicon']
+const PUBLIC = [
+  // Public pages (visible to anyone, no auth needed)
+  '/login', '/join', '/agents', '/pricing', '/sms-consent', '/privacy', '/terms',
+  // Public link redirector + previews
+  '/s/', '/preview',
+  // Public webhook + public-facing API
+  '/api/auth', '/api/stripe', '/api/apply', '/api/telnyx', '/api/preview-request', '/api/sms/status',
+  // SEO + static files
+  '/robots.txt', '/sitemap.xml', '/opengraph-image', '/apple-icon', '/icon',
+  '/_next', '/favicon',
+]
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
