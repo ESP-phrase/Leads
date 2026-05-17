@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { sendSms, buildPreviewMessage, isA2pEnabled } from '@/lib/sms'
 import { SMS_TEMPLATES, renderTemplate } from '@/lib/sms-templates'
+import { pickTierForLead } from '@/lib/pricing'
 
 export async function POST(req: Request) {
   if (!isA2pEnabled()) {
@@ -51,6 +52,7 @@ export async function POST(req: Request) {
       link,
       city: lead.city,
       category: lead.category,
+      price: pickTierForLead(lead).priceDisplay,
     })
   } else if (message) {
     // Render any user-typed message that uses placeholders
@@ -60,6 +62,7 @@ export async function POST(req: Request) {
       link,
       city: lead.city,
       category: lead.category,
+      price: pickTierForLead(lead).priceDisplay,
     })
     // If the message doesn't already have the link, append it
     if (!text.includes(link) && !text.includes('http')) {

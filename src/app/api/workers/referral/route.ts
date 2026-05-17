@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getSession } from '@/lib/auth'
+import { pickTierForLead } from '@/lib/pricing'
 
-const WORKER_SHARE = 119   // $ per closed deal
 const REFERRAL_PCT = 0.15  // 15% of recruit's earnings go to referrer
 
 export async function GET() {
@@ -27,8 +27,13 @@ export async function GET() {
 
   // Tally referral earnings
   const recruits = worker.referrals.map(r => {
-    const closed = r.leads.filter((l) => l.invoicePaid).length
-    const earned = closed * WORKER_SHARE
+    const closedLeads = r.leads.filter((l) => l.invoicePaid)
+    const closed = closedLeads.length
+    // Per-deal tier-based earnings — Premium closes pay more than Starter
+    const earned = closedLeads.reduce(
+      (sum, l) => sum + Math.round(pickTierForLead(l).workerShareCents / 100),
+      0,
+    )
     const yourCut = Math.round(earned * REFERRAL_PCT)
     return {
       id: r.id,

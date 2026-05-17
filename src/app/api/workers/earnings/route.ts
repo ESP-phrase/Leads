@@ -1,10 +1,27 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getSession } from '@/lib/auth'
+import { pickTierForLead } from '@/lib/pricing'
 
-const WORKER_SHARE_DOLLARS = 119  // 40% of $299
-const SITE_PRICE_DOLLARS = 299
-const REFERRAL_PCT = 0.15         // referrer earns 15% of each recruit's closed deals
+const REFERRAL_PCT = 0.15  // referrer earns 15% of each recruit's closed-deal share
+
+type LeadForEarnings = {
+  invoicePaid: boolean
+  invoiceUrl: string | null
+  status: string
+  wealthScore: number | null
+  ownerIncomeRange: string | null
+}
+
+/** Worker share (dollars) for a single lead at its computed tier. */
+function workerShareDollars(lead: LeadForEarnings): number {
+  return Math.round(pickTierForLead(lead).workerShareCents / 100)
+}
+
+/** Sum of worker shares for leads matching a predicate. */
+function sumShares(leads: LeadForEarnings[], match: (l: LeadForEarnings) => boolean): number {
+  return leads.reduce((sum, l) => match(l) ? sum + workerShareDollars(l) : sum, 0)
+}
 
 // GET → returns earnings for the logged-in worker, or all workers (admin)
 export async function GET() {
@@ -25,12 +42,12 @@ export async function GET() {
       const closedDeals     = w.leads.filter(l => l.invoicePaid).length
       const pendingDeals    = w.leads.filter(l => l.invoiceUrl && !l.invoicePaid).length
       const interestedDeals = w.leads.filter(l => l.status === 'INTERESTED').length
-      const directEarned    = closedDeals * WORKER_SHARE_DOLLARS
 
-      // Referral earnings: 15% of each recruit's closed deals
+      const directEarned = sumShares(w.leads, l => l.invoicePaid)
+
+      // Referral earnings: 15% of each recruit's per-tier closed-deal share
       const referralEarned = w.referrals.reduce((sum, r) => {
-        const rClosed = r.leads.filter((l) => l.invoicePaid).length
-        return sum + Math.round(rClosed * WORKER_SHARE_DOLLARS * REFERRAL_PCT)
+        return sum + Math.round(sumShares(r.leads, l => l.invoicePaid) * REFERRAL_PCT)
       }, 0)
 
       return {
@@ -47,8 +64,8 @@ export async function GET() {
         earned:          directEarned + referralEarned,
         directEarned,
         referralEarned,
-        pending:         pendingDeals * WORKER_SHARE_DOLLARS,
-        potential:       interestedDeals * WORKER_SHARE_DOLLARS,
+        pending:         sumShares(w.leads, l => Boolean(l.invoiceUrl) && !l.invoicePaid),
+        potential:       sumShares(w.leads, l => l.status === 'INTERESTED'),
       }
     })
 
@@ -69,11 +86,10 @@ export async function GET() {
     const closedDeals     = w.leads.filter(l => l.invoicePaid).length
     const pendingDeals    = w.leads.filter(l => l.invoiceUrl && !l.invoicePaid).length
     const interestedDeals = w.leads.filter(l => l.status === 'INTERESTED').length
-    const directEarned    = closedDeals * WORKER_SHARE_DOLLARS
 
+    const directEarned = sumShares(w.leads, l => l.invoicePaid)
     const referralEarned = w.referrals.reduce((sum, r) => {
-      const rClosed = r.leads.filter((l) => l.invoicePaid).length
-      return sum + Math.round(rClosed * WORKER_SHARE_DOLLARS * REFERRAL_PCT)
+      return sum + Math.round(sumShares(r.leads, l => l.invoicePaid) * REFERRAL_PCT)
     }, 0)
 
     return NextResponse.json({
@@ -88,10 +104,12 @@ export async function GET() {
       earned:        directEarned + referralEarned,
       directEarned,
       referralEarned,
-      pending:       pendingDeals * WORKER_SHARE_DOLLARS,
-      potential:     interestedDeals * WORKER_SHARE_DOLLARS,
-      sitePrice:     SITE_PRICE_DOLLARS,
-      yourShare:     WORKER_SHARE_DOLLARS,
+      pending:       sumShares(w.leads, l => Boolean(l.invoiceUrl) && !l.invoicePaid),
+      potential:     sumShares(w.leads, l => l.status === 'INTERESTED'),
+      // Headline numbers for the dashboard — reflect the "default" Standard tier.
+      // Actual per-deal pay scales with each lead's wealth tier ($60–$319).
+      sitePrice:     299,
+      yourShare:     119,
       referralPct:   REFERRAL_PCT * 100,
     })
   }

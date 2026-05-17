@@ -9,6 +9,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { SMS_TEMPLATES, renderTemplate } from '@/lib/sms-templates'
+import { pickTierForLead } from '@/lib/pricing'
 
 export async function POST(req: Request) {
   const { leadId, templateId, message } = await req.json()
@@ -37,6 +38,7 @@ export async function POST(req: Request) {
       link,
       city: lead.city,
       category: lead.category,
+      price: pickTierForLead(lead).priceDisplay,
     })
   } else if (message) {
     text = renderTemplate(message, {
@@ -45,6 +47,7 @@ export async function POST(req: Request) {
       link,
       city: lead.city,
       category: lead.category,
+      price: pickTierForLead(lead).priceDisplay,
     })
     if (!text.includes(link) && !text.includes('http')) text += `\n\n${link}`
   } else {

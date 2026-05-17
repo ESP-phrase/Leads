@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { sendSms, isA2pEnabled } from '@/lib/sms'
 import { SMS_TEMPLATES, renderTemplate } from '@/lib/sms-templates'
+import { pickTierForLead } from '@/lib/pricing'
 
 export const maxDuration = 60
 
@@ -49,6 +50,7 @@ export async function POST(req: Request) {
       link,
       city: lead.city,
       category: lead.category,
+      price: pickTierForLead(lead).priceDisplay,
     })
 
     try {

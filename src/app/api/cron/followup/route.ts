@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { sendSms, isA2pEnabled, ratePerSecond, getNumberType } from '@/lib/sms'
 import { renderTemplate, SMS_TEMPLATES } from '@/lib/sms-templates'
+import { pickTierForLead } from '@/lib/pricing'
 
 /** Sleep to keep us under TFN/long-code rate limits. */
 function sleepFor(rps: number) {
@@ -70,6 +71,7 @@ export async function GET(req: Request) {
       link: previewUrl,
       city: lead.city,
       category: lead.category,
+      price: pickTierForLead(lead).priceDisplay,
     })
 
     try {
@@ -126,6 +128,7 @@ export async function GET(req: Request) {
       link: previewUrl,
       city: lead.city,
       category: lead.category,
+      price: pickTierForLead(lead).priceDisplay,
     })
 
     try {

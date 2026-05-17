@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { sendSms, buildPreviewMessage, isA2pEnabled } from '@/lib/sms'
 import { SMS_TEMPLATES, renderTemplate } from '@/lib/sms-templates'
+import { pickTierForLead } from '@/lib/pricing'
 
 // Sequence steps: [templateId, hoursUntilNextStep]
 // Step 0 fires immediately, then we schedule step 1 for +24h, etc.
@@ -37,7 +38,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const step = STEPS[0]
   const tmpl = SMS_TEMPLATES.find(t => t.id === step.templateId)
   const text = tmpl
-    ? renderTemplate(tmpl.body, { name: lead.name?.split(' ')[0] ?? null, business: lead.name, link: previewUrl, city: lead.city, category: lead.category })
+    ? renderTemplate(tmpl.body, { name: lead.name?.split(' ')[0] ?? null, business: lead.name, link: previewUrl, city: lead.city, category: lead.category, price: pickTierForLead(lead).priceDisplay })
     : buildPreviewMessage(lead.name, previewUrl)
 
   // Send step 0 immediately

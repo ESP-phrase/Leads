@@ -11,7 +11,8 @@ export function getStripe(): Stripe {
   return _stripe
 }
 
-export const WORKER_FEE = 500      // $5.00 in cents
-export const SITE_PRICE = 29900    // $299.00 in cents
-export const WORKER_SHARE = 11900  // $119.00 — worker 40%
-export const OWNER_SHARE = 17900   // $180.00 — you 60% (after rounding)
+export const WORKER_FEE = 500      // $5.00 in cents — worker activation deposit
+
+// Website pricing is now wealth-tier-based — see src/lib/pricing.ts
+// (Starter $149 / Standard $299 / Pro $499 / Premium $799). Worker share is 40%
+// of whichever tier the lead lands in.

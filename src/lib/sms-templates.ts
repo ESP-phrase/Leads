@@ -6,7 +6,8 @@ export interface SmsTemplate {
   stage: 'first-touch' | 'follow-up' | 'closing'
 }
 
-// Placeholders: {name}, {business}, {link}, {city}, {category}
+// Placeholders: {name}, {business}, {link}, {city}, {category}, {price}
+// {price} resolves at send-time to the lead's wealth-tier price ("$149"–"$799").
 export const SMS_TEMPLATES: SmsTemplate[] = [
   {
     id: 'preview-soft',
@@ -64,14 +65,14 @@ Let me know if you want to chat — I'm flexible on price.`,
     stage: 'follow-up',
     body: `Hi {name} — last check-in. The site for {business} is still live: {link}
 
-If you want it, $299 gets it on a real domain. Otherwise, no worries — wish you the best!`,
+If you want it, {price} gets it on a real domain. Otherwise, no worries — wish you the best!`,
   },
   {
     id: 'closing-discount',
     label: 'Limited-time discount',
     emoji: '💰',
     stage: 'closing',
-    body: `{name}! Quick offer — first 5 new clients this week get the website for $199 instead of $299.
+    body: `{name}! Quick offer — first 5 new clients this week get the website at a one-time discount off our usual {price}.
 
 Yours: {link}
 
@@ -82,7 +83,7 @@ Grab it: reply YES and I'll send a payment link.`,
     label: 'Send payment link',
     emoji: '✅',
     stage: 'closing',
-    body: `Awesome, {name}! Here's the payment link for {business}'s website ($299):
+    body: `Awesome, {name}! Here's the payment link for {business}'s website ({price}):
 
 {link}
 
@@ -92,7 +93,14 @@ Once paid, I'll send you the live URL within 24 hours.`,
 
 export function renderTemplate(
   template: string,
-  vars: { name?: string | null; business: string; link: string; city?: string | null; category?: string | null },
+  vars: {
+    name?: string | null
+    business: string
+    link: string
+    city?: string | null
+    category?: string | null
+    price?: string | null
+  },
 ): string {
   return template
     .replace(/\{name\}/g, vars.name || 'there')
@@ -100,4 +108,5 @@ export function renderTemplate(
     .replace(/\{link\}/g, vars.link)
     .replace(/\{city\}/g, vars.city || 'your area')
     .replace(/\{category\}/g, vars.category || 'business')
+    .replace(/\{price\}/g, vars.price || '$299')
 }
