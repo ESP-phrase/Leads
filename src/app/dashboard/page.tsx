@@ -9,6 +9,7 @@ import {
   Search, CheckCircle2, Receipt, Check, X as XIcon, Layers, Repeat2, Sparkles, Smartphone,
 } from 'lucide-react'
 import { SMS_TEMPLATES } from '@/lib/sms-templates'
+import { pickTierForLead } from '@/lib/pricing'
 import type { Lead, LeadStatus } from '@/types'
 import { statusLabel, formatPhone } from '@/lib/utils'
 import Sidebar from '@/components/Sidebar'
@@ -775,32 +776,51 @@ function Row({ lead, statuses, workers, isEven, generatingId, sendingId, invoici
             </span>
           </button>
         )}
-        {leadAny.wealthScore != null && (
-          <div className="flex items-center gap-1 mt-0.5 text-xs">
-            <button type="button"
-              onClick={e => { e.stopPropagation(); onEnrich(lead) }}
-              disabled={isEnr}
-              title={leadAny.wealthSignals ? `Signals: ${leadAny.wealthSignals} — click to re-enrich` : 'Wealth proxy score (0-100) — click to re-enrich'}
-              style={{
-                padding: '1px 6px',
-                borderRadius: 4,
-                fontSize: 10,
-                fontWeight: 700,
-                background: `${wealthColor(leadAny.wealthScore)}20`,
-                color: wealthColor(leadAny.wealthScore),
-                border: `1px solid ${wealthColor(leadAny.wealthScore)}40`,
-                cursor: 'pointer',
-              }}
-              className="hover:opacity-80 transition-opacity disabled:opacity-50">
-              ${leadAny.wealthScore}
-            </button>
-            {leadAny.wealthSignals && (
-              <span style={{ color: '#3a4a2a', fontSize: 10 }} className="truncate max-w-[140px]">
-                {leadAny.wealthSignals.split(',').slice(0, 2).join(',')}
+        {leadAny.wealthScore != null && (() => {
+          const tier = pickTierForLead({
+            wealthScore: leadAny.wealthScore,
+            ownerIncomeRange: leadAny.ownerIncomeRange ?? null,
+          })
+          return (
+            <div className="flex items-center gap-1 mt-0.5 text-xs flex-wrap">
+              <button type="button"
+                onClick={e => { e.stopPropagation(); onEnrich(lead) }}
+                disabled={isEnr}
+                title={leadAny.wealthSignals ? `Signals: ${leadAny.wealthSignals} — click to re-enrich` : 'Wealth proxy score (0-100) — click to re-enrich'}
+                style={{
+                  padding: '1px 6px',
+                  borderRadius: 4,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  background: `${wealthColor(leadAny.wealthScore)}20`,
+                  color: wealthColor(leadAny.wealthScore),
+                  border: `1px solid ${wealthColor(leadAny.wealthScore)}40`,
+                  cursor: 'pointer',
+                }}
+                className="hover:opacity-80 transition-opacity disabled:opacity-50">
+                ${leadAny.wealthScore}
+              </button>
+              <span
+                title={`Recommended pitch: ${tier.productName} (${tier.priceDisplay}). Worker share: $${Math.round(tier.workerShareCents / 100)}.`}
+                style={{
+                  padding: '1px 6px',
+                  borderRadius: 4,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  background: '#c8f13510',
+                  color: '#c8f135',
+                  border: '1px solid #c8f13530',
+                }}>
+                → {tier.priceDisplay} {tier.label}
               </span>
-            )}
-          </div>
-        )}
+              {leadAny.wealthSignals && (
+                <span style={{ color: '#3a4a2a', fontSize: 10 }} className="truncate max-w-[140px]">
+                  {leadAny.wealthSignals.split(',').slice(0, 2).join(',')}
+                </span>
+              )}
+            </div>
+          )
+        })()}
       </div>
 
       <div className="px-3 py-3.5">
