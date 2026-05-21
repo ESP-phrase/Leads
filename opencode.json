@@ -1,0 +1,189 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  "provider": {
+    "opencode": {}
+  },
+
+  "routing": {
+    "default": "big-pickle",
+
+    "models": {
+      "architect": "zen",
+      "builder": "big-pickle",
+      "worker": "opencode/auto",
+      "reviewer": "zen",
+      "debugger": "zen",
+      "frontend": "big-pickle",
+      "backend": "big-pickle",
+      "cleanup": "opencode/auto"
+    },
+
+    "rules": [
+      {
+        "name": "architecture",
+        "match": [
+          "architecture",
+          "system design",
+          "design system",
+          "scaling",
+          "scalable",
+          "infra",
+          "infrastructure",
+          "database design",
+          "schema design",
+          "prisma schema",
+          "security review",
+          "auth flow",
+          "stripe billing",
+          "queue architecture",
+          "worker architecture",
+          "retry strategy",
+          "rate limiting",
+          "proxy rotation",
+          "anti bot",
+          "captcha",
+          "performance bottleneck",
+          "review implementation"
+        ],
+        "model": "zen"
+      },
+
+      {
+        "name": "debugging-hard",
+        "match": [
+          "race condition",
+          "memory leak",
+          "build failure",
+          "production bug",
+          "stuck",
+          "weird bug",
+          "investigate",
+          "debug this",
+          "error loop",
+          "timeout issue",
+          "worker failure"
+        ],
+        "model": "zen"
+      },
+
+      {
+        "name": "implementation-backend",
+        "match": [
+          "build api",
+          "create endpoint",
+          "implement route",
+          "write prisma model",
+          "build webhook",
+          "create worker",
+          "write scraper",
+          "implement service",
+          "backend logic",
+          "database migration"
+        ],
+        "model": "big-pickle"
+      },
+
+      {
+        "name": "implementation-frontend",
+        "match": [
+          "build component",
+          "create dashboard",
+          "make page",
+          "landing page",
+          "tailwind ui",
+          "react component",
+          "next.js page",
+          "charts",
+          "recharts",
+          "frontend"
+        ],
+        "model": "big-pickle"
+      },
+
+      {
+        "name": "cleanup-fast",
+        "match": [
+          "fix typescript",
+          "fix ts errors",
+          "lint",
+          "cleanup",
+          "format code",
+          "convert js to ts",
+          "write helper",
+          "boilerplate",
+          "refactor small",
+          "rename variables"
+        ],
+        "model": "opencode/auto"
+      }
+    ]
+  },
+
+  "workflow": {
+    "feature_build": [
+      {
+        "step": "design",
+        "model": "zen",
+        "prompt": "Design production-ready architecture for this feature. Include schema, services, workers, retries, failure modes, API contracts, scaling risks."
+      },
+      {
+        "step": "implementation",
+        "model": "big-pickle",
+        "prompt": "Implement exactly per approved architecture."
+      },
+      {
+        "step": "cleanup",
+        "model": "opencode/auto",
+        "prompt": "Fix TypeScript, lint, formatting, and repetitive cleanup."
+      },
+      {
+        "step": "review",
+        "model": "zen",
+        "prompt": "Audit implementation for production SaaS readiness."
+      }
+    ],
+
+    "bugfix": [
+      {
+        "step": "diagnose",
+        "model": "zen"
+      },
+      {
+        "step": "patch",
+        "model": "big-pickle"
+      },
+      {
+        "step": "cleanup",
+        "model": "opencode/auto"
+      }
+    ]
+  },
+
+  "projectProfiles": {
+    "whalescore": {
+      "stack": [
+        "nextjs",
+        "typescript",
+        "prisma",
+        "postgres",
+        "stripe",
+        "brightdata",
+        "playwright"
+      ],
+
+      "preferredRouting": {
+        "scraperArchitecture": "zen",
+        "scraperImplementation": "big-pickle",
+        "apiRoutes": "big-pickle",
+        "typescriptFixes": "opencode/auto",
+        "schemaDesign": "zen",
+        "uiBuild": "big-pickle",
+        "codeReview": "zen",
+        "performanceReview": "zen",
+        "refactors": "big-pickle",
+        "smallEdits": "opencode/auto"
+      }
+    }
+  }
+}
