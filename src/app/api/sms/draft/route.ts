@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import OpenAI from 'openai'
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+import { getLLMClient, resolveModel, MODEL_VOICE } from '@/lib/llmClient'
 
 const TONES: Record<string, string> = {
   warm: `You write warm, friendly SMS follow-up messages from a solo web designer to local businesses after a missed call.
@@ -68,8 +66,8 @@ export async function POST(req: Request) {
     previewUrl ? `Preview site URL: ${previewUrl}` : null,
   ].filter(Boolean).join('\n')
 
-  const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+  const completion = await getLLMClient().chat.completions.create({
+    model: resolveModel(MODEL_VOICE),
     messages: [
       { role: 'system', content: systemPrompt + '\n\nAlways end with "Reply STOP to opt out." on its own line. Include the preview URL on its own line.' },
       { role: 'user', content: context },

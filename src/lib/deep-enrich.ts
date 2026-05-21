@@ -6,10 +6,8 @@
 //
 // Manual-trigger only (per-row "Deep" button). Costs ~$0.005/lead in OpenAI tokens.
 
-import OpenAI from 'openai'
+import { getLLMClient, resolveModel, MODEL_JUDGMENT } from '@/lib/llmClient'
 import { sosLookup, type SosResult } from './sos-lookup'
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
 export interface DeepEnrichResult {
   legalName: string | null
@@ -98,8 +96,8 @@ If there are NO useful signals beyond the basic business name, set ownerIncomeRa
 Return ONLY the JSON object, no markdown.`
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+    const completion = await getLLMClient().chat.completions.create({
+      model: resolveModel(MODEL_JUDGMENT),
       messages: [{ role: 'user', content: prompt }],
       response_format: { type: 'json_object' },
       temperature: 0.1,

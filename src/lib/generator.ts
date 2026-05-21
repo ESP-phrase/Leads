@@ -1,6 +1,4 @@
-import OpenAI from 'openai'
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+import { getLLMClient, resolveModel, MODEL_WRITER } from '@/lib/llmClient'
 
 export interface WhyReason {
   title: string
@@ -83,8 +81,8 @@ Return valid JSON with these exact fields:
 
 Return ONLY the JSON. No commentary.`
 
-  const response = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+  const response = await getLLMClient().chat.completions.create({
+    model: resolveModel(MODEL_WRITER),
     messages: [{ role: 'user', content: prompt }],
     response_format: { type: 'json_object' },
     temperature: 0.85,  // higher temp = less canned

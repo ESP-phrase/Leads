@@ -5,9 +5,7 @@
 //   3. GPT-4o-mini extracts owner name / email / phone / about (≈$0.001/lead)
 //   4. Fallback: DuckDuckGo HTML search for "[business] owner" → GPT extract
 
-import OpenAI from 'openai'
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+import { getLLMClient, resolveModel, MODEL_EXTRACT } from '@/lib/llmClient'
 
 export interface EnrichmentResult {
   ownerName: string | null
@@ -254,8 +252,8 @@ Rules:
 Return ONLY the JSON object, no markdown.`
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+    const completion = await getLLMClient().chat.completions.create({
+      model: resolveModel(MODEL_EXTRACT),
       messages: [{ role: 'user', content: prompt }],
       response_format: { type: 'json_object' },
       temperature: 0.1,
